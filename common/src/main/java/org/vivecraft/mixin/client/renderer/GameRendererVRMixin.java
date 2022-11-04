@@ -52,7 +52,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.vivecraft.ClientDataHolder;
-import org.vivecraft.IrisHelper;
+import org.vivecraft.modCompat.iris.IrisHelper;
 import org.vivecraft.MethodHolder;
 import org.vivecraft.Xevents;
 import org.vivecraft.Xplat;

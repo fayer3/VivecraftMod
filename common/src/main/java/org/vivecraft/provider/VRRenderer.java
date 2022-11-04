@@ -22,7 +22,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
 import org.vivecraft.ClientDataHolder;
-import org.vivecraft.IrisHelper;
+import org.vivecraft.modCompat.iris.IrisHelper;
 import org.vivecraft.VRTextureTarget;
 import org.vivecraft.extensions.GameRendererExtension;
 import org.vivecraft.extensions.RenderTargetExtension;
