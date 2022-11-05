@@ -52,6 +52,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.vivecraft.ClientDataHolder;
+import org.vivecraft.modCompat.immersivePortals.ImmersivePortalsHelper;
 import org.vivecraft.modCompat.iris.IrisHelper;
 import org.vivecraft.MethodHolder;
 import org.vivecraft.Xevents;
@@ -468,7 +469,7 @@ public abstract class GameRendererVRMixin
 	
 	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;pick(F)V"), method = "renderLevel(FJLcom/mojang/blaze3d/vertex/PoseStack;)V")
 	public void renderpick(GameRenderer g, float  pPartialTicks) {
-		if (GameRendererVRMixin.DATA_HOLDER.currentPass == RenderPass.LEFT) {
+		if (GameRendererVRMixin.DATA_HOLDER.currentPass == RenderPass.LEFT && !(Xplat.isModLoaded("immersive_portals") && ImmersivePortalsHelper.isRenderingPortal())) {
 			this.pick(pPartialTicks);
 
 			if (this.minecraft.hitResult != null && this.minecraft.hitResult.getType() != HitResult.Type.MISS) {
@@ -509,9 +510,10 @@ public abstract class GameRendererVRMixin
 
 	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 1), method = "renderLevel")
 	public void noHandProfiler(ProfilerFiller instance, String s) {
-		GL11.glDisable(GL11.GL_STENCIL_TEST);
+		if (!Xplat.isModLoaded("immersive_portals")) {
+			GL11.glDisable(GL11.GL_STENCIL_TEST);
+		}
 		this.minecraft.getProfiler().popPush("ShadersEnd"); //TODO needed?
-		return;
 	}
 	@Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/GameRenderer;renderHand:Z"), method = "renderLevel")
 	public boolean noHands(GameRenderer instance) {
@@ -546,7 +548,7 @@ public abstract class GameRendererVRMixin
 
 	@Override
 	public void setupRVE() {
-		if (this.cached) {
+		if (this.cached && !(Xplat.isModLoaded("immersive_portals") && ImmersivePortalsHelper.isRenderingPortal())) {
 			VRData.VRDevicePose vrdata$vrdevicepose = GameRendererVRMixin.DATA_HOLDER.vrPlayer.vrdata_world_render
 					.getEye(GameRendererVRMixin.DATA_HOLDER.currentPass);
 			Vec3 vec3 = vrdata$vrdevicepose.getPosition();
@@ -570,7 +572,7 @@ public abstract class GameRendererVRMixin
 	@Override
 	public void cacheRVEPos(LivingEntity e) {
 		if (this.minecraft.getCameraEntity() != null) {
-			if (!this.cached) {
+			if (!this.cached  && !(Xplat.isModLoaded("immersive_portals") && ImmersivePortalsHelper.isRenderingPortal())) {
 				this.rveX = e.getX();
 				this.rveY = e.getY();
 				this.rveZ = e.getZ();
@@ -1998,8 +2000,9 @@ public abstract class GameRendererVRMixin
 				GameRendererVRMixin.DATA_HOLDER.vrRenderer.doStencil(false);
 //				}
 			} else {
-				// TODO don't disabled stencil for immersive portals
-				//GL11.glDisable(GL11.GL_STENCIL_TEST);
+				if (!Xplat.isModLoaded("immersive_portals")) {
+					GL11.glDisable(GL11.GL_STENCIL_TEST);
+				}
 			}
 		} else {
 			// No stencil for telescope
@@ -2380,7 +2383,7 @@ public abstract class GameRendererVRMixin
 
 	@Override
 	public void restoreRVEPos(LivingEntity e) {
-		if (e != null) {
+		if (e != null && !(Xplat.isModLoaded("immersive_portals") && ImmersivePortalsHelper.isRenderingPortal())) {
 			e.setPosRaw(this.rveX, this.rveY, this.rveZ);
 			e.xOld = this.rvelastX;
 			e.yOld = this.rvelastY;
