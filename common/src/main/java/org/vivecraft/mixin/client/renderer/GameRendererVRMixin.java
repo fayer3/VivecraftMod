@@ -10,7 +10,7 @@ import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
-import net.minecraft.Util;
+import net.minecraft.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -24,6 +24,8 @@ import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.tags.FluidTags;
@@ -51,12 +53,12 @@ import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import org.vivecraft.ClientDataHolder;
+import org.vivecraft.*;
+import org.vivecraft.gui.VivecraftClickEvent;
+import org.vivecraft.gui.settings.GuiOtherHUDSettings;
+import org.vivecraft.gui.settings.GuiRenderOpticsSettings;
 import org.vivecraft.modCompat.immersivePortals.ImmersivePortalsHelper;
 import org.vivecraft.modCompat.iris.IrisHelper;
-import org.vivecraft.MethodHolder;
-import org.vivecraft.Xevents;
-import org.vivecraft.Xplat;
 import org.vivecraft.extensions.GameRendererExtension;
 import org.vivecraft.extensions.ItemInHandRendererExtension;
 import org.vivecraft.extensions.LevelRendererExtension;
@@ -164,6 +166,9 @@ public abstract class GameRendererVRMixin
 
 	@Unique
 	private boolean wasStencilOn = false;
+
+	@Unique
+	private boolean showedStencilMessage = false;
 
 	@Shadow
 	@Final
@@ -1985,6 +1990,28 @@ public abstract class GameRendererVRMixin
 	@Override
 	public void drawEyeStencil(boolean flag1) {
 		wasStencilOn = GL11.glIsEnabled(GL11.GL_STENCIL_TEST);
+
+		if (wasStencilOn && GameRendererVRMixin.DATA_HOLDER.vrSettings.vrUseStencil && GameRendererVRMixin.DATA_HOLDER.vrSettings.chatMessageStencil && !showedStencilMessage) {
+			showedStencilMessage = true;
+			this.minecraft.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.stencil",
+					new TranslatableComponent("vivecraft.messages.3options",
+							new TranslatableComponent("options.title"),
+							new TranslatableComponent("vivecraft.options.screen.main"),
+							new TranslatableComponent("vivecraft.options.screen.stereorendering"))
+							.withStyle(style -> style.withClickEvent(new VivecraftClickEvent(VivecraftClickEvent.VivecraftAction.OPEN_SCREEN, new GuiRenderOpticsSettings(null)))
+									.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent("vivecraft.messages.openSettings")))
+									.withColor(ChatFormatting.GREEN)
+									.withItalic(true)),
+					new TranslatableComponent("vivecraft.messages.3options",
+							new TranslatableComponent("options.title"),
+							new TranslatableComponent("vivecraft.options.screen.main"),
+							new TranslatableComponent("vivecraft.options.screen.guiother"))
+							.withStyle(style -> style.withClickEvent(new VivecraftClickEvent(VivecraftClickEvent.VivecraftAction.OPEN_SCREEN, new GuiOtherHUDSettings(null)))
+									.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent("vivecraft.messages.openSettings")))
+									.withColor(ChatFormatting.GREEN)
+									.withItalic(true))
+			));
+		}
 
 		// stencil only for left/right VR view
 		if ((GameRendererVRMixin.DATA_HOLDER.currentPass == RenderPass.LEFT
