@@ -691,6 +691,7 @@ public abstract class GameRendererVRMixin
 				this.renderMainMenuHand(1, partialTicks, false, poseStack);
 			} else {
 				this.resetProjectionMatrix(this.getProjectionMatrix(this.getFov(this.mainCamera, partialTicks, true)));
+				// TODO: is resetting the posestack needed? Techjar means there was a reason for it
 				PoseStack posestack1 = new PoseStack();
 				posestack1.last().pose().setIdentity();
 				this.applyVRModelView(GameRendererVRMixin.DATA_HOLDER.currentPass, posestack1);
@@ -1072,6 +1073,7 @@ public abstract class GameRendererVRMixin
 
 		if (renderTeleport) {
 			matrix.pushPose();
+			// TODO: is resetting the posestack needed? Techjar means there was a reason for it
 			matrix.setIdentity();
 			this.applyVRModelView(GameRendererVRMixin.DATA_HOLDER.currentPass, matrix);
 //			net.optifine.shaders.Program program = Shaders.activeProgram; TODO
@@ -1842,8 +1844,6 @@ public abstract class GameRendererVRMixin
 			RenderSystem.enableCull();
 			RenderSystem.setShader(GameRenderer::getPositionColorShader);
 			RenderSystem.setShaderTexture(0, new ResourceLocation("vivecraft:textures/white.png"));
-			Tesselator tesselator = Tesselator.getInstance();
-			tesselator.getBuilder().begin(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
 			double d0 = GameRendererVRMixin.DATA_HOLDER.teleportTracker.lastTeleportArcDisplayOffset;
 			Vec3 vec3 = GameRendererVRMixin.DATA_HOLDER.teleportTracker.getDestination();
 			boolean flag1 = vec3.x != 0.0D || vec3.y != 0.0D || vec3.z != 0.0D;
@@ -1865,35 +1865,45 @@ public abstract class GameRendererVRMixin
 				GameRendererVRMixin.DATA_HOLDER.teleportTracker.lastTeleportArcDisplayOffset = d0;
 			}
 
-			float f = GameRendererVRMixin.DATA_HOLDER.teleportTracker.vrMovementStyle.beamHalfWidth * 0.15F;
-			int i = GameRendererVRMixin.DATA_HOLDER.teleportTracker.movementTeleportArcSteps - 1;
+			// render teleport arc
+			if (!Xplat.isModLoaded("immersive_portals") || !ImmersivePortalsHelper.isRenderingPortal()) {
+				Tesselator tesselator = Tesselator.getInstance();
+				tesselator.getBuilder().begin(Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+				float f = GameRendererVRMixin.DATA_HOLDER.teleportTracker.vrMovementStyle.beamHalfWidth * 0.15F;
+				int i = GameRendererVRMixin.DATA_HOLDER.teleportTracker.movementTeleportArcSteps - 1;
 
-			if (GameRendererVRMixin.DATA_HOLDER.teleportTracker.vrMovementStyle.beamGrow) {
-				i = (int) ((double) i * GameRendererVRMixin.DATA_HOLDER.teleportTracker.movementTeleportProgress);
+				if (GameRendererVRMixin.DATA_HOLDER.teleportTracker.vrMovementStyle.beamGrow) {
+					i = (int) ((double) i * GameRendererVRMixin.DATA_HOLDER.teleportTracker.movementTeleportProgress);
+				}
+
+				double d1 = 1.0D / (double) i;
+				Vec3 vec31 = new Vec3(0.0D, 1.0D, 0.0D);
+
+				for (int j = 0; j < i; ++j) {
+					double d2 = (double) j / (double) i + d0 * d1;
+					int k = Mth.floor(d2);
+					d2 = d2 - (double) ((float) k);
+					Vec3 vec32 = GameRendererVRMixin.DATA_HOLDER.teleportTracker
+							.getInterpolatedArcPosition((float) (d2 - d1 * (double) 0.4F))
+							.subtract(this.minecraft.getCameraEntity().position());
+					Vec3 vec33 = GameRendererVRMixin.DATA_HOLDER.teleportTracker.getInterpolatedArcPosition((float) d2)
+							.subtract(this.minecraft.getCameraEntity().position());
+					float f2 = (float) d2 * 2.0F;
+					this.renderBox(tesselator, vec32, vec33, -f, f, (-1.0F + f2) * f, (1.0F + f2) * f, vec31, vec3i, b0,
+							poseStack);
+				}
+
+				tesselator.end();
 			}
-
-			double d1 = 1.0D / (double) i;
-			Vec3 vec31 = new Vec3(0.0D, 1.0D, 0.0D);
-
-			for (int j = 0; j < i; ++j) {
-				double d2 = (double) j / (double) i + d0 * d1;
-				int k = Mth.floor(d2);
-				d2 = d2 - (double) ((float) k);
-				Vec3 vec32 = GameRendererVRMixin.DATA_HOLDER.teleportTracker
-						.getInterpolatedArcPosition((float) (d2 - d1 * (double) 0.4F))
-						.subtract(this.minecraft.getCameraEntity().position());
-				Vec3 vec33 = GameRendererVRMixin.DATA_HOLDER.teleportTracker.getInterpolatedArcPosition((float) d2)
-						.subtract(this.minecraft.getCameraEntity().position());
-				float f2 = (float) d2 * 2.0F;
-				this.renderBox(tesselator, vec32, vec33, -f, f, (-1.0F + f2) * f, (1.0F + f2) * f, vec31, vec3i, b0,
-						poseStack);
-			}
-
-			tesselator.end();
 			RenderSystem.disableCull();
 
+			// render teleport target indicator
 			if (flag1 && GameRendererVRMixin.DATA_HOLDER.teleportTracker.movementTeleportProgress >= 1.0D) {
 				Vec3 vec34 = (new Vec3(vec3.x, vec3.y, vec3.z)).subtract(this.minecraft.getCameraEntity().position());
+				if (Xplat.isModLoaded("immersive_portals") && ImmersivePortalsHelper.isRenderingPortal()) {
+					// posestack is reset, so use the renderpass camera as source.
+					vec34 = vec3.subtract(ClientDataHolder.getInstance().vrPlayer.getVRDataWorld().getEye(ClientDataHolder.getInstance().currentPass).getPosition());
+				}
 				int l = 1;
 				float f1 = 0.01F;
 				double d4 = 0.0D;

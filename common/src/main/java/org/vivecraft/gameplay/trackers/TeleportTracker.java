@@ -21,6 +21,7 @@ import org.vivecraft.api.ItemTags;
 import org.vivecraft.extensions.GameRendererExtension;
 import org.vivecraft.extensions.PlayerExtension;
 import org.vivecraft.api.ClientNetworkHelper;
+import org.vivecraft.modCompat.immersivePortals.ImmersivePortalsHelper;
 import org.vivecraft.provider.openvr_jna.OpenVRUtil;
 import org.vivecraft.gameplay.VRMovementStyle;
 import org.vivecraft.utils.Utils;
@@ -28,6 +29,7 @@ import org.vivecraft.utils.math.Angle;
 import org.vivecraft.utils.math.Matrix4f;
 import org.vivecraft.utils.math.Quaternion;
 import org.vivecraft.utils.math.Vector3;
+import org.vivecraft.Xplat;
 
 import java.util.Random;
 
@@ -311,6 +313,23 @@ public class TeleportTracker extends Tracker
             }
 
             BlockHitResult blockhitresult = mc.level.clip(new ClipContext(vec34, vec35, ClipContext.Block.COLLIDER, flag ? ClipContext.Fluid.ANY : ClipContext.Fluid.ANY, mc.player));
+
+            if (blockhitresult != null && Xplat.isModLoaded("immersive_portals")) {
+                BlockHitResult portalBlockhitresult = ImmersivePortalsHelper.raytrace(blockhitresult, mc.level, vec34, vec35, mc.player, true);
+
+                // cancel reaytrace, if we hit an impassible portal, or no block to stand on
+                if (portalBlockhitresult == null) {
+                    return;
+                } else {
+                    blockhitresult = portalBlockhitresult;
+                }
+
+                // check for hits of portal blocks, this can happen,
+                // since portal collision boxes are bigger than the actual portal
+                if (ImmersivePortalsHelper.isBlockPortal(mc.level.getBlockState(blockhitresult.getBlockPos()).getBlock())) {
+                    blockhitresult = BlockHitResult.miss(blockhitresult.getLocation(), blockhitresult.getDirection(), blockhitresult.getBlockPos());
+                }
+            }
 
             if (blockhitresult != null && blockhitresult.getType() != HitResult.Type.MISS)
             {

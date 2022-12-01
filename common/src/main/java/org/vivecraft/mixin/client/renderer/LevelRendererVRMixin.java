@@ -1,5 +1,7 @@
 package org.vivecraft.mixin.client.renderer;
 
+import com.mojang.logging.LogUtils;
+import net.minecraft.core.Vec3i;
 import org.vivecraft.ClientDataHolder;
 import org.vivecraft.modCompat.immersivePortals.ImmersivePortalsHelper;
 import org.vivecraft.modCompat.iris.IrisHelper;
@@ -172,7 +174,8 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
 //	}
 
 	// TODO immersive portals conflict, can maybe be ignored, since theirs succeeds
-	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;pollLightUpdates()V"), method = "renderLevel")
+	// make it optional, since this is no critical redirect
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;pollLightUpdates()V"), method = "renderLevel", require = 0)
 	public void noPoll(ClientLevel instance) {
 
 	}
