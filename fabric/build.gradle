@@ -48,17 +48,19 @@ dependencies {
     modRuntimeOnly "maven.modrinth:lithium:mc1.18.2-0.10.3"
     modRuntimeOnly "maven.modrinth:indium:1.0.7+mc1.18.2"
 
-    /*
     // for immersive portals compat
-    modRuntimeOnly ('com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:v1.4.11-1.18'){ //temp immersiveportals
+    modRuntimeOnly ('com.github.iPortalTeam.ImmersivePortalsMod:imm_ptl_core:v1.4.11-1.18'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }
-    modRuntimeOnly ('com.github.qouteall.ImmersivePortalsMod:q_misc_util:v1.4.11-1.18'){ //temp immersiveportals
+    modRuntimeOnly ('com.github.iPortalTeam.ImmersivePortalsMod:q_misc_util:v1.4.11-1.18'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }
-    */
+    modRuntimeOnly ('com.github.iPortalTeam.ImmersivePortalsMod:build:v1.4.11-1.18'){
+        exclude(group: "net.fabricmc.fabric-api")
+        transitive(false)
+    }
 
     // needed for resource loading
     include(modImplementation(fabricApi.module("fabric-resource-loader-v0", rootProject.fabric_api_version)))

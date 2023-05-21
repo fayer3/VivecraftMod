@@ -399,7 +399,7 @@
     "vivecraft.messages.configChangeRestart":"§6VR Modus geändert, bitte starte das Spiel neu damit die Änderungen übernommen werden.",
     "vivecraft.messages.stencil": "[Vivecraft] Ein anderer Mod verwendet den Schablonen Puffer, wenn Sie Grafikfehler bemerken, versuchen Sie die Augenschablone in folgendem Menü zu deaktivieren: %s\nSie können diese Nachricht in folgendem Menü deaktivieren: %s",
     "vivecraft.messages.3options": "%s > %s > %s",
-    "vivecraft.messages.openSettings": "Klicken um die Einstellungen zu öffnen."
+    "vivecraft.messages.openSettings": "Klicken um die Einstellungen zu öffnen.",
     "vivecraft.toasts.move1":"Laufe mit %s",
     "vivecraft.toasts.move2":"Laufe mit %s und %s",
     "vivecraft.toasts.move3":"Laufe mit %s, %s und %s",

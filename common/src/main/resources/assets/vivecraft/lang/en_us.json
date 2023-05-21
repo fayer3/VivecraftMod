@@ -398,7 +398,7 @@
     "vivecraft.messages.configChangeRestart":"§6VR Mode changed, please restart the game for it to take effect.",
     "vivecraft.messages.stencil": "[Vivecraft] A different mod uses the stencil buffer, if you run into weird rendering issues, try disabling the Eye Stencil in: %s\nYou can disable this message in: %s",
     "vivecraft.messages.3options": "%s > %s > %s",
-    "vivecraft.messages.openSettings": "Click to open settings"
+    "vivecraft.messages.openSettings": "Click to open settings",
     "vivecraft.toasts.move1":"Move with %s",
     "vivecraft.toasts.move2":"Move with %s and %s",
     "vivecraft.toasts.move3":"Move with %s, %s and %s",

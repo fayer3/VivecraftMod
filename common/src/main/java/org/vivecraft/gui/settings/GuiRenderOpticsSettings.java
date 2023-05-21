@@ -1,7 +1,6 @@
 package org.vivecraft.gui.settings;
 
-import org.vivecraft.ClientDataHolder;
-import org.vivecraft.IrisHelper;
+import org.vivecraft.modCompat.iris.IrisHelper;
 import org.vivecraft.Xplat;
 import org.vivecraft.gui.framework.GuiVROptionButton;
 import org.vivecraft.gui.framework.GuiVROptionsBase;

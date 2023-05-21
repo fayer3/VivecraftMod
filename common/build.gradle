@@ -31,17 +31,15 @@ dependencies {
     modCompileOnly "maven.modrinth:lithium:mc1.18.2-0.10.3"
     modCompileOnly "maven.modrinth:indium:1.0.7+mc1.18.2"
 
-    /*
     // for immersive portals compat
-    modCompileOnly ('com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:v1.4.11-1.18'){ //temp immersiveportals
+    modCompileOnly ('com.github.iPortalTeam.ImmersivePortalsMod:imm_ptl_core:v1.4.11-1.18'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }
-    modCompileOnly ('com.github.qouteall.ImmersivePortalsMod:q_misc_util:v1.4.11-1.18'){ //temp immersiveportals
+    modCompileOnly ('com.github.iPortalTeam.ImmersivePortalsMod:q_misc_util:v1.4.11-1.18'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }
-    */
 
     //LaunchPopup
     implementation 'com.github.fayer3:LaunchPopup:master-SNAPSHOT'
