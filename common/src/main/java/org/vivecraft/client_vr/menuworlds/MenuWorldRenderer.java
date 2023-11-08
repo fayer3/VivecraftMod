@@ -42,6 +42,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.vivecraft.client.Xplat;
+import org.vivecraft.client.extensions.BufferBuilderExtension;
 import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.settings.VRSettings;
@@ -144,9 +145,10 @@ public class MenuWorldRenderer {
             loadRenderers();
             getWorldTask = CompletableFuture.supplyAsync(() -> {
                 try {
-                    InputStream inputStream = MenuWorldDownloader.getRandomWorld();
-                    VRSettings.logger.info("MenuWorlds: Loading world data...");
-                    return inputStream != null ? MenuWorldExporter.loadWorld(inputStream) : null;
+                    try (InputStream inputStream = MenuWorldDownloader.getRandomWorld()) {
+                        VRSettings.logger.info("MenuWorlds: Loading world data...");
+                        return inputStream != null ? MenuWorldExporter.loadWorld(inputStream) : null;
+                    }
                 } catch (Exception e) {
                     VRSettings.logger.error("Exception thrown when loading main menu world, falling back to old menu room. \n {}", e.getMessage());
                     e.printStackTrace();
@@ -427,6 +429,7 @@ public class MenuWorldRenderer {
             BufferBuilder.RenderedBuffer renderedBuffer = vertBuffer.end();
             if (!renderedBuffer.isEmpty())
                 uploadGeometry(layer, renderedBuffer);
+            ((BufferBuilderExtension) vertBuffer).vivecraft$freeBuffer();
         }
         bufferBuilders = null;
         currentPositions = null;
@@ -463,6 +466,11 @@ public class MenuWorldRenderer {
     public void cancelBuilding() {
         if (!building) return;
         building = false;
+        if (bufferBuilders != null) {
+            for (var vertBuffer : bufferBuilders.values()) {
+                ((BufferBuilderExtension) vertBuffer).vivecraft$freeBuffer();
+            }
+        }
         bufferBuilders = null;
         currentPositions = null;
     }

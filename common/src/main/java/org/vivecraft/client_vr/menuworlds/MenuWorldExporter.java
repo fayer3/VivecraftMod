@@ -177,156 +177,157 @@ public class MenuWorldExporter {
             output.write(buffer, 0, len);
         }
 
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(output.toByteArray()));
-        int xSize = dis.readInt();
-        int ySize = dis.readInt();
-        int zSize = dis.readInt();
-        int ground = dis.readInt();
+        try (DataInputStream dis = new DataInputStream(new ByteArrayInputStream(output.toByteArray()))) {
+            int xSize = dis.readInt();
+            int ySize = dis.readInt();
+            int zSize = dis.readInt();
+            int ground = dis.readInt();
 
-        ResourceLocation dimName;
-        if (header.version < 4) { // old format
-            int dimId = dis.readInt();
-            dimName = switch (dimId) {
-                case -1 -> BuiltinDimensionTypes.NETHER_EFFECTS;
-                case 1 -> BuiltinDimensionTypes.END_EFFECTS;
-                default -> BuiltinDimensionTypes.OVERWORLD_EFFECTS;
-            };
-        } else {
-            dimName = new ResourceLocation(dis.readUTF());
-        }
-
-        boolean isFlat;
-
-        if (header.version < 4) // old format
-        {
-            isFlat = dis.readUTF().equals("flat");
-        } else {
-            isFlat = dis.readBoolean();
-        }
-
-        boolean dimHasSkyLight = dis.readBoolean();
-
-        long seed = 0;
-        if (header.version >= 3) {
-            seed = dis.readLong();
-        }
-
-        int dataVersion;
-        if (header.version == 2) {
-            dataVersion = 1631; // assume 1.13.2
-        } else if (header.version == 3) {
-            dataVersion = 2230; // assume 1.15.2
-        } else if (header.version == 4) {
-            dataVersion = 2586; // assume 1.16.5
-        } else {
-            dataVersion = dis.readInt(); // v5+ stores the real data version
-        }
-
-        if (dataVersion > SharedConstants.getCurrentVersion().getDataVersion().getVersion()) {
-            VRSettings.logger.warn("Data version is newer than current, this menu world may not load correctly.");
-        }
-
-        OptionalLong dimFixedTime = OptionalLong.empty();
-        boolean dimHasCeiling;
-        int dimMinY;
-        float dimAmbientLight;
-
-        if (header.version < 5) { // fill in missing values
-            if (BuiltinDimensionTypes.NETHER_EFFECTS.equals(dimName)) {
-                dimFixedTime = OptionalLong.of(18000L);
-                dimHasCeiling = true;
-                dimMinY = 0;
-                dimAmbientLight = 0.1f;
-            } else if (BuiltinDimensionTypes.END_EFFECTS.equals(dimName)) {
-                dimFixedTime = OptionalLong.of(6000L);
-                dimHasCeiling = false;
-                dimMinY = 0;
-                dimAmbientLight = 0.0f;
-            } else { // overworld/default
-                dimHasCeiling = false;
-                dimMinY = 0; // pre-v5 worlds don't have deeper underground
-                dimAmbientLight = 0.0f;
+            ResourceLocation dimName;
+            if (header.version < 4) { // old format
+                int dimId = dis.readInt();
+                dimName = switch (dimId) {
+                    case -1 -> BuiltinDimensionTypes.NETHER_EFFECTS;
+                    case 1 -> BuiltinDimensionTypes.END_EFFECTS;
+                    default -> BuiltinDimensionTypes.OVERWORLD_EFFECTS;
+                };
+            } else {
+                dimName = new ResourceLocation(dis.readUTF());
             }
-        } else {
-            if (dis.readBoolean()) {
-                dimFixedTime = OptionalLong.of(dis.readLong());
+
+            boolean isFlat;
+
+            if (header.version < 4) // old format
+            {
+                isFlat = dis.readUTF().equals("flat");
+            } else {
+                isFlat = dis.readBoolean();
             }
-            dimHasCeiling = dis.readBoolean();
-            dimMinY = dis.readInt();
-            dimAmbientLight = dis.readFloat();
-        }
 
-        DimensionType dimensionType = new DimensionType(dimFixedTime, dimHasSkyLight, dimHasCeiling, false, false, 1.0, true, false, dimMinY, ySize, ySize, BlockTags.INFINIBURN_OVERWORLD, dimName, dimAmbientLight, new DimensionType.MonsterSettings(false, false, ConstantInt.of(0), 0));
+            boolean dimHasSkyLight = dis.readBoolean();
 
-        float rotation = 0.0f;
-        boolean rain = false;
-        boolean thunder = false;
+            long seed = 0;
+            if (header.version >= 3) {
+                seed = dis.readLong();
+            }
 
-        if (header.version >= 5) {
-            rotation = dis.readFloat();
-            rain = dis.readBoolean();
-            thunder = dis.readBoolean();
-        }
+            int dataVersion;
+            if (header.version == 2) {
+                dataVersion = 1631; // assume 1.13.2
+            } else if (header.version == 3) {
+                dataVersion = 2230; // assume 1.15.2
+            } else if (header.version == 4) {
+                dataVersion = 2586; // assume 1.16.5
+            } else {
+                dataVersion = dis.readInt(); // v5+ stores the real data version
+            }
 
-        BlockStateMapper blockStateMapper = new BlockStateMapper();
-        blockStateMapper.readPalette(dis, dataVersion);
+            if (dataVersion > SharedConstants.getCurrentVersion().getDataVersion().getVersion()) {
+                VRSettings.logger.warn("Data version is newer than current, this menu world may not load correctly.");
+            }
 
-        BiomeMapper biomeMapper;
-        if (header.version >= 5) {
-            biomeMapper = new PaletteBiomeMapper();
-            ((PaletteBiomeMapper) biomeMapper).readPalette(dis);
-        } else {
-            biomeMapper = new LegacyBiomeMapper();
-        }
+            OptionalLong dimFixedTime = OptionalLong.empty();
+            boolean dimHasCeiling;
+            int dimMinY;
+            float dimAmbientLight;
 
-        BlockState[] blocks = new BlockState[xSize * ySize * zSize];
-        for (int i = 0; i < blocks.length; i++) {
-            blocks[i] = blockStateMapper.getState(dis.readInt());
-        }
+            if (header.version < 5) { // fill in missing values
+                if (BuiltinDimensionTypes.NETHER_EFFECTS.equals(dimName)) {
+                    dimFixedTime = OptionalLong.of(18000L);
+                    dimHasCeiling = true;
+                    dimMinY = 0;
+                    dimAmbientLight = 0.1f;
+                } else if (BuiltinDimensionTypes.END_EFFECTS.equals(dimName)) {
+                    dimFixedTime = OptionalLong.of(6000L);
+                    dimHasCeiling = false;
+                    dimMinY = 0;
+                    dimAmbientLight = 0.0f;
+                } else { // overworld/default
+                    dimHasCeiling = false;
+                    dimMinY = 0; // pre-v5 worlds don't have deeper underground
+                    dimAmbientLight = 0.0f;
+                }
+            } else {
+                if (dis.readBoolean()) {
+                    dimFixedTime = OptionalLong.of(dis.readLong());
+                }
+                dimHasCeiling = dis.readBoolean();
+                dimMinY = dis.readInt();
+                dimAmbientLight = dis.readFloat();
+            }
 
-        short[][] heightmap = new short[xSize][zSize];
-        for (int x = 0; x < xSize; x++) {
-            for (int z = 0; z < zSize; z++) {
-                for (int y = ySize - 1; y >= 0; y--) {
-                    int index = (y * zSize + z) * xSize + x;
-                    if (blocks[index].blocksMotion() || !blocks[index].getFluidState().isEmpty()) {
-                        heightmap[x][z] = (short) (y + 1);
-                        break;
+            DimensionType dimensionType = new DimensionType(dimFixedTime, dimHasSkyLight, dimHasCeiling, false, false, 1.0, true, false, dimMinY, ySize, ySize, BlockTags.INFINIBURN_OVERWORLD, dimName, dimAmbientLight, new DimensionType.MonsterSettings(false, false, ConstantInt.of(0), 0));
+
+            float rotation = 0.0f;
+            boolean rain = false;
+            boolean thunder = false;
+
+            if (header.version >= 5) {
+                rotation = dis.readFloat();
+                rain = dis.readBoolean();
+                thunder = dis.readBoolean();
+            }
+
+            BlockStateMapper blockStateMapper = new BlockStateMapper();
+            blockStateMapper.readPalette(dis, dataVersion);
+
+            BiomeMapper biomeMapper;
+            if (header.version >= 5) {
+                biomeMapper = new PaletteBiomeMapper();
+                ((PaletteBiomeMapper) biomeMapper).readPalette(dis);
+            } else {
+                biomeMapper = new LegacyBiomeMapper();
+            }
+
+            BlockState[] blocks = new BlockState[xSize * ySize * zSize];
+            for (int i = 0; i < blocks.length; i++) {
+                blocks[i] = blockStateMapper.getState(dis.readInt());
+            }
+
+            short[][] heightmap = new short[xSize][zSize];
+            for (int x = 0; x < xSize; x++) {
+                for (int z = 0; z < zSize; z++) {
+                    for (int y = ySize - 1; y >= 0; y--) {
+                        int index = (y * zSize + z) * xSize + x;
+                        if (blocks[index].blocksMotion() || !blocks[index].getFluidState().isEmpty()) {
+                            heightmap[x][z] = (short) (y + 1);
+                            break;
+                        }
                     }
                 }
             }
-        }
 
-        byte[] skylightmap = new byte[xSize * ySize * zSize];
-        byte[] blocklightmap = new byte[xSize * ySize * zSize];
-        for (int i = 0; i < skylightmap.length; i++) {
-            int b = dis.readByte() & 0xFF;
-            skylightmap[i] = (byte) (b & 15);
-            blocklightmap[i] = (byte) (b >> 4);
-        }
-
-        Biome[] biomemap = new Biome[xSize * ySize * zSize / 64];
-        if (header.version == 2) {
-            Biome[] tempBiomemap = new Biome[xSize * zSize];
-            for (int i = 0; i < tempBiomemap.length; i++) {
-                tempBiomemap[i] = biomeMapper.getBiome(dis.readInt());
+            byte[] skylightmap = new byte[xSize * ySize * zSize];
+            byte[] blocklightmap = new byte[xSize * ySize * zSize];
+            for (int i = 0; i < skylightmap.length; i++) {
+                int b = dis.readByte() & 0xFF;
+                skylightmap[i] = (byte) (b & 15);
+                blocklightmap[i] = (byte) (b >> 4);
             }
-            for (int x = 0; x < xSize / 4; x++) {
-                for (int z = 0; z < zSize / 4; z++) {
-                    biomemap[z * (xSize / 4) + x] = tempBiomemap[(z * 4) * xSize + (x * 4)];
+
+            Biome[] biomemap = new Biome[xSize * ySize * zSize / 64];
+            if (header.version == 2) {
+                Biome[] tempBiomemap = new Biome[xSize * zSize];
+                for (int i = 0; i < tempBiomemap.length; i++) {
+                    tempBiomemap[i] = biomeMapper.getBiome(dis.readInt());
+                }
+                for (int x = 0; x < xSize / 4; x++) {
+                    for (int z = 0; z < zSize / 4; z++) {
+                        biomemap[z * (xSize / 4) + x] = tempBiomemap[(z * 4) * xSize + (x * 4)];
+                    }
+                }
+                int yStride = (xSize / 4) * (zSize / 4);
+                for (int y = 1; y < ySize / 4; y++) {
+                    System.arraycopy(biomemap, 0, biomemap, yStride * y, yStride);
+                }
+            } else {
+                for (int i = 0; i < biomemap.length; i++) {
+                    biomemap[i] = biomeMapper.getBiome(dis.readInt());
                 }
             }
-            int yStride = (xSize / 4) * (zSize / 4);
-            for (int y = 1; y < ySize / 4; y++) {
-                System.arraycopy(biomemap, 0, biomemap, yStride * y, yStride);
-            }
-        } else {
-            for (int i = 0; i < biomemap.length; i++) {
-                biomemap[i] = biomeMapper.getBiome(dis.readInt());
-            }
-        }
 
-        return new FakeBlockAccess(header.version, seed, blocks, skylightmap, blocklightmap, biomemap, heightmap, xSize, ySize, zSize, ground, dimensionType, isFlat, rotation, rain, thunder);
+            return new FakeBlockAccess(header.version, seed, blocks, skylightmap, blocklightmap, biomemap, heightmap, xSize, ySize, zSize, ground, dimensionType, isFlat, rotation, rain, thunder);
+        }
     }
 
     public static FakeBlockAccess loadWorld(InputStream is) throws IOException, DataFormatException {
