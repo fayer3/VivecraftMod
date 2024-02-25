@@ -62,7 +62,7 @@ public class ClientPacketListenerVRMixin {
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "close")
+    @Inject(at = @At("TAIL"), method = "cleanup")
     public void vivecraft$cleanup(CallbackInfo ci) {
         VRServerPerms.INSTANCE.setTeleportSupported(false);
         if (VRState.vrInitialized) {
