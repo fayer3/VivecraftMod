@@ -9,7 +9,6 @@ import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
@@ -37,6 +36,7 @@ public class ClientPacketListenerVRMixin {
 
     @Unique
     String vivecraft$lastMsg = null;
+
     @Final
     @Shadow
     private Minecraft minecraft;
@@ -65,17 +65,16 @@ public class ClientPacketListenerVRMixin {
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "onDisconnect")
-    public void vivecraft$disconnect(Component component, CallbackInfo ci) {
+    @Inject(at = @At("TAIL"), method = "close")
+    public void vivecraft$cleanup(CallbackInfo ci) {
         VRServerPerms.INSTANCE.setTeleportSupported(false);
         if (VRState.vrInitialized) {
             ClientDataHolderVR.getInstance().vrPlayer.setTeleportOverride(false);
         }
         ClientDataHolderVR.getInstance().vrSettings.overrides.resetAll();
-    }
-
-    @Inject(at = @At("TAIL"), method = "close")
-    public void vivecraft$cleanup(CallbackInfo ci) {
+        ClientNetworking.resetServerSettings();
+        ClientNetworking.displayedChatMessage = false;
+        ClientNetworking.displayedChatWarning = false;
         ClientNetworking.needsReset = true;
     }
 
@@ -137,11 +136,12 @@ public class ClientPacketListenerVRMixin {
         ClientDataHolderVR.getInstance().vrSettings.overrides.resetAll();
     }
 
-    @Inject(at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/network/protocol/game/ClientboundCustomPayloadPacket;getData()Lnet/minecraft/network/FriendlyByteBuf;"), method = "handleCustomPayload(Lnet/minecraft/network/protocol/game/ClientboundCustomPayloadPacket;)V", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
-    public void vivecraft$handlepacket(ClientboundCustomPayloadPacket p_105004_, CallbackInfo info, ResourceLocation channelID, FriendlyByteBuf buffer) {
-        if (channelID.equals(CommonNetworkHelper.CHANNEL)) {
-            var packetID = CommonNetworkHelper.PacketDiscriminators.values()[buffer.readByte()];
-            ClientNetworking.handlePacket(packetID, buffer);
+    @Inject(at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/network/protocol/game/ClientboundCustomPayloadPacket;getData()Lnet/minecraft/network/FriendlyByteBuf;"), method = "handleCustomPayload", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
+    public void vivecraft$handlepacket(ClientboundCustomPayloadPacket payloadPacket, CallbackInfo info, ResourceLocation channelID, FriendlyByteBuf buffer) {
+        if (CommonNetworkHelper.CHANNEL.equals(channelID)) {
+            ClientNetworking.handlePacket(
+                CommonNetworkHelper.PacketDiscriminators.values()[buffer.readByte()],
+                buffer);
             buffer.release();
             info.cancel();
         }
