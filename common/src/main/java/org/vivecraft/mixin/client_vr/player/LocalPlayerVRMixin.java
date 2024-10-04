@@ -1,13 +1,11 @@
 package org.vivecraft.mixin.client_vr.player;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
-import com.mojang.authlib.GameProfile;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
@@ -15,10 +13,8 @@ import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -44,7 +40,7 @@ import org.vivecraft.client_vr.utils.external.jkatvr;
 import org.vivecraft.common.network.CommonNetworkHelper;
 
 @Mixin(LocalPlayer.class)
-public abstract class LocalPlayerVRMixin extends AbstractClientPlayer implements PlayerExtension {
+public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin implements PlayerExtension {
 
     @Unique
     private Vec3 vivecraft$moveMulIn = Vec3.ZERO;
@@ -78,15 +74,14 @@ public abstract class LocalPlayerVRMixin extends AbstractClientPlayer implements
     @Shadow
     private InteractionHand usingItemHand;
 
-    public LocalPlayerVRMixin(ClientLevel clientLevel, GameProfile gameProfile) {
-        super(clientLevel, gameProfile);
-    }
-
     @Shadow
     protected abstract void updateAutoJump(float movementX, float movementZ);
 
     @Shadow
-    public abstract void swing(InteractionHand hand);
+    public abstract boolean isShiftKeyDown();
+
+    @Shadow
+    public abstract InteractionHand getUsedItemHand();
 
     @Inject(method = "startRiding", at = @At("TAIL"))
     private void vivecraft$startRidingTracker(Entity vehicle, boolean force, CallbackInfoReturnable<Boolean> cir) {
@@ -227,73 +222,64 @@ public abstract class LocalPlayerVRMixin extends AbstractClientPlayer implements
         return VRState.vrRunning ? ClientDataHolderVR.getInstance().vrPlayer.vrdata_world_pre.getBodyYaw() * ((float) Math.PI / 180) : original;
     }
 
+    @Inject(method = "handleEntityEvent", at = @At("HEAD"))
+    private void vivecraft$hapticsOnEvent(byte id, CallbackInfo ci) {
+        if (VRState.vrRunning && vivecraft$isLocalPlayer(this)) {
+            if (id == EntityEvent.DEATH) {
+                ClientDataHolderVR.getInstance().vr.triggerHapticPulse(0, 2000);
+                ClientDataHolderVR.getInstance().vr.triggerHapticPulse(1, 2000);
+            }
+        }
+    }
+
     /**
-     Player overrides
+     * inject into {@link Player#eat(Level, ItemStack)}
      */
     @Override
-    public ItemStack eat(Level level, ItemStack food) {
-        if (VRState.vrRunning && food.isEdible() && (Object) this == Minecraft.getInstance().player && food.getHoverName().getString().equals("EAT ME")) {
+    protected void vivecraft$beforeEat(Level level, ItemStack food, CallbackInfoReturnable<ItemStack> cir) {
+        if (VRState.vrRunning && food.isEdible() && vivecraft$isLocalPlayer(this) &&
+            food.getHoverName().getString().equals("EAT ME"))
+        {
             ClientDataHolderVR.getInstance().vrPlayer.wfMode = 0.5D;
             ClientDataHolderVR.getInstance().vrPlayer.wfCount = 400;
         }
-        return super.eat(level, food);
-    }
-
-    @Override
-    public void die(DamageSource damageSource) {
-        super.die(damageSource);
-        if (!VRState.vrRunning || !vivecraft$isLocalPlayer(this)) {
-            return;
-        }
-        ClientDataHolderVR.getInstance().vr.triggerHapticPulse(0, 2000);
-        ClientDataHolderVR.getInstance().vr.triggerHapticPulse(1, 2000);
     }
 
     /**
-     LivingEntity overrides
+     * inject into {@link LivingEntity#releaseUsingItem()}
      */
     @Override
-    public void releaseUsingItem() {
-        if (vivecraft$isLocalPlayer(this)) {
+    protected void vivecraft$beforeReleaseUsingItem(CallbackInfo ci) {
+        if (VRState.vrRunning && vivecraft$isLocalPlayer(this)) {
             ClientNetworking.sendActiveHand((byte) this.getUsedItemHand().ordinal());
         }
-        super.releaseUsingItem();
     }
 
     /**
-     Entity overrides
+     * inject into {@link Entity#absMoveTo(double, double, double, float, float)}
+     * and {@link Entity#moveTo(double, double, double, float, float)}
      */
     @Override
-    public void moveTo(double x, double y, double z, float yRot, float xRot) {
-        super.moveTo(x, y, z, yRot, xRot);
-        if (!VRState.vrRunning || !vivecraft$isLocalPlayer(this)) {
-            return;
-        }
-        if (this.vivecraft$initFromServer) {
+    protected void vivecraft$afterAbsMoveTo(CallbackInfo ci) {
+        if (VRState.vrRunning && vivecraft$isLocalPlayer(this) && this.vivecraft$initFromServer) {
             ClientDataHolderVR.getInstance().vrPlayer.snapRoomOriginToPlayerEntity((LocalPlayer) (Object) this, false, false);
         }
     }
 
+    /**
+     * inject into {@link Entity#setPos(double, double, double)}
+     */
     @Override
-    public void absMoveTo(double x, double y, double z, float yRot, float xRot) {
-        super.absMoveTo(x, y, z, yRot, xRot);
-        if (!VRState.vrRunning || !vivecraft$isLocalPlayer(this)) {
-            return;
-        }
-        ClientDataHolderVR.getInstance().vrPlayer.snapRoomOriginToPlayerEntity((LocalPlayer) (Object) this, false, false);
-    }
-
-    @Override
-    public void setPos(double x, double y, double z) {
+    protected void vivecraft$wrapSetPos(double x, double y, double z, Operation<Void> original) {
         this.vivecraft$initFromServer = true;
         if (!VRState.vrRunning || !vivecraft$isLocalPlayer(this)) {
-            super.setPos(x, y, z);
+            original.call(x, y, z);
             return;
         }
         double oldX = this.getX();
         double oldY = this.getY();
         double oldZ = this.getZ();
-        super.setPos(x, y, z);
+        original.call(x, y, z);
         double newX = this.getX();
         double newY = this.getY();
         double newZ = this.getZ();
@@ -315,17 +301,21 @@ public abstract class LocalPlayerVRMixin extends AbstractClientPlayer implements
         }
     }
 
+    /**
+     * inject into {@link Entity#moveRelative(float, Vec3)}
+     */
     @Override
-    public void moveRelative(float amount, Vec3 relative) {
+    protected Vec3 vivecraft$controllerMovement(Vec3 relative, float amount, float facing, Operation<Vec3> original) {
         if (!VRState.vrRunning || !vivecraft$isLocalPlayer(this)) {
-            super.moveRelative(amount, relative);
-            return;
+            return original.call(relative, amount, facing);
         }
 
         double up = relative.y;
         double strafe = relative.x;
         double forward = relative.z;
         VRPlayer vrplayer = this.vivecraft$dataholder.vrPlayer;
+
+        Vec3 movement = Vec3.ZERO;
 
         if (vrplayer.getFreeMove()) {
             double speed = strafe * strafe + forward * forward;
@@ -418,10 +408,7 @@ public abstract class LocalPlayerVRMixin extends AbstractClientPlayer implements
                     yAdd = 5.0F;
                 }
 
-                this.setDeltaMovement(
-                    this.getDeltaMovement().x + mX * addFactor,
-                    this.getDeltaMovement().y + mY * (double) yAdd,
-                    this.getDeltaMovement().z + mZ * addFactor);
+                movement = new Vec3(mX * addFactor, mY * (double) yAdd, mZ * addFactor);
                 this.vivecraft$additionX = mX;
                 this.vivecraft$additionZ = mZ;
             }
@@ -430,6 +417,7 @@ public abstract class LocalPlayerVRMixin extends AbstractClientPlayer implements
                 this.vivecraft$doDrag();
             }
         }
+        return movement;
     }
 
     /**
