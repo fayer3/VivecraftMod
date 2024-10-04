@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRState;
+import org.vivecraft.client_vr.extensions.ClassDependentMixin;
 import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_xr.render_pass.RenderPassManager;
@@ -28,7 +29,11 @@ import java.util.EnumMap;
 
 @Pseudo
 @Mixin(IrisChunkProgramOverrides.class)
-public class IrisChunkProgramOverridesMixin implements IrisChunkProgramOverridesExtension {
+public class IrisChunkProgramOverridesMixin implements IrisChunkProgramOverridesExtension, ClassDependentMixin {
+
+    @Unique
+    private static final String vivecraft$dependentClass = "net.caffeinemc.mods.sodium.client.gl.shader.GlProgram";
+
     @Final
     @Shadow(remap = false)
     private EnumMap<IrisTerrainPass, GlProgram<IrisChunkShaderInterface>> programs;
