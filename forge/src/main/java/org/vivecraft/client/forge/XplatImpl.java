@@ -122,7 +122,7 @@ public class XplatImpl implements Xplat {
                 .writeBytes(resourceLocation.toString().getBytes()))));
     }
 
-    static VivecraftPayload wrapPayload(VivecraftPayload payload) {
+    public static VivecraftPayload wrapPayload(VivecraftPayload payload) {
         return payload;
     }
 
