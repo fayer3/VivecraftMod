@@ -1,15 +1,11 @@
 package org.vivecraft.mixin.client_vr.multiplayer;
 
-import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
@@ -20,7 +16,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Surrogate;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -28,7 +23,6 @@ import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.provider.ControllerType;
 import org.vivecraft.client_vr.settings.VRSettings;
-import org.vivecraft.common.network.packets.VivecraftDataPacket;
 
 @Mixin(ClientPacketListener.class)
 public abstract class ClientPacketListenerVRMixin extends ClientCommonPacketListenerImpl {
@@ -144,25 +138,6 @@ public abstract class ClientPacketListenerVRMixin extends ClientCommonPacketList
                     SoundSource.NEUTRAL, 0.3F, 0.1F, false);
             }
         }
-    }
-
-    @Inject(method = "handleCustomPayload", at = @At("HEAD"), cancellable = true)
-    private void vivecraft$handlepacket(CustomPacketPayload customPacketPayload, CallbackInfo info) {
-        if (customPacketPayload instanceof VivecraftDataPacket dataPacket) {
-            FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer()).writeBytes(dataPacket.buffer());
-            ClientNetworking.handlePacket(dataPacket.packetId(), buffer);
-            buffer.release();
-            info.cancel();
-        }
-    }
-
-    /**
-     * this is just needed so that neoforge doesn't crash.
-     * packets are handled with their events.
-     * {@link org.vivecraft.neoforge.event.ClientEvents#handleVivePacket}
-     */
-    @Surrogate
-    private void vivecraft$handlepacket(ClientboundCustomPayloadPacket packet, CustomPacketPayload customPacketPayload, CallbackInfo info) {
     }
 
     @Inject(method = "handleOpenScreen", at = @At("HEAD"))
