@@ -159,7 +159,7 @@ public class ConfigBuilder {
         List<String> path = this.stack.stream().toList();
 
         EnumValue<T> value = new EnumValue<>(this.config, path, defaultValue, enumClass);
-        this.spec.defineEnum(path, defaultValue, EnumGetMethod.NAME_IGNORECASE);
+        this.spec.defineInList(path, defaultValue, value.getValidValues());
         this.stack.removeLast();
 
         this.configValues.add(value);
@@ -334,12 +334,10 @@ public class ConfigBuilder {
             this.enumClass = enumClass;
         }
 
-        public T toEnum(Object value) {
-            if (this.enumClass.isInstance(value)) {
-                return this.enumClass.cast(value);
-            } else if (value instanceof String) {
+        public T getEnumValue(Object value) {
+            try {
                 return EnumGetMethod.NAME_IGNORECASE.get(value, this.enumClass);
-            } else {
+            } catch (Exception e) {
                 return null;
             }
         }
@@ -351,14 +349,6 @@ public class ConfigBuilder {
         @Override
         public Supplier<AbstractWidget> getWidget(int width, int height) {
             return WidgetBuilder.getCycleWidget(this, getValidValues(), width, height);
-        }
-
-        /**
-         * need to override this, because enums are stored and read as Strings from the config file
-         */
-        @Override
-        public boolean isDefault() {
-            return Objects.equals(toEnum(get()), getDefaultValue());
         }
     }
 

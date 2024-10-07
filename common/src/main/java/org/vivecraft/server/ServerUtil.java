@@ -207,7 +207,7 @@ public class ServerUtil {
                         })
                         .executes(context -> {
                             Object newValue = context.getArgument(argumentName, String.class);
-                            Object newEnumValue = enumValue.toEnum(newValue);
+                            Object newEnumValue = enumValue.getEnumValue(newValue);
                             if (newEnumValue != null) {
                                 setting.set(newEnumValue);
                                 context.getSource().sendSystemMessage(

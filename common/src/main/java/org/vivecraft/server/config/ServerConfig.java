@@ -398,6 +398,13 @@ public class ServerConfig {
         // end vrSwitching
         builder.pop();
 
+        // fix any enums that are loaded as strings first
+        for (ConfigBuilder.ConfigValue<?> configValue: builder.getConfigValues()) {
+            if (configValue instanceof ConfigBuilder.EnumValue enumValue) {
+                enumValue.set(enumValue.getEnumValue(enumValue.get()));
+            }
+        }
+
         // if the config is outdated, or is missing keys, re add them
         builder.correct(listener);
     }
