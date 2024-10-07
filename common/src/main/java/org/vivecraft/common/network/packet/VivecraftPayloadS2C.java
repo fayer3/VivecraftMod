@@ -1,8 +1,7 @@
-package org.vivecraft.common.network.packet.s2c;
+package org.vivecraft.common.network.packet;
 
 import net.minecraft.network.FriendlyByteBuf;
-import org.vivecraft.common.network.packet.PayloadIdentifier;
-import org.vivecraft.common.network.packet.VivecraftPayload;
+import org.vivecraft.common.network.packet.s2c.*;
 
 /**
  * Vivecraft packet sent from Clients to the Server

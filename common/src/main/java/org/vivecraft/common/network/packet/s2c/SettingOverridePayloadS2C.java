@@ -2,6 +2,7 @@ package org.vivecraft.common.network.packet.s2c;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,13 +14,13 @@ import java.util.Map;
 public record SettingOverridePayloadS2C(Map<String, String> overrides) implements VivecraftPayloadS2C {
 
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.SETTING_OVERRIDE;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         for(Map.Entry<String, String> entry : this.overrides.entrySet()) {
             buffer.writeUtf(entry.getKey());
             buffer.writeUtf(entry.getValue());

@@ -2,6 +2,7 @@ package org.vivecraft.common.network.packet.c2s;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
 
 /**
  * holds the clients world scale
@@ -10,13 +11,13 @@ import org.vivecraft.common.network.packet.PayloadIdentifier;
 public record WorldScalePayloadC2S(float worldScale) implements VivecraftPayloadC2S {
 
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.WORLDSCALE;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         buffer.writeFloat(this.worldScale);
     }
 

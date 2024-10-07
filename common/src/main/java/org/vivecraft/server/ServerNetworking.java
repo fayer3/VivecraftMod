@@ -13,11 +13,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.vivecraft.client.Xplat;
 import org.vivecraft.common.CommonDataHolder;
 import org.vivecraft.common.network.CommonNetworkHelper;
 import org.vivecraft.common.network.VrPlayerState;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
-import org.vivecraft.common.network.packet.VivecraftPacketS2C;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 import org.vivecraft.common.network.packet.c2s.*;
 import org.vivecraft.common.network.packet.s2c.*;
 import org.vivecraft.mixin.server.ChunkMapAccessor;
@@ -50,7 +52,7 @@ public class ServerNetworking {
         ServerVivePlayer vivePlayer = ServerVRPlayers.getVivePlayer(player);
 
         // clients are expected to send a VERSION packet first
-        if (vivePlayer == null && c2sPayload.id() != PayloadIdentifier.VERSION) {
+        if (vivePlayer == null && c2sPayload.payloadId() != PayloadIdentifier.VERSION) {
             return;
         }
 
@@ -59,7 +61,7 @@ public class ServerNetworking {
             vivePlayer.player = player;
         }
 
-        switch (c2sPayload.id()) {
+        switch (c2sPayload.payloadId()) {
             case VERSION -> {
                 // Vivecraft client connected, send server settings
                 vivePlayer = new ServerVivePlayer(player);
@@ -192,7 +194,7 @@ public class ServerNetworking {
                     legacyDataMap.put(player.getUUID(), playerData);
                 }
                 // keep the payload around
-                playerData.put(c2sPayload.id(), c2sPayload);
+                playerData.put(c2sPayload.payloadId(), c2sPayload);
 
                 if (playerData.size() == 3) {
                     // we have all data
@@ -214,7 +216,7 @@ public class ServerNetworking {
                     legacyDataMap.remove(player.getUUID());
                 }
             }
-            default -> throw new IllegalStateException("Vivecraft: got unexpected packet on server: " + c2sPayload.id());
+            default -> throw new IllegalStateException("Vivecraft: got unexpected packet on server: " + c2sPayload.payloadId());
         }
     }
 
@@ -265,7 +267,7 @@ public class ServerNetworking {
      * @param payload payload to send
      */
     private static void sendPacketToTrackingPlayers(ServerVivePlayer vivePlayer, VivecraftPayloadS2C payload) {
-        ClientboundCustomPayloadPacket packet =  new ClientboundCustomPayloadPacket(new VivecraftPacketS2C(payload));
+        ClientboundCustomPayloadPacket packet =  new ClientboundCustomPayloadPacket(Xplat.wrapPayload(payload));
 
         Map<UUID, ServerVivePlayer> vivePlayers = ServerVRPlayers.getPlayersWithVivecraft(vivePlayer.player.server);
         for (var trackedPlayer : getTrackingPlayers(vivePlayer.player)) {

@@ -1,8 +1,5 @@
 package org.vivecraft.client.network;
 
-import com.google.common.base.Charsets;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
@@ -27,7 +24,8 @@ import org.vivecraft.common.CommonDataHolder;
 import org.vivecraft.common.VRServerPerms;
 import org.vivecraft.common.network.CommonNetworkHelper;
 import org.vivecraft.common.network.VrPlayerState;
-import org.vivecraft.common.network.packet.VivecraftPacketC2S;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 import org.vivecraft.common.network.packet.c2s.*;
 import org.vivecraft.common.network.packet.s2c.*;
 
@@ -120,7 +118,7 @@ public class ClientNetworking {
     }
 
     public static ServerboundCustomPayloadPacket createServerPacket(VivecraftPayloadC2S payload) {
-        return new ServerboundCustomPayloadPacket(new VivecraftPacketC2S(payload));
+        return new ServerboundCustomPayloadPacket(Xplat.wrapPayload(payload));
     }
 
     public static void sendLegacyPackets(ClientPacketListener connection, VrPlayerState vrPlayerState) {
@@ -198,7 +196,7 @@ public class ClientNetworking {
     public static void handlePacket(VivecraftPayloadS2C s2cPayload) {
         ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();
         Minecraft mc = Minecraft.getInstance();
-        switch (s2cPayload.id()) {
+        switch (s2cPayload.payloadId()) {
             case VERSION -> {
                 VRServerPerms.INSTANCE.setTeleportSupported(true);
                 if (VRState.vrInitialized) {

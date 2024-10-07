@@ -23,6 +23,7 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.FluidState;
 import org.vivecraft.client.Xplat;
+import org.vivecraft.common.network.packet.VivecraftPayload;
 import org.vivecraft.fabric.mixin.world.level.biome.BiomeAccessor;
 
 import java.nio.file.Path;
@@ -122,6 +123,10 @@ public class XplatImpl implements Xplat {
                 return ID;
             }
         }));
+    }
+
+    static VivecraftPayload wrapPayload(VivecraftPayload payload) {
+        return payload;
     }
 
     public static boolean hasKeyModifier(KeyMapping keyMapping) {

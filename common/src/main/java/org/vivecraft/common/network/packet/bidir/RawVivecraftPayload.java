@@ -1,4 +1,4 @@
-package org.vivecraft.common.network.packet.bidirectional;
+package org.vivecraft.common.network.packet.bidir;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
@@ -20,7 +20,7 @@ public record RawVivecraftPayload(byte[] rawData) implements VivecraftPayload {
      * returns the PacketIdentifier associated with this packet
      */
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.values()[this.rawData[0]];
     }
 

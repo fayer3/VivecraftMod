@@ -8,9 +8,8 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.common.network.CommonNetworkHelper;
-import org.vivecraft.common.network.packet.VivecraftPacketS2C;
-import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
-import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 import org.vivecraft.server.ServerNetworking;
 import org.vivecraft.server.ServerUtil;
 import org.vivecraft.server.config.ServerConfig;
@@ -35,6 +34,6 @@ public class VivecraftMod implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(CommonNetworkHelper.CHANNEL,
             (server, player, handler, buffer, responseSender) -> server.execute(
                 () -> ServerNetworking.handlePacket(VivecraftPayloadC2S.readPacket(buffer), player,
-                    p -> responseSender.sendPacket(new VivecraftPacketS2C(p)))));
+                    responseSender::sendPacket)));
     }
 }

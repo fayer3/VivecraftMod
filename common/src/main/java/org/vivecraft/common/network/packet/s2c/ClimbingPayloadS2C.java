@@ -7,8 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 import org.vivecraft.server.config.ClimbeyBlockmode;
-import org.vivecraft.server.config.ServerConfig;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -23,13 +23,13 @@ import java.util.List;
 public record ClimbingPayloadS2C(boolean allowed, ClimbeyBlockmode blockmode, @Nullable List<String> blocks) implements VivecraftPayloadS2C {
 
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.CLIMBING;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         buffer.writeBoolean(this.allowed);
         buffer.writeByte(this.blockmode.ordinal());
         if (this.blocks != null) {

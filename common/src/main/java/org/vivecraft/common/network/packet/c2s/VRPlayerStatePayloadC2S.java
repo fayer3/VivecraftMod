@@ -3,6 +3,7 @@ package org.vivecraft.common.network.packet.c2s;
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.VrPlayerState;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
 
 /**
  * holds the clients complete vr state
@@ -10,13 +11,13 @@ import org.vivecraft.common.network.packet.PayloadIdentifier;
  */
 public record VRPlayerStatePayloadC2S(VrPlayerState playerState) implements VivecraftPayloadC2S {
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.VR_PLAYER_STATE;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         this.playerState.serialize(buffer);
     }
 

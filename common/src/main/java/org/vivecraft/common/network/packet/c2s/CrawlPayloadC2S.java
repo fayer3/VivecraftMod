@@ -2,6 +2,7 @@ package org.vivecraft.common.network.packet.c2s;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
 
 /**
  * holds if the client started or stopped crawling
@@ -10,13 +11,13 @@ import org.vivecraft.common.network.packet.PayloadIdentifier;
 public record CrawlPayloadC2S(boolean crawling) implements VivecraftPayloadC2S {
 
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.CRAWL;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         buffer.writeBoolean(this.crawling);
     }
 

@@ -27,6 +27,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.Xplat;
+import org.vivecraft.common.network.packet.VivecraftPayload;
 
 import java.nio.file.Path;
 
@@ -119,6 +120,10 @@ public class XplatImpl implements Xplat {
             new ResourceLocation("minecraft:register"),
             new FriendlyByteBuf(Unpooled.buffer())
                 .writeBytes(resourceLocation.toString().getBytes()))));
+    }
+
+    static VivecraftPayload wrapPayload(VivecraftPayload payload) {
+        return payload;
     }
 
     public static boolean hasKeyModifier(KeyMapping keyMapping) {

@@ -2,6 +2,7 @@ package org.vivecraft.common.network.packet.c2s;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
 
 /**
  * holds the clients current active hand, this is usually the hand that caused the next action
@@ -10,13 +11,13 @@ import org.vivecraft.common.network.packet.PayloadIdentifier;
 public record ActiveHandPayloadC2S(byte hand) implements VivecraftPayloadC2S {
 
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.ACTIVEHAND;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         buffer.writeByte(this.hand);
     }
 

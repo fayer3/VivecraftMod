@@ -8,9 +8,8 @@ import net.minecraftforge.network.ChannelBuilder;
 import net.minecraftforge.network.EventNetworkChannel;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.common.network.CommonNetworkHelper;
-import org.vivecraft.common.network.packet.VivecraftPacketS2C;
-import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
-import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 import org.vivecraft.server.ServerNetworking;
 import org.vivecraft.server.config.ServerConfig;
 
@@ -46,6 +45,6 @@ public class Vivecraft {
     private static void handleServerVivePacket(FriendlyByteBuf buffer, CustomPayloadEvent.Context context) {
         context.enqueueWork(
             () -> ServerNetworking.handlePacket(VivecraftPayloadC2S.readPacket(buffer), context.getSender(),
-                p -> context.getConnection().send(new ClientboundCustomPayloadPacket(new VivecraftPacketS2C(p)))));
+                p -> context.getConnection().send(new ClientboundCustomPayloadPacket(p))));
     }
 }

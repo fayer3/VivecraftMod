@@ -1,6 +1,5 @@
 package org.vivecraft.neoforge.event;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -9,10 +8,9 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.common.network.CommonNetworkHelper;
-import org.vivecraft.common.network.packet.VivecraftPacketBiDir;
-import org.vivecraft.common.network.packet.VivecraftPacketS2C;
-import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
-import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
+import org.vivecraft.common.network.packet.VivecraftPayloadBiDir;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 import org.vivecraft.neoforge.Vivecraft;
 import org.vivecraft.server.ServerNetworking;
 
@@ -24,15 +22,13 @@ public class CommonModEvents {
         final IPayloadRegistrar registrar = event.registrar("vivecraft")
             .optional();
         registrar.play(CommonNetworkHelper.CHANNEL,
-            VivecraftPacketBiDir::new,
+            VivecraftPayloadBiDir::new,
             (packet, context) -> {
-                FriendlyByteBuf buffer = packet.rawPayload().asByteBuf();
                 if (context.flow().isClientbound()) {
-                    handleClientVivePacket(VivecraftPayloadS2C.readPacket(buffer), context);
+                    handleClientVivePacket(packet.getS2CPayload(), context);
                 } else {
-                    handleServerVivePacket(VivecraftPayloadC2S.readPacket(buffer), context);
+                    handleServerVivePacket(packet.getC2SPayload(), context);
                 }
-                buffer.release();
             });
     }
 
@@ -42,6 +38,6 @@ public class CommonModEvents {
 
     public static void handleServerVivePacket(VivecraftPayloadC2S packet, IPayloadContext context) {
         context.workHandler().execute(() -> ServerNetworking.handlePacket(packet, (ServerPlayer) context.player().get(),
-            p -> context.replyHandler().send(new VivecraftPacketS2C(p))));
+            p -> context.replyHandler().send(new VivecraftPayloadBiDir(p))));
     }
 }

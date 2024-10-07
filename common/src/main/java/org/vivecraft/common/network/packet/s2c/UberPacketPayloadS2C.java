@@ -3,6 +3,7 @@ package org.vivecraft.common.network.packet.s2c;
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.VrPlayerState;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 
 import java.util.UUID;
 
@@ -18,13 +19,13 @@ public record UberPacketPayloadS2C(UUID playerID, VrPlayerState state, float wor
 {
 
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.UBERPACKET;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         buffer.writeUUID(this.playerID);
         this.state.serialize(buffer);
         buffer.writeFloat(this.worldScale);

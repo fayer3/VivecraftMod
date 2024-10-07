@@ -22,6 +22,10 @@ import net.neoforged.neoforge.client.textures.FluidSpriteCache;
 import net.neoforged.neoforge.common.NeoForgeMod;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.Xplat;
+import org.vivecraft.common.network.packet.VivecraftPayload;
+import org.vivecraft.common.network.packet.VivecraftPayloadBiDir;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 
 import java.nio.file.Path;
 
@@ -103,6 +107,14 @@ public class XplatImpl implements Xplat {
     public static void addNetworkChannel(ClientPacketListener listener, ResourceLocation resourceLocation) {
         // neoforge does that automatically, since we use their networking system
         // at least I have been told this
+    }
+
+    public static VivecraftPayload wrapPayload(VivecraftPayload payload) {
+        if (payload instanceof VivecraftPayloadC2S C2S) {
+            return new VivecraftPayloadBiDir(C2S);
+        } else {
+            return new VivecraftPayloadBiDir((VivecraftPayloadS2C) payload);
+        }
     }
 
     public static boolean hasKeyModifier(KeyMapping keyMapping) {

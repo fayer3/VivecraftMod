@@ -2,6 +2,7 @@ package org.vivecraft.common.network.packet.s2c;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 
 /**
  * packet that holds the Vivecraft server version
@@ -10,13 +11,13 @@ import org.vivecraft.common.network.packet.PayloadIdentifier;
 public record VersionPayloadS2C(String version) implements VivecraftPayloadS2C {
 
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.VERSION;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         buffer.writeUtf(this.version);
     }
 

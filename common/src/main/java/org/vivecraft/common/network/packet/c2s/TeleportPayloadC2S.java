@@ -2,6 +2,7 @@ package org.vivecraft.common.network.packet.c2s;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
 
 /**
  * holds the clients wanted teleport position
@@ -12,13 +13,13 @@ import org.vivecraft.common.network.packet.PayloadIdentifier;
 public record TeleportPayloadC2S(float x, float y, float z) implements VivecraftPayloadC2S {
 
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.TELEPORT;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         buffer.writeFloat(this.x);
         buffer.writeFloat(this.y);
         buffer.writeFloat(this.z);

@@ -2,6 +2,7 @@ package org.vivecraft.common.network.packet.s2c;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 
 import java.util.UUID;
 
@@ -13,13 +14,13 @@ import java.util.UUID;
 public record VRActivePayloadS2C(boolean vr, UUID playerID) implements VivecraftPayloadS2C {
 
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.IS_VR_ACTIVE;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         buffer.writeBoolean(this.vr);
         buffer.writeUUID(this.playerID);
     }

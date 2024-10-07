@@ -14,6 +14,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.FluidState;
+import org.vivecraft.common.network.packet.VivecraftPayload;
 
 import java.nio.file.Path;
 
@@ -168,6 +169,16 @@ public interface Xplat {
      */
     @ExpectPlatform
     static void addNetworkChannel(ClientPacketListener listener, ResourceLocation resourceLocation) {}
+
+    /**
+     * wraps the given payload into the mod loader specific payload
+     * needed, because neoforge 1.20.4 has no support to separate S2C and C2S packet reading
+     * @param payload payload to wrap
+     */
+    @ExpectPlatform
+    static VivecraftPayload wrapPayload(VivecraftPayload payload) {
+        throw new AssertionError();
+    }
 
     /**
      * checks if the given KeyMapping uses a key modifier to trigger

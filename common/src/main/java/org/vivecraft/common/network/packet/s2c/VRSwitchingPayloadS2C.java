@@ -2,6 +2,7 @@ package org.vivecraft.common.network.packet.s2c;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 
 /**
  * packet that holds if the server allows switching between VR and NONVR
@@ -10,13 +11,13 @@ import org.vivecraft.common.network.packet.PayloadIdentifier;
 public record VRSwitchingPayloadS2C(boolean allowed) implements VivecraftPayloadS2C {
 
     @Override
-    public PayloadIdentifier id() {
+    public PayloadIdentifier payloadId() {
         return PayloadIdentifier.VR_SWITCHING;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeByte(id().ordinal());
+        buffer.writeByte(payloadId().ordinal());
         buffer.writeBoolean(this.allowed);
     }
 
