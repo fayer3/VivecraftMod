@@ -2,7 +2,6 @@ package org.vivecraft.common.network.packet.c2s;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
-import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
 
 /**
  * holds the clients current active hand, this is usually the hand that caused the next action

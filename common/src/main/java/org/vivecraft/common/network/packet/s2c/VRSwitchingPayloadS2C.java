@@ -2,7 +2,6 @@ package org.vivecraft.common.network.packet.s2c;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
-import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 
 /**
  * packet that holds if the server allows switching between VR and NONVR

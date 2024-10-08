@@ -13,8 +13,8 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.FluidState;
-import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
-import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
+import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
 
 import java.nio.file.Path;
 

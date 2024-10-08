@@ -3,8 +3,8 @@ package org.vivecraft.neoforge.packet;
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
 import org.vivecraft.common.network.packet.VivecraftPayload;
-import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
-import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
+import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
 
 import javax.annotation.Nullable;
 

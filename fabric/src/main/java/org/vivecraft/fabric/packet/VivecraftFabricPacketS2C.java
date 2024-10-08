@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.CommonNetworkHelper;
-import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
+import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
 
 /**
  * Fabric network packet

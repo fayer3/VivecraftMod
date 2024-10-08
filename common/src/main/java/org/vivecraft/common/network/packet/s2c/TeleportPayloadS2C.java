@@ -1,7 +1,6 @@
 package org.vivecraft.common.network.packet.s2c;
 
 import org.vivecraft.common.network.packet.PayloadIdentifier;
-import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 
 /**
  * indicates that the server supports direct teleports

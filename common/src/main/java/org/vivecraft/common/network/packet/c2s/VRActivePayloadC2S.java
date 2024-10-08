@@ -2,7 +2,6 @@ package org.vivecraft.common.network.packet.c2s;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
-import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
 
 /**
  * holds weather the client is in VR or NONVR mode

@@ -25,8 +25,8 @@ import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.network.NetworkDirection;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.Xplat;
-import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
-import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
+import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
 
 import java.nio.file.Path;
 

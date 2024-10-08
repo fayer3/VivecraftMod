@@ -23,8 +23,8 @@ import net.neoforged.neoforge.client.textures.FluidSpriteCache;
 import net.neoforged.neoforge.common.NeoForgeMod;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.Xplat;
-import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
-import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
+import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
 import org.vivecraft.neoforge.packet.VivecraftPayloadBiDir;
 
 import java.nio.file.Path;
