@@ -28,7 +28,8 @@ public record VersionPayloadC2S(String version, boolean vr, int maxVersion, int 
     @Override
     public void write(FriendlyByteBuf buffer) {
         buffer.writeByte(payloadId().ordinal());
-        buffer.writeUtf(String.format("%s\n%d\n%d", this.version, this.maxVersion, this.minVersion));
+        buffer.writeUtf(
+            String.format("%s %s\n%d\n%d", this.version, this.vr ? "VR" : "NONVR", this.maxVersion, this.minVersion));
     }
 
     public static VersionPayloadC2S read(FriendlyByteBuf buffer) {
