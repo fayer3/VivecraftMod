@@ -20,8 +20,6 @@ import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.common.network.packet.c2s.DrawPayloadC2S;
 import org.vivecraft.mod_compat_vr.pehkui.PehkuiHelper;
 
-import java.nio.ByteBuffer;
-
 public class BowTracker extends Tracker {
     private double currentDraw;
     public boolean isDrawing;

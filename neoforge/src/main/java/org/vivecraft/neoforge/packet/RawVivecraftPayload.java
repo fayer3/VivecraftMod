@@ -1,4 +1,4 @@
-package org.vivecraft.common.network.packet.bidir;
+package org.vivecraft.neoforge.packet;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;

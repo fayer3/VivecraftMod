@@ -1,11 +1,11 @@
 package org.vivecraft.forge;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.ChannelBuilder;
 import net.minecraftforge.network.EventNetworkChannel;
+import org.vivecraft.client.Xplat;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.common.network.CommonNetworkHelper;
 import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
@@ -45,6 +45,6 @@ public class Vivecraft {
     private static void handleServerVivePacket(FriendlyByteBuf buffer, CustomPayloadEvent.Context context) {
         context.enqueueWork(
             () -> ServerNetworking.handlePacket(VivecraftPayloadC2S.readPacket(buffer), context.getSender(),
-                p -> context.getConnection().send(new ClientboundCustomPayloadPacket(p))));
+                p -> context.getConnection().send(Xplat.getS2CPacket(p))));
     }
 }

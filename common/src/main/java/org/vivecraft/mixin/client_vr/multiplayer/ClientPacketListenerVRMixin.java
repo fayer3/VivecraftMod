@@ -1,11 +1,13 @@
 package org.vivecraft.mixin.client_vr.multiplayer;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
@@ -23,6 +25,7 @@ import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.provider.ControllerType;
 import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 
 @Mixin(ClientPacketListener.class)
 public abstract class ClientPacketListenerVRMixin extends ClientCommonPacketListenerImpl {
@@ -143,5 +146,13 @@ public abstract class ClientPacketListenerVRMixin extends ClientCommonPacketList
     @Inject(method = "handleOpenScreen", at = @At("HEAD"))
     private void vivecraft$markScreenActive(ClientboundOpenScreenPacket clientboundOpenScreenPacket, CallbackInfo ci) {
         GuiHandler.guiAppearOverBlockActive = true;
+    }
+
+    @Inject(method = "handleCustomPayload", at = @At("TAIL"), cancellable = true)
+    private void vivecraft$handleVivecraftPackets(CallbackInfo ci, @Local(argsOnly = true) CustomPacketPayload payload) {
+        if (payload instanceof VivecraftPayloadS2C S2CPayload) {
+            this.minecraft.execute(() -> ClientNetworking.handlePacket(S2CPayload));
+            ci.cancel();
+        }
     }
 }

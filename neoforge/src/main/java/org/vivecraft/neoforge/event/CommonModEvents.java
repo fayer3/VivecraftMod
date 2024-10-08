@@ -8,10 +8,10 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.common.network.CommonNetworkHelper;
-import org.vivecraft.common.network.packet.VivecraftPayloadBiDir;
 import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
 import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 import org.vivecraft.neoforge.Vivecraft;
+import org.vivecraft.neoforge.packet.VivecraftPayloadBiDir;
 import org.vivecraft.server.ServerNetworking;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = Vivecraft.MODID)

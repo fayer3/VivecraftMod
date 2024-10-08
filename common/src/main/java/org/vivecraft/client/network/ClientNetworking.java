@@ -5,7 +5,7 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Pose;
@@ -73,7 +73,6 @@ public class ClientNetworking {
     }
 
     public static void sendVersionInfo() {
-        Xplat.addNetworkChannel(Minecraft.getInstance().getConnection(), CommonNetworkHelper.CHANNEL);
         // send version string, with currently running
         Minecraft.getInstance().getConnection().send(createServerPacket(
             new VersionPayloadC2S(
@@ -117,8 +116,8 @@ public class ClientNetworking {
                 userHeight / AutoCalibration.defaultHeight, true);
     }
 
-    public static ServerboundCustomPayloadPacket createServerPacket(VivecraftPayloadC2S payload) {
-        return new ServerboundCustomPayloadPacket(Xplat.wrapPayload(payload));
+    public static Packet<?> createServerPacket(VivecraftPayloadC2S payload) {
+        return Xplat.getC2SPacket(payload);
     }
 
     public static void sendLegacyPackets(ClientPacketListener connection, VrPlayerState vrPlayerState) {

@@ -3,7 +3,7 @@ package org.vivecraft.server;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
@@ -267,7 +267,7 @@ public class ServerNetworking {
      * @param payload payload to send
      */
     private static void sendPacketToTrackingPlayers(ServerVivePlayer vivePlayer, VivecraftPayloadS2C payload) {
-        ClientboundCustomPayloadPacket packet =  new ClientboundCustomPayloadPacket(Xplat.wrapPayload(payload));
+        Packet<?> packet = Xplat.getS2CPacket(payload);
 
         Map<UUID, ServerVivePlayer> vivePlayers = ServerVRPlayers.getPlayersWithVivecraft(vivePlayer.player.server);
         for (var trackedPlayer : getTrackingPlayers(vivePlayer.player)) {

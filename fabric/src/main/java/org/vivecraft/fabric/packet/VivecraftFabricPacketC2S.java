@@ -1,4 +1,4 @@
-package org.vivecraft.fabric.packets;
+package org.vivecraft.fabric.packet;
 
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketType;

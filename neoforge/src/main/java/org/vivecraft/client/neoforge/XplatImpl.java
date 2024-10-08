@@ -2,10 +2,11 @@ package org.vivecraft.client.neoforge;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
@@ -22,10 +23,9 @@ import net.neoforged.neoforge.client.textures.FluidSpriteCache;
 import net.neoforged.neoforge.common.NeoForgeMod;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.Xplat;
-import org.vivecraft.common.network.packet.VivecraftPayload;
-import org.vivecraft.common.network.packet.VivecraftPayloadBiDir;
 import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
 import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
+import org.vivecraft.neoforge.packet.VivecraftPayloadBiDir;
 
 import java.nio.file.Path;
 
@@ -71,7 +71,9 @@ public class XplatImpl implements Xplat {
         return "use";
     }
 
-    public static TextureAtlasSprite[] getFluidTextures(BlockAndTintGetter level, BlockPos pos, FluidState fluidStateIn) {
+    public static TextureAtlasSprite[] getFluidTextures(
+        BlockAndTintGetter level, BlockPos pos, FluidState fluidStateIn)
+    {
         return FluidSpriteCache.getFluidSprites(level, pos, fluidStateIn);
     }
 
@@ -104,17 +106,12 @@ public class XplatImpl implements Xplat {
         return totalRange;
     }
 
-    public static void addNetworkChannel(ClientPacketListener listener, ResourceLocation resourceLocation) {
-        // neoforge does that automatically, since we use their networking system
-        // at least I have been told this
+    public static Packet<?> getC2SPacket(VivecraftPayloadC2S payload) {
+        return new ServerboundCustomPayloadPacket(new VivecraftPayloadBiDir(payload));
     }
 
-    public static VivecraftPayload wrapPayload(VivecraftPayload payload) {
-        if (payload instanceof VivecraftPayloadC2S C2S) {
-            return new VivecraftPayloadBiDir(C2S);
-        } else {
-            return new VivecraftPayloadBiDir((VivecraftPayloadS2C) payload);
-        }
+    public static Packet<?> getS2CPacket(VivecraftPayloadS2C payload) {
+        return new ClientboundCustomPayloadPacket(new VivecraftPayloadBiDir(payload));
     }
 
     public static boolean hasKeyModifier(KeyMapping keyMapping) {

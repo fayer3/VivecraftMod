@@ -1,14 +1,19 @@
-package org.vivecraft.common.network.packet;
+package org.vivecraft.neoforge.packet;
 
-import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
-import org.vivecraft.common.network.packet.bidir.RawVivecraftPayload;
+import org.vivecraft.common.network.packet.PayloadIdentifier;
+import org.vivecraft.common.network.packet.VivecraftPayload;
+import org.vivecraft.common.network.packet.VivecraftPayloadC2S;
+import org.vivecraft.common.network.packet.VivecraftPayloadS2C;
 
 import javax.annotation.Nullable;
 
 /**
  * Vivecraft network payload that holds a raw packet, has no specific flow direction
- * @param rawPayload raw payload with actual data
+ * this is only needed because NeoForge 1.20.4 uses the same payload for C2S and S2C
+ * @param rawPayload raw payload with unspecified data
+ * @param C2SPayload a payload sent to the server
+ * @param S2CPayload a payload sent to the client
  */
 public record VivecraftPayloadBiDir(@Nullable VivecraftPayloadC2S C2SPayload,
                                     @Nullable VivecraftPayloadS2C S2CPayload,
