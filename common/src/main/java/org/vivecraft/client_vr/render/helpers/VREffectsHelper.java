@@ -25,8 +25,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Triple;
-import org.joml.Matrix4f;
-import org.joml.Vector2f;
+import org.joml.*;
 import org.lwjgl.opengl.GL11C;
 import org.vivecraft.client.VivecraftVRMod;
 import org.vivecraft.client.Xevents;
@@ -51,6 +50,7 @@ import org.vivecraft.mod_compat_vr.ShadersHelper;
 import org.vivecraft.mod_compat_vr.immersiveportals.ImmersivePortalsHelper;
 import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
 
+import java.lang.Math;
 import java.util.Calendar;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -294,14 +294,14 @@ public class VREffectsHelper {
         poseStack.popPose();
 
         // render floor
-        Vector2f area = dataHolder.vr.getPlayAreaSize();
+        Vector2fc area = dataHolder.vr.getPlayAreaSize();
         if (area == null) {
             area = new Vector2f(2, 2);
         }
         // render two floors, grass at room size, and dirt a bit bigger
         for (int i = 0; i < 2; i++) {
-            float width = area.x + i * 2;
-            float length = area.y + i * 2;
+            float width = area.x() + i * 2;
+            float length = area.y() + i * 2;
 
             poseStack.pushPose();
             RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
@@ -369,13 +369,13 @@ public class VREffectsHelper {
         float height = 2.5F;
         float oversize = 1.3F; // how much bigger than the room
 
-        Vector2f area = dataHolder.vr.getPlayAreaSize();
+        Vector2fc area = dataHolder.vr.getPlayAreaSize();
         if (area == null) {
             area = new Vector2f(2, 2);
         }
 
-        float width = area.x + oversize;
-        float length = area.y + oversize;
+        float width = area.x() + oversize;
+        float length = area.y() + oversize;
 
         float r, g, b, a;
         r = g = b = 0.8f;
@@ -481,13 +481,13 @@ public class VREffectsHelper {
         dataHolder.menuWorldRenderer.render(poseStack);
 
         // render room floor
-        Vector2f area = dataHolder.vr.getPlayAreaSize();
+        Vector2fc area = dataHolder.vr.getPlayAreaSize();
         if (area == null) {
             area = new Vector2f(2, 2);
         }
 
-        float width = area.x;
-        float length = area.y;
+        float width = area.x();
+        float length = area.y();
 
         RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
         RenderSystem.setShaderTexture(0, Screen.BACKGROUND_LOCATION);
@@ -851,16 +851,17 @@ public class VREffectsHelper {
         Vec3 eye = RenderHelper.getSmoothCameraPosition(dataHolder.currentPass, dataHolder.vrPlayer.vrdata_world_render);
 
         //convert previously calculated coords to world coords
-        Vec3 keyboardPos = VRPlayer.room_to_world_pos(KeyboardHandler.Pos_room, dataHolder.vrPlayer.vrdata_world_render);
-        org.vivecraft.common.utils.math.Matrix4f rot = org.vivecraft.common.utils.math.Matrix4f.rotationY(dataHolder.vrPlayer.vrdata_world_render.rotation_radians);
-        org.vivecraft.common.utils.math.Matrix4f keyboardRot = org.vivecraft.common.utils.math.Matrix4f.multiply(rot, KeyboardHandler.Rotation_room);
+        Vec3 keyboardPos = VRPlayer.roomToWorldPos(KeyboardHandler.Pos_room, dataHolder.vrPlayer.vrdata_world_render);
+
+        Matrix4f keyboardRot = new Matrix4f().rotationY(dataHolder.vrPlayer.vrdata_world_render.rotation_radians)
+            .mul(KeyboardHandler.Rotation_room);
 
         // offset from eye to keyboard pos
         poseStack.translate((float) (keyboardPos.x - eye.x),
             (float) (keyboardPos.y - eye.y),
             (float) (keyboardPos.z - eye.z));
 
-        poseStack.mulPoseMatrix(keyboardRot.toMCMatrix());
+        poseStack.mulPoseMatrix(keyboardRot);
 
         float scale = dataHolder.vrPlayer.vrdata_world_render.worldScale;
         poseStack.scale(scale, scale, scale);
@@ -1041,7 +1042,7 @@ public class VREffectsHelper {
      * @param depthAlways if the depth test should be disabled
      * @param poseStack PoseStack to use for positioning
      */
-    public static void render2D(float partialTick, RenderTarget framebuffer, Vec3 pos, org.vivecraft.common.utils.math.Matrix4f rot, boolean depthAlways, PoseStack poseStack) {
+    public static void render2D(float partialTick, RenderTarget framebuffer, Vector3fc pos, Matrix4f rot, boolean depthAlways, PoseStack poseStack) {
         if (dataHolder.bowTracker.isDrawing) return;
 
         mc.getProfiler().push("render2D");
@@ -1052,13 +1053,13 @@ public class VREffectsHelper {
 
         Vec3 eye = RenderHelper.getSmoothCameraPosition(dataHolder.currentPass, dataHolder.vrPlayer.vrdata_world_render);
 
-        Vec3 worldPos = VRPlayer.room_to_world_pos(pos, dataHolder.vrPlayer.vrdata_world_render);
-        org.vivecraft.common.utils.math.Matrix4f yRot = org.vivecraft.common.utils.math.Matrix4f
-            .rotationY(dataHolder.vrPlayer.vrdata_world_render.rotation_radians);
-        org.vivecraft.common.utils.math.Matrix4f worldRotation = org.vivecraft.common.utils.math.Matrix4f.multiply(yRot, rot);
+        Vec3 worldPos = VRPlayer.roomToWorldPos(pos, dataHolder.vrPlayer.vrdata_world_render);
+
+        Matrix4f worldRotation = new Matrix4f().rotationY(dataHolder.vrPlayer.vrdata_world_render.rotation_radians)
+            .mul(rot);
 
         poseStack.translate(worldPos.x - eye.x, worldPos.y - eye.y, worldPos.z - eye.z);
-        poseStack.mulPoseMatrix(worldRotation.toMCMatrix());
+        poseStack.mulPoseMatrix(worldRotation);
 
         float scale = GuiHandler.guiScale * dataHolder.vrPlayer.vrdata_world_render.worldScale;
         poseStack.scale(scale, scale, scale);
