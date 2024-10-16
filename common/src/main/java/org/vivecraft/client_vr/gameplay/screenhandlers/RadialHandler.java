@@ -2,22 +2,21 @@ package org.vivecraft.client_vr.gameplay.screenhandlers;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.VivecraftVRMod;
-import org.vivecraft.client.utils.MathUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRData;
 import org.vivecraft.client_vr.gui.GuiRadial;
 import org.vivecraft.client_vr.provider.ControllerType;
-import org.vivecraft.common.utils.math.Matrix4f;
 
 public class RadialHandler {
     public static Minecraft mc = Minecraft.getInstance();
     public static ClientDataHolderVR dh = ClientDataHolderVR.getInstance();
     private static boolean Showing = false;
     public static GuiRadial UI = new GuiRadial();
-    public static Vec3 Pos_room = new Vec3(0.0D, 0.0D, 0.0D);
+    public static Vector3f Pos_room = new Vector3f();
     public static Matrix4f Rotation_room = new Matrix4f();
     private static boolean PointedL;
     private static boolean PointedR;
@@ -66,7 +65,7 @@ public class RadialHandler {
     public static void orientOverlay(ControllerType controller) {
         if (!isShowing()) return;
 
-        VRData.VRDevicePose pose = dh.vrPlayer.vrdata_room_pre.hmd; //normal menu.
+        VRData.VRDevicePose roomPose = dh.vrPlayer.vrdata_room_pre.hmd; //normal menu.
         float distance = 2.0F;
         int id = 0;
 
@@ -76,21 +75,20 @@ public class RadialHandler {
 
         if (dh.vrSettings.radialModeHold) {
             // open with controller centered, consistent motions.
-            pose = dh.vrPlayer.vrdata_room_pre.getController(id);
+            roomPose = dh.vrPlayer.vrdata_room_pre.getController(id);
             distance = 1.2F;
         }
 
-        Vec3 position = pose.getPosition();
-        Vec3 offset = pose.getDirection().scale(distance * 0.5F);
+        Vector3f position = roomPose.getPositionF();
+        Vector3f offset = roomPose.getDirection().mul(distance * 0.5F);
 
         Pos_room = position.add(offset);
 
         float pitch = (float) Math.asin(offset.y / offset.length());
         float yaw = (float) (Math.PI + Math.atan2(offset.x, offset.z));
 
-        Rotation_room = Matrix4f.rotationY(yaw);
-        Matrix4f tilt = MathUtils.rotationXMatrix(pitch);
-        Rotation_room = Matrix4f.multiply(Rotation_room, tilt);
+        Rotation_room.rotationY(yaw);
+        Rotation_room.rotateX(pitch);
     }
 
     public static void processBindings() {

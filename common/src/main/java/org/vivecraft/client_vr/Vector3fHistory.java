@@ -1,20 +1,21 @@
 package org.vivecraft.client_vr;
 
 import net.minecraft.Util;
-import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-public class Vec3History {
+public class Vector3fHistory {
     private static final int _capacity = 450;
     private final LinkedList<Entry> _data = new LinkedList<>();
 
     /**
      * adds a new entry with the given Vec3
-     * @param in Vec3 to add
+     * @param in Vector3fc to add
      */
-    public void add(Vec3 in) {
+    public void add(Vector3fc in) {
         this._data.add(new Entry(in));
 
         if (this._data.size() > _capacity) {
@@ -30,24 +31,24 @@ public class Vec3History {
     }
 
     /**
-     * @return the newest Vec3
+     * @return the newest Vector3f
      */
-    public Vec3 latest() {
+    public Vector3fc latest() {
         return (this._data.getLast()).data;
     }
 
     /**
      * Get the total integrated device translation for the specified time period.
+     * this is the sum of the distance of all points to the oldest point in the timeframe
      * @param seconds time period
      * @return distance in meters
      */
-    public double totalMovement(double seconds) {
+    public float totalMovement(double seconds) {
         long now = Util.getMillis();
         ListIterator<Entry> iterator = this._data.listIterator(this._data.size());
         Entry last = null;
-        double distance = 0.0D;
+        float distance = 0.0F;
 
-        // TODO: this does the wrong thing I think
         while (iterator.hasPrevious()) {
             Entry current = iterator.previous();
 
@@ -57,7 +58,7 @@ public class Vec3History {
                 if (last == null) {
                     last = current;
                 } else {
-                    distance += last.data.distanceTo(current.data);
+                    distance += last.data.distance(current.data);
                 }
             }
         }
@@ -70,7 +71,7 @@ public class Vec3History {
      * @param seconds time period
      * @return vector with the position difference
      */
-    public Vec3 netMovement(double seconds) {
+    public Vector3f netMovement(double seconds) {
         long now = Util.getMillis();
         ListIterator<Entry> iterator = this._data.listIterator(this._data.size());
         Entry last = null;
@@ -90,7 +91,7 @@ public class Vec3History {
             }
         }
 
-        return last != null && first != null ? last.data.subtract(first.data) : new Vec3(0.0D, 0.0D, 0.0D);
+        return last != null && first != null ? last.data.sub(first.data, new Vector3f()) : new Vector3f();
     }
 
     /**
@@ -98,10 +99,10 @@ public class Vec3History {
      * @param seconds time period
      * @return speed in m/s.
      */
-    public double averageSpeed(double seconds) {
+    public float averageSpeed(double seconds) {
         long now = Util.getMillis();
         ListIterator<Entry> iterator = this._data.listIterator(this._data.size());
-        double speedTotal = 0.0D;
+        float speedTotal = 0.0F;
         Entry last = null;
         int count = 0;
 
@@ -116,13 +117,13 @@ public class Vec3History {
                 last = current;
             } else {
                 count++;
-                double timeDelta = 0.001D * (last.ts - current.ts);
-                double positionDelta = last.data.subtract(current.data).length();
+                float timeDelta = 0.001F * (last.ts - current.ts);
+                float positionDelta = last.data.distance(current.data);
                 speedTotal += positionDelta / timeDelta;
             }
         }
 
-        return count == 0 ? speedTotal : speedTotal / (double) count;
+        return count == 0 ? speedTotal : speedTotal / (float) count;
     }
 
     /**
@@ -130,10 +131,10 @@ public class Vec3History {
      * @param seconds time period
      * @return average position
      */
-    public Vec3 averagePosition(double seconds) {
+    public Vector3f averagePosition(double seconds) {
         long now = Util.getMillis();
         ListIterator<Entry> iterator = this._data.listIterator(this._data.size());
-        Vec3 vec3 = new Vec3(0.0D, 0.0D, 0.0D);
+        Vector3f vec3 = new Vector3f();
         int count = 0;
 
         while (iterator.hasPrevious()) {
@@ -143,11 +144,11 @@ public class Vec3History {
                 break;
             }
 
-            vec3 = vec3.add(current.data);
+            vec3.add(current.data);
             count++;
         }
 
-        return count == 0 ? vec3 : vec3.scale(1.0D / (double) count);
+        return count == 0 ? vec3 : vec3.div(count);
     }
 
     /**
@@ -155,9 +156,9 @@ public class Vec3History {
      */
     private static class Entry {
         public long ts = Util.getMillis();
-        public Vec3 data;
+        public Vector3fc data;
 
-        public Entry(Vec3 in) {
+        public Entry(Vector3fc in) {
             this.data = in;
         }
     }

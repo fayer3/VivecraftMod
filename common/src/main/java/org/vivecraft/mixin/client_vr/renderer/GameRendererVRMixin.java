@@ -204,7 +204,7 @@ public abstract class GameRendererVRMixin
         if (!VRState.vrRunning) {
             return original.call(instance, partialTick);
         } else {
-            return vivecraft$DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getDirection();
+            return new Vec3(vivecraft$DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getDirection());
         }
     }
 
