@@ -32,7 +32,7 @@ import org.vivecraft.client.Xevents;
 import org.vivecraft.client.gui.VivecraftClickEvent;
 import org.vivecraft.client.gui.settings.GuiOtherHUDSettings;
 import org.vivecraft.client.gui.settings.GuiRenderOpticsSettings;
-import org.vivecraft.client.utils.Utils;
+import org.vivecraft.client.utils.ClientUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.MethodHolder;
 import org.vivecraft.client_vr.extensions.GameRendererExtension;
@@ -960,7 +960,7 @@ public class VREffectsHelper {
             }
 
             int minLight = ShadersHelper.ShaderLight();
-            int light = Utils.getCombinedLightWithMin(mc.level, BlockPos.containing(pos), minLight);
+            int light = ClientUtils.getCombinedLightWithMin(mc.level, BlockPos.containing(pos), minLight);
 
             RenderHelper.drawSizedQuadWithLightmapCutout(
                 (float) mc.getWindow().getGuiScaledWidth(), (float) mc.getWindow().getGuiScaledHeight(),
