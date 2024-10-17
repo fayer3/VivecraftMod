@@ -147,7 +147,7 @@ public class VRPlayer {
             this.roomOrigin,
             this.dh.vrSettings.walkMultiplier,
             this.worldScale,
-            (float) Math.toRadians(this.dh.vrSettings.worldRotation));
+            Mth.DEG_TO_RAD * this.dh.vrSettings.worldRotation);
 
         VRSettings.ServerOverrides.Setting worldScaleOverride = this.dh.vrSettings.overrides.getSetting(VRSettings.VrOptions.WORLD_SCALE);
 
@@ -242,7 +242,7 @@ public class VRPlayer {
 
         // Handle all room translations up to this point and then rotate it around the hmd.
         float end = this.dh.vrSettings.worldRotation;
-        float start = (float) Math.toDegrees(this.vrdata_world_pre.rotation_radians);
+        float start = Mth.RAD_TO_DEG * this.vrdata_world_pre.rotation_radians;
         this.rotateOriginAround(-end + start, this.vrdata_world_pre.getNewHeadPivot(this.roomOrigin, this.worldScale));
         //
 
@@ -255,7 +255,7 @@ public class VRPlayer {
             this.roomOrigin,
             this.dh.vrSettings.walkMultiplier,
             this.worldScale,
-            (float) Math.toRadians(this.dh.vrSettings.worldRotation));
+            Mth.DEG_TO_RAD * this.dh.vrSettings.worldRotation);
 
         // Vivecraft - setup the player entity with the correct view for the logic tick.
         this.doPermanentLookOverride(this.mc.player, this.vrdata_world_post);
@@ -353,7 +353,7 @@ public class VRPlayer {
         Vec3 point = this.roomOrigin;
 
         // reverse rotate.
-        float rads = (float) Math.toRadians(degrees);
+        float rads = Mth.DEG_TO_RAD * degrees;
 
         if (rads != 0.0F) {
             this.setRoomOrigin(

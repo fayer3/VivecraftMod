@@ -575,7 +575,7 @@ public class GuiHandler {
             }
 
             yawAvg /= dh.vr.hmdYawSamples.size();
-            yawAvg = (float) Math.toRadians(yawAvg);
+            yawAvg = Mth.DEG_TO_RAD * yawAvg;
 
             Vector3f dir = new Vector3f((float) -Math.sin(yawAvg), 0.0F, (float) Math.cos(yawAvg));
             float dist = MethodHolder.isInMenuRoom() ?
