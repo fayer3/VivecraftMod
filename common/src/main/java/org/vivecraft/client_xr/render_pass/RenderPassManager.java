@@ -2,7 +2,6 @@ package org.vivecraft.client_xr.render_pass;
 
 import com.mojang.blaze3d.pipeline.MainTarget;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.PostChain;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.render.RenderPass;
@@ -13,9 +12,6 @@ public class RenderPassManager {
     public static RenderPassManager INSTANCE;
 
     public final MainTarget vanillaRenderTarget;
-    public PostChain vanillaOutlineChain;
-    public PostChain vanillaPostEffect;
-    public PostChain vanillaTransparencyChain;
     public static RenderPassType renderPassType = RenderPassType.VANILLA;
     public static WorldRenderPass wrp;
 
@@ -32,9 +28,6 @@ public class RenderPassManager {
         RenderPassManager.wrp = wrp;
         renderPassType = RenderPassType.WORLD_ONLY;
         mc.mainRenderTarget = wrp.target;
-        if (mc.gameRenderer != null) {
-            mc.gameRenderer.postEffect = wrp.postEffect;
-        }
     }
 
     /**
@@ -55,8 +48,5 @@ public class RenderPassManager {
         RenderPassManager.wrp = null;
         renderPassType = RenderPassType.VANILLA;
         mc.mainRenderTarget = INSTANCE.vanillaRenderTarget;
-        if (mc.gameRenderer != null) {
-            mc.gameRenderer.postEffect = INSTANCE.vanillaPostEffect;
-        }
     }
 }

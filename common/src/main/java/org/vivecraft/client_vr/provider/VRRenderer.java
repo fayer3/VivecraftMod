@@ -77,7 +77,6 @@ public abstract class VRRenderer {
     public int mirrorFBWidth;
     protected boolean reinitFrameBuffers = true;
     protected boolean resizeFrameBuffers = false;
-    protected boolean acceptReinits = true;
     public float renderScale;
 
     // render resolution set by the VR runtime, includes the supersampling factor
@@ -443,13 +442,11 @@ public abstract class VRRenderer {
      * @param cause cause that gets logged
      */
     public void reinitFrameBuffers(String cause) {
-        if (this.acceptReinits) {
-            if (!this.reinitFrameBuffers) {
-                // only print the first cause
-                VRSettings.logger.info("Vivecraft: Reinit Render: {}", cause);
-            }
-            this.reinitFrameBuffers = true;
+        if (!this.reinitFrameBuffers) {
+            // only print the first cause
+            VRSettings.logger.info("Vivecraft: Reinit Render: {}", cause);
         }
+        this.reinitFrameBuffers = true;
     }
 
     /**
@@ -492,7 +489,6 @@ public abstract class VRRenderer {
         }
 
         if (this.resizeFrameBuffers && !this.reinitFrameBuffers) {
-            this.resizeFrameBuffers = false;
             Tuple<Integer, Integer> tuple = this.getRenderTextureSizes();
             int eyew = tuple.getA();
             int eyeh = tuple.getB();
@@ -560,6 +556,10 @@ public abstract class VRRenderer {
                     minecraft.screen.init(minecraft, guiWidth, guiHeight);
                 }
             }
+            // need to recall this, for PostChains to get the right resize
+            Minecraft.getInstance().resizeDisplay();
+
+            this.resizeFrameBuffers = false;
         }
 
         if (this.reinitFrameBuffers) {
@@ -788,12 +788,13 @@ public abstract class VRRenderer {
                 String.format("%.1f", windowPixels / 1000000.0F),
                 String.format("%.1f", pixelsPerFrame / 1000000.0F));
 
+            // this reloads any PostChain, at least in vanilla
+            minecraft.levelRenderer.onResourceManagerReload(minecraft.getResourceManager());
+
+            ShadersHelper.maybeReloadShaders();
+
             this.reinitFrameBuffers = false;
             this.resizeFrameBuffers = false;
-
-            this.acceptReinits = false;
-            ShadersHelper.maybeReloadShaders();
-            this.acceptReinits = true;
         }
     }
 

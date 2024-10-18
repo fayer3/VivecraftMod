@@ -133,10 +133,6 @@ public abstract class GameRendererVRMixin
     @Final
     private Camera mainCamera;
 
-    @Shadow
-    @Nullable
-    private PostChain postEffect;
-
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/Camera"))
     private Camera vivecraft$replaceCamera() {
         return new XRCamera();
@@ -146,28 +142,6 @@ public abstract class GameRendererVRMixin
     private void vivecraft$shutdownVREffects(CallbackInfo ci) {
         if (VRState.vrInitialized) {
             RenderPassManager.setVanillaRenderPass();
-            RenderPassManager.INSTANCE.vanillaPostEffect = null;
-            if (WorldRenderPass.stereoXR != null && WorldRenderPass.stereoXR.postEffect != null) {
-                WorldRenderPass.stereoXR.postEffect.close();
-                WorldRenderPass.stereoXR.postEffect = null;
-            }
-            if (WorldRenderPass.center != null && WorldRenderPass.center.postEffect != null) {
-                WorldRenderPass.center.postEffect.close();
-                WorldRenderPass.center.postEffect = null;
-            }
-        }
-    }
-
-    @Inject(method = "loadEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PostChain;resize(II)V", shift = Shift.AFTER))
-    private void vivecraft$loadVREffects(ResourceLocation resourceLocation, CallbackInfo ci) throws IOException {
-        if (VRState.vrInitialized) {
-            RenderPassManager.INSTANCE.vanillaPostEffect = this.postEffect;
-            if (WorldRenderPass.stereoXR != null) {
-                WorldRenderPass.stereoXR.postEffect = WorldRenderPass.createPostChain(resourceLocation, WorldRenderPass.stereoXR.target);
-            }
-            if (WorldRenderPass.center != null) {
-                WorldRenderPass.center.postEffect = WorldRenderPass.createPostChain(resourceLocation, WorldRenderPass.center.target);
-            }
         }
     }
 
