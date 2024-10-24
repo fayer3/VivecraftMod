@@ -536,8 +536,8 @@ public class GuiHandler {
                     guirot = new Matrix4f().rotationY(dh.vrPlayer.vrdata_world_render.rotation_radians);
                     guirot.mul(dh.vr.getAimRotation(1));
 
-                    guirot.rotateZ(Mth.PI * 0.5F * i);
-                    guirot.rotateY(Mth.PI * 0.5F * i);
+                    guirot.rotateZ(Mth.HALF_PI * i);
+                    guirot.rotateY(Mth.HALF_PI * i);
 
                     guipos = RenderHelper.getControllerRenderPos(1);
                     dh.vr.hudPopup = true;

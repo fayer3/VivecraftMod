@@ -2,6 +2,7 @@ package org.vivecraft.client_vr.gameplay.screenhandlers;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -85,7 +86,7 @@ public class RadialHandler {
         Pos_room = position.add(offset);
 
         float pitch = (float) Math.asin(offset.y / offset.length());
-        float yaw = (float) (Math.PI + Math.atan2(offset.x, offset.z));
+        float yaw = Mth.PI + (float) Math.atan2(offset.x, offset.z);
 
         Rotation_room.rotationY(yaw);
         Rotation_room.rotateX(pitch);
