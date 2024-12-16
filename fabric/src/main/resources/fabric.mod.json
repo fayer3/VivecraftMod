@@ -41,7 +41,8 @@
     "vivecraft.rei.mixins.json",
     "vivecraft.resolutioncontrol.mixins.json",
     "vivecraft.sereneseasons.mixins.json",
-    "vivecraft.fabric.mixins.json"
+    "vivecraft.fabric.mixins.json",
+    "vivecraft.vulkanmod.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.16.1",

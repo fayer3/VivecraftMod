@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.vivecraft.client_vr.VRState;
 import org.vivecraft.mixin.client.blaze3d.RenderSystemAccessor;
 
-@Mixin(LevelRenderer.class)
+@Mixin(value = LevelRenderer.class, priority = 1100)
 public class NoSodiumLevelRendererVRMixin {
 
     @Shadow

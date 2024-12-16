@@ -16,7 +16,7 @@ import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_xr.render_pass.RenderPassType;
 
-@Mixin(RenderTarget.class)
+@Mixin(value = RenderTarget.class, priority = 1100)
 public abstract class RenderTargetMixin implements RenderTargetExtension {
 
     @Shadow
@@ -109,7 +109,7 @@ public abstract class RenderTargetMixin implements RenderTargetExtension {
         return this.vivecraft$stencil ? GL30.GL_DEPTH_STENCIL_ATTACHMENT : attachment;
     }
 
-    @ModifyArg(method = "clear", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/pipeline/RenderTarget;bindWrite(Z)V"))
+    @ModifyArg(method = "clear", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/pipeline/RenderTarget;bindWrite(Z)V"), require = 0, expect = 0)
     private boolean vivecraft$noViewportChangeOnClear(boolean changeViewport) {
         // this viewport change doesn't seem to be needed in general,
         // and removing it makes mods not break rendering when they have miss sized RenderTargets

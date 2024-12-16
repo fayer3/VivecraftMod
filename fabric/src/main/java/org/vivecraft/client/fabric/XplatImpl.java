@@ -64,7 +64,11 @@ public class XplatImpl implements Xplat {
     }
 
     public static Path getJarPath() {
-        return FabricLoader.getInstance().getModContainer("vivecraft").get().getRootPaths().get(0);
+        return getJarPath("vivecraft");
+    }
+
+    public static Path getJarPath(String modId) {
+        return FabricLoader.getInstance().getModContainer(modId).get().getRootPaths().get(0);
     }
 
     public static String getUseMethodName() {

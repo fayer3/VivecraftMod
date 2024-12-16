@@ -17,6 +17,7 @@ import org.vivecraft.client_vr.provider.VRRenderer;
 import org.vivecraft.client_vr.render.RenderConfigException;
 import org.vivecraft.client_vr.render.helpers.RenderHelper;
 import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.mod_compat_vr.vulkanmod.VulkanModHelper;
 
 import static org.lwjgl.openvr.VRCompositor.VRCompositor_PostPresentHandoff;
 import static org.lwjgl.openvr.VRCompositor.VRCompositor_Submit;
@@ -95,20 +96,36 @@ public class OpenVRStereoRenderer extends VRRenderer {
         RenderSystem.bindTexture(this.LeftEyeTextureId);
         RenderSystem.texParameter(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_LINEAR);
         RenderSystem.texParameter(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_LINEAR);
-        GlStateManager._texImage2D(GL11C.GL_TEXTURE_2D, 0, GL11C.GL_RGBA8, width, height, 0, GL11C.GL_RGBA, GL11C.GL_INT, null);
-        this.openvr.texType0.handle(this.LeftEyeTextureId);
-        this.openvr.texType0.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
-        this.openvr.texType0.eType(VR.ETextureType_TextureType_OpenGL);
+
+        if (VulkanModHelper.isLoaded()) {
+            VulkanModHelper.genAndSetOpenVRImage(this.LeftEyeTextureId, width, height);
+            this.openvr.texType0.handle(VulkanModHelper.getVulkanImageId(this.LeftEyeTextureId));
+            this.openvr.texType0.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
+            this.openvr.texType0.eType(VR.ETextureType_TextureType_Vulkan);
+        } else {
+            GlStateManager._texImage2D(GL11C.GL_TEXTURE_2D, 0, GL11C.GL_RGBA8, width, height, 0, GL11C.GL_RGBA, GL11C.GL_INT, null);
+            this.openvr.texType0.handle(this.LeftEyeTextureId);
+            this.openvr.texType0.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
+            this.openvr.texType0.eType(VR.ETextureType_TextureType_OpenGL);
+        }
 
         // generate right eye texture
         this.RightEyeTextureId = GlStateManager._genTexture();
         RenderSystem.bindTexture(this.RightEyeTextureId);
         RenderSystem.texParameter(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_LINEAR);
         RenderSystem.texParameter(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_LINEAR);
-        GlStateManager._texImage2D(GL11C.GL_TEXTURE_2D, 0, GL11C.GL_RGBA8, width, height, 0, GL11C.GL_RGBA, GL11C.GL_INT, null);
-        this.openvr.texType1.handle(this.RightEyeTextureId);
-        this.openvr.texType1.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
-        this.openvr.texType1.eType(VR.ETextureType_TextureType_OpenGL);
+
+        if (VulkanModHelper.isLoaded()) {
+            VulkanModHelper.genAndSetOpenVRImage(this.RightEyeTextureId, width, height);
+            this.openvr.texType1.handle(VulkanModHelper.getVulkanImageId(this.RightEyeTextureId));
+            this.openvr.texType1.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
+            this.openvr.texType1.eType(VR.ETextureType_TextureType_Vulkan);
+        } else {
+            GlStateManager._texImage2D(GL11C.GL_TEXTURE_2D, 0, GL11C.GL_RGBA8, width, height, 0, GL11C.GL_RGBA, GL11C.GL_INT, null);
+            this.openvr.texType1.handle(this.RightEyeTextureId);
+            this.openvr.texType1.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
+            this.openvr.texType1.eType(VR.ETextureType_TextureType_OpenGL);
+        }
 
         RenderSystem.bindTexture(boundTextureId);
         this.lastError = RenderHelper.checkGLError("create VR textures");

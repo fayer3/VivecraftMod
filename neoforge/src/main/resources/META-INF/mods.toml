@@ -62,3 +62,5 @@ config = "vivecraft.sereneseasons.mixins.json"
 config = "vivecraft.optifine.mixins.json"
 [[mixins]]
 config = "vivecraft.neoforge.mixins.json"
+[[mixins]]
+config = "vivecraft.vulkanmod.mixins.json"

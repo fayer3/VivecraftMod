@@ -65,7 +65,11 @@ public class XplatImpl implements Xplat {
     }
 
     public static Path getJarPath() {
-        return FMLLoader.getLoadingModList().getModFileById("vivecraft").getFile().getSecureJar().getPath("/");
+        return getJarPath("vivecraft");
+    }
+
+    public static Path getJarPath(String modId) {
+        return FMLLoader.getLoadingModList().getModFileById(modId).getFile().getSecureJar().getPath("/");
     }
 
     public static String getUseMethodName() {

@@ -113,6 +113,14 @@ public interface Xplat {
     }
 
     /**
+     * @return path to access files inside the given mod jar
+     */
+    @ExpectPlatform
+    static Path getJarPath(String modId) {
+        throw new AssertionError();
+    }
+
+    /**
      * @return runtime name of the {@link BlockBehaviour#use} method
      */
     @ExpectPlatform
