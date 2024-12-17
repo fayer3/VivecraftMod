@@ -12,6 +12,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.ScreenEffectRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -641,6 +642,15 @@ public class VREffectsHelper {
             && dataHolder.currentPass != RenderPass.CAMERA) {
             VREffectsHelper.renderFireInFirstPerson();
         }
+
+        RenderSystem.getModelViewStack().pushMatrix().identity();
+        RenderSystem.applyModelViewMatrix();
+
+        ScreenEffectRenderer.renderScreenEffect(mc, new PoseStack());
+
+        RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.applyModelViewMatrix();
+
         mc.gameRenderer.renderItemActivationAnimation(new GuiGraphics(mc, mc.renderBuffers().bufferSource()), par1);
     }
 
