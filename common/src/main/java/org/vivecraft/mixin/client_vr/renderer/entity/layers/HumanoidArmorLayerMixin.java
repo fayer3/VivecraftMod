@@ -20,7 +20,8 @@ import org.vivecraft.mod_compat_vr.shaders.ShadersHelper;
 
 @Mixin(HumanoidArmorLayer.class)
 public class HumanoidArmorLayerMixin {
-    @Inject(method = "renderArmorPiece", at = @At("HEAD"), cancellable = true)
+    // no remapping, because of a loom quirk and forge/neoforge override
+    @Inject(method = {"renderArmorPiece*", "method_4169"}, at = @At("HEAD"), cancellable = true, remap = false)
     private void vivecraft$noHelmetInFirstPerson(
         CallbackInfo ci, @Local(argsOnly = true) LivingEntity entity, @Local(argsOnly = true) EquipmentSlot slot)
     {
@@ -34,10 +35,10 @@ public class HumanoidArmorLayerMixin {
         }
     }
 
-    @Inject(method = "renderArmorPiece", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;setPartVisibility(Lnet/minecraft/client/model/HumanoidModel;Lnet/minecraft/world/entity/EquipmentSlot;)V", shift = At.Shift.AFTER))
+    @Inject(method = {"renderArmorPiece*", "method_4169"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;setPartVisibility(Lnet/minecraft/client/model/HumanoidModel;Lnet/minecraft/world/entity/EquipmentSlot;)V", shift = At.Shift.AFTER, remap = true), remap = false)
     private void vivecraft$noArmsInFirstPerson(
         CallbackInfo ci, @Local(argsOnly = true) LivingEntity entity, @Local(argsOnly = true) EquipmentSlot slot,
-        @Local(argsOnly = true) HumanoidModel model)
+        @Local(argsOnly = true, ordinal = 0) HumanoidModel model)
     {
         if (VRState.VR_RUNNING && entity == Minecraft.getInstance().player && slot == EquipmentSlot.CHEST &&
             ClientDataHolderVR.getInstance().vrSettings.shouldRenderSelf &&

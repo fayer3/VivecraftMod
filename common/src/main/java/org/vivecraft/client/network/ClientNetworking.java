@@ -278,7 +278,7 @@ public class ClientNetworking {
 
                 if (packet.blocks() != null) {
                     for (String blockId : packet.blocks()) {
-                        Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation(blockId));
+                        Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockId));
 
                         // if the block is not there AIR is returned
                         if (block != Blocks.AIR) {

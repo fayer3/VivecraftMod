@@ -13,13 +13,15 @@ import org.vivecraft.client_xr.render_pass.RenderPassType;
 @Mixin(GameRenderer.class)
 public class ForgeGameRendererVRMixin {
 
-    @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setAnglesInternal(FF)V", remap = false), remap = true)
-    private void vivecraft$removeAnglesInternal(Camera instance, float yaw, float pitch, Operation<Void> original) {
+    @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setRotation(FFF)V", remap = false), remap = true)
+    private void vivecraft$removeAnglesInternal(
+        Camera instance, float yaw, float pitch, float roll, Operation<Void> original)
+    {
         if (RenderPassType.isVanilla() || (ClientDataHolderVR.getInstance().currentPass != RenderPass.LEFT &&
             ClientDataHolderVR.getInstance().currentPass != RenderPass.RIGHT
         ))
         {
-            original.call(instance, yaw, pitch);
+            original.call(instance, yaw, pitch, roll);
         }
     }
 }

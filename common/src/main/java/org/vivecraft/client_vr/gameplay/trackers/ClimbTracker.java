@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -31,8 +32,8 @@ import org.vivecraft.server.config.ClimbeyBlockmode;
 import java.util.*;
 
 public class ClimbTracker extends Tracker {
-    public static final ModelResourceLocation CLAWS_MODEL = new ModelResourceLocation("vivecraft", "climb_claws",
-        "inventory");
+    public static final ModelResourceLocation CLAWS_MODEL = new ModelResourceLocation(
+        ResourceLocation.fromNamespaceAndPath("vivecraft", "item/climb_claws"), "standalone");
 
     public Set<Block> blocklist = new HashSet<>();
     public ClimbeyBlockmode serverBlockmode = ClimbeyBlockmode.DISABLED;

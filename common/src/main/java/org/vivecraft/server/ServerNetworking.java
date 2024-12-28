@@ -281,7 +281,7 @@ public class ServerNetworking {
             blocks = new ArrayList<>();
             for (String block : ServerConfig.CLIMBEY_BLOCKLIST.get()) {
                 try {
-                    Block b = BuiltInRegistries.BLOCK.get(new ResourceLocation(block));
+                    Block b = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(block));
                     // only send valid blocks
                     if (b != Blocks.AIR) {
                         blocks.add(block);

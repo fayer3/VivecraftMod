@@ -37,7 +37,7 @@ public class FileUtils {
     public static void unpackAsset(String sourcePath, String targetFile, boolean required) {
         try {
             Optional<Resource> resource = Minecraft.getInstance().getResourceManager()
-                .getResource(new ResourceLocation("vivecraft", sourcePath));
+                .getResource(ResourceLocation.fromNamespaceAndPath("vivecraft", sourcePath));
 
             if (resource.isPresent()) {
                 try (InputStream is = resource.get().open(); OutputStream os = new FileOutputStream(targetFile)) {

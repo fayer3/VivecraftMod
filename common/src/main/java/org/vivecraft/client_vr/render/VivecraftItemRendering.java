@@ -356,15 +356,15 @@ public class VivecraftItemRendering {
 
                 float progress = 0.0F;
                 boolean charging = false;
-                int riptideLevel = 0;
+                float riptideLevel = 0;
 
                 if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0 && player.getUsedItemHand() == hand) {
                     charging = true;
-                    riptideLevel = EnchantmentHelper.getRiptide(itemStack);
+                    riptideLevel = EnchantmentHelper.getTridentSpinAttackStrength(itemStack, player);
 
                     if (riptideLevel <= 0 || player.isInWaterOrRain()) {
                         progress =
-                            itemStack.getUseDuration() - (player.getUseItemRemainingTicks() - partialTick + 1.0F);
+                            itemStack.getUseDuration(player) - (player.getUseItemRemainingTicks() - partialTick + 1.0F);
 
                         if (progress > TridentItem.THROW_THRESHOLD_TIME) {
                             float rotationProgress = progress - TridentItem.THROW_THRESHOLD_TIME;

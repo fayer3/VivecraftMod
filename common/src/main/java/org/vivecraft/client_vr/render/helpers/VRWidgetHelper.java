@@ -1,10 +1,7 @@
 package org.vivecraft.client_vr.render.helpers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -37,7 +34,7 @@ public class VRWidgetHelper {
     private static final ClientDataHolderVR DATA_HOLDER = ClientDataHolderVR.getInstance();
 
     private static final RandomSource RANDOM = RandomSource.create();
-    private static final ResourceLocation TRANSPARENT_TEXTURE = new ResourceLocation("vivecraft:transparent");
+    private static final ResourceLocation TRANSPARENT_TEXTURE = ResourceLocation.parse("vivecraft:transparent");
     public static boolean DEBUG = false;
 
     /**
@@ -161,23 +158,20 @@ public class VRWidgetHelper {
         }
         MC.gameRenderer.lightTexture().turnOnLightLayer();
 
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferBuilder = tesselator.getBuilder();
-
         // render camera model
-        bufferBuilder.begin(Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
+        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
 
         MC.getBlockRenderer().getModelRenderer()
             .renderModel(poseStack.last(), bufferBuilder, null, MC.getModelManager().getModel(model), 1.0F, 1.0F, 1.0F,
                 combinedLight, OverlayTexture.NO_OVERLAY);
-        tesselator.end();
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
 
         // render camera display
         RenderSystem.disableBlend();
         displayBindFunc.run();
         RenderSystem.setShader(GameRenderer::getRendertypeEntitySolidShader);
 
-        bufferBuilder.begin(Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
+        bufferBuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
 
         // need to render this manually, because the uvs in the model are for the atlas texture, and not fullscreen
         for (BakedQuad bakedquad : MC.getModelManager().getModel(displayModel).getQuads(null, null, RANDOM)) {
@@ -187,49 +181,49 @@ public class VRWidgetHelper {
                 int[] vertexList = bakedquad.getVertices();
                 boolean mirrored = displayFaceFunc.apply(bakedquad.getDirection()) == DisplayFace.MIRROR;
                 int step = vertexList.length / 4;
-                bufferBuilder.vertex(
+                bufferBuilder.addVertex(
                         poseStack.last().pose(),
                         Float.intBitsToFloat(vertexList[0]),
                         Float.intBitsToFloat(vertexList[1]),
                         Float.intBitsToFloat(vertexList[2]))
-                    .color(1.0F, 1.0F, 1.0F, 1.0F)
-                    .uv(mirrored ? 1.0F : 0.0F, 1.0F)
-                    .overlayCoords(OverlayTexture.NO_OVERLAY)
-                    .uv2(LightTexture.FULL_BRIGHT)
-                    .normal(0.0F, 1.0F, 0.0F).endVertex();
-                bufferBuilder.vertex(
+                    .setColor(1.0F, 1.0F, 1.0F, 1.0F)
+                    .setUv(mirrored ? 1.0F : 0.0F, 1.0F)
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(LightTexture.FULL_BRIGHT)
+                    .setNormal(0.0F, 1.0F, 0.0F);
+                bufferBuilder.addVertex(
                         poseStack.last().pose(),
                         Float.intBitsToFloat(vertexList[step]),
                         Float.intBitsToFloat(vertexList[step + 1]),
                         Float.intBitsToFloat(vertexList[step + 2]))
-                    .color(1.0F, 1.0F, 1.0F, 1.0F)
-                    .uv(mirrored ? 1.0F : 0.0F, 0.0F)
-                    .overlayCoords(OverlayTexture.NO_OVERLAY)
-                    .uv2(LightTexture.FULL_BRIGHT)
-                    .normal(0.0F, 1.0F, 0.0F).endVertex();
-                bufferBuilder.vertex(
+                    .setColor(1.0F, 1.0F, 1.0F, 1.0F)
+                    .setUv(mirrored ? 1.0F : 0.0F, 0.0F)
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(LightTexture.FULL_BRIGHT)
+                    .setNormal(0.0F, 1.0F, 0.0F);
+                bufferBuilder.addVertex(
                         poseStack.last().pose(),
                         Float.intBitsToFloat(vertexList[step * 2]),
                         Float.intBitsToFloat(vertexList[step * 2 + 1]),
                         Float.intBitsToFloat(vertexList[step * 2 + 2]))
-                    .color(1.0F, 1.0F, 1.0F, 1.0F)
-                    .uv(mirrored ? 0.0F : 1.0F, 0.0F)
-                    .overlayCoords(OverlayTexture.NO_OVERLAY)
-                    .uv2(LightTexture.FULL_BRIGHT)
-                    .normal(0.0F, 1.0F, 0.0F).endVertex();
-                bufferBuilder.vertex(
+                    .setColor(1.0F, 1.0F, 1.0F, 1.0F)
+                    .setUv(mirrored ? 0.0F : 1.0F, 0.0F)
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(LightTexture.FULL_BRIGHT)
+                    .setNormal(0.0F, 1.0F, 0.0F);
+                bufferBuilder.addVertex(
                         poseStack.last().pose(),
                         Float.intBitsToFloat(vertexList[step * 3]),
                         Float.intBitsToFloat(vertexList[step * 3 + 1]),
                         Float.intBitsToFloat(vertexList[step * 3 + 2]))
-                    .color(1.0F, 1.0F, 1.0F, 1.0F)
-                    .uv(mirrored ? 0.0F : 1.0F, 1.0F)
-                    .overlayCoords(OverlayTexture.NO_OVERLAY)
-                    .uv2(LightTexture.FULL_BRIGHT)
-                    .normal(0.0F, 1.0F, 0.0F).endVertex();
+                    .setColor(1.0F, 1.0F, 1.0F, 1.0F)
+                    .setUv(mirrored ? 0.0F : 1.0F, 1.0F)
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(LightTexture.FULL_BRIGHT)
+                    .setNormal(0.0F, 1.0F, 0.0F);
             }
         }
-        tesselator.end();
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
 
         MC.gameRenderer.lightTexture().turnOffLightLayer();
         RenderSystem.enableBlend();

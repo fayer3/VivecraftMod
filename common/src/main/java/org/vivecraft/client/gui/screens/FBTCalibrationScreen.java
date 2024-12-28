@@ -188,42 +188,41 @@ public class FBTCalibrationScreen extends Screen {
             poseStack.scale(min, -min, min);
             poseStack.mulPose(Axis.YP.rotation(Mth.PI));
 
-            BufferBuilder builder = Tesselator.getInstance().getBuilder();
-
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
             // arms outline
-            builder.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder builder = Tesselator.getInstance()
+                .begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
 
-            builder.vertex(poseStack.last().pose(), 4, 24, -100)
-                .color(1F, 1F, 1F, 1F).endVertex();
-            builder.vertex(poseStack.last().pose(), 16, 24, -100)
-                .color(1F, 1F, 1F, 1F).endVertex();
-            builder.vertex(poseStack.last().pose(), 16, 20, -100)
-                .color(1F, 1F, 1F, 1F).endVertex();
-            builder.vertex(poseStack.last().pose(), 4, 20, -100)
-                .color(1F, 1F, 1F, 1F).endVertex();
-            builder.vertex(poseStack.last().pose(), 4, 24, -100)
-                .color(1F, 1F, 1F, 1F).endVertex();
+            builder.addVertex(poseStack.last().pose(), 4, 24, -100)
+                .setColor(1F, 1F, 1F, 1F);
+            builder.addVertex(poseStack.last().pose(), 16, 24, -100)
+                .setColor(1F, 1F, 1F, 1F);
+            builder.addVertex(poseStack.last().pose(), 16, 20, -100)
+                .setColor(1F, 1F, 1F, 1F);
+            builder.addVertex(poseStack.last().pose(), 4, 20, -100)
+                .setColor(1F, 1F, 1F, 1F);
+            builder.addVertex(poseStack.last().pose(), 4, 24, -100)
+                .setColor(1F, 1F, 1F, 1F);
 
             // connecting line
-            builder.vertex(poseStack.last().pose(), 4, 24, -100)
-                .color(1F, 1F, 1F, 0F).endVertex();
-            builder.vertex(poseStack.last().pose(), -4, 24, -100)
-                .color(1F, 1F, 1F, 0F).endVertex();
+            builder.addVertex(poseStack.last().pose(), 4, 24, -100)
+                .setColor(1F, 1F, 1F, 0F);
+            builder.addVertex(poseStack.last().pose(), -4, 24, -100)
+                .setColor(1F, 1F, 1F, 0F);
 
-            builder.vertex(poseStack.last().pose(), -4, 24, -100)
-                .color(1F, 1F, 1F, 1F).endVertex();
-            builder.vertex(poseStack.last().pose(), -16, 24, -100)
-                .color(1F, 1F, 1F, 1F).endVertex();
-            builder.vertex(poseStack.last().pose(), -16, 20, -100)
-                .color(1F, 1F, 1F, 1F).endVertex();
-            builder.vertex(poseStack.last().pose(), -4, 20, -100)
-                .color(1F, 1F, 1F, 1F).endVertex();
-            builder.vertex(poseStack.last().pose(), -4, 24, -100)
-                .color(1F, 1F, 1F, 1F).endVertex();
+            builder.addVertex(poseStack.last().pose(), -4, 24, -100)
+                .setColor(1F, 1F, 1F, 1F);
+            builder.addVertex(poseStack.last().pose(), -16, 24, -100)
+                .setColor(1F, 1F, 1F, 1F);
+            builder.addVertex(poseStack.last().pose(), -16, 20, -100)
+                .setColor(1F, 1F, 1F, 1F);
+            builder.addVertex(poseStack.last().pose(), -4, 20, -100)
+                .setColor(1F, 1F, 1F, 1F);
+            builder.addVertex(poseStack.last().pose(), -4, 24, -100)
+                .setColor(1F, 1F, 1F, 1F);
 
-            BufferUploader.drawWithShader(builder.end());
+            BufferUploader.drawWithShader(builder.buildOrThrow());
 
             if (VRState.VR_RUNNING) {
                 poseStack.mulPose(Axis.YP.rotation(
@@ -231,7 +230,8 @@ public class FBTCalibrationScreen extends Screen {
             }
 
             // body overlay
-            builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            builder = Tesselator.getInstance()
+                .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             // legs
             RenderHelper.renderBox(builder,
                 new Vec3(2, 0, 0), new Vec3(2, 12, 0),
@@ -259,7 +259,7 @@ public class FBTCalibrationScreen extends Screen {
                 new Vec3(-6, 22, 0).add(this.rightHand.x * 10F, this.rightHand.y * 10F, this.rightHand.z * 10F),
                 4, 4, this.rightHandAtPosition ? colorActive : color, (byte) 200, poseStack.last().pose());
 
-            BufferUploader.drawWithShader(builder.end());
+            BufferUploader.drawWithShader(builder.buildOrThrow());
 
             if (VRState.VR_RUNNING) {
                 ClientDataHolderVR.getInstance().vr.getInputAction(VivecraftVRMod.INSTANCE.keyVRInteract)

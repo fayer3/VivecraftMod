@@ -219,7 +219,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endBatch()V", ordinal = 0, shift = Shift.AFTER))
     private void vivecraft$renderVrStuffPart1(
-        CallbackInfo ci, @Local(argsOnly = true) float partialTick, @Share("guiRendered") LocalBooleanRef guiRendered)
+        CallbackInfo ci, @Local(ordinal = 0) float partialTick, @Share("guiRendered") LocalBooleanRef guiRendered)
     {
         if (RenderPassType.isVanilla()) return;
 
@@ -239,7 +239,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getCloudsType()Lnet/minecraft/client/CloudStatus;"))
     private void vivecraft$renderVrStuffPart2(
-        CallbackInfo ci, @Local(argsOnly = true) float partialTick, @Share("guiRendered") LocalBooleanRef guiRendered)
+        CallbackInfo ci, @Local(ordinal = 0) float partialTick, @Share("guiRendered") LocalBooleanRef guiRendered)
     {
         if (RenderPassType.isVanilla()) return;
 
@@ -257,7 +257,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
     // or if shaders are on, and option AFTER_SHADER is selected
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void vivecraft$renderVrStuffFinal(
-        CallbackInfo ci, @Local(argsOnly = true) float partialTick, @Share("guiRendered") LocalBooleanRef guiRendered)
+        CallbackInfo ci, @Local(ordinal = 0) float partialTick, @Share("guiRendered") LocalBooleanRef guiRendered)
     {
         if (RenderPassType.isVanilla()) return;
 
@@ -323,7 +323,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
         }
     }
 
-    @WrapOperation(method = "initTransparency", at = @At(value = "NEW", target = "net/minecraft/resources/ResourceLocation"))
+    @WrapOperation(method = "initTransparency", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/ResourceLocation;withDefaultNamespace(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"))
     private ResourceLocation vivecraft$vrTransparency(String location, Operation<ResourceLocation> original) {
         if (VRState.VR_INITIALIZED) {
             return original.call("shaders/post/vrtransparency.json");

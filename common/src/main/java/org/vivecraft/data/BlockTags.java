@@ -16,6 +16,6 @@ public class BlockTags {
     public static final TagKey<Block> VIVECRAFT_MUSIC_BLOCKS = tag("music_blocks");
 
     private static TagKey<Block> tag(String name) {
-        return TagKey.create(Registries.BLOCK, new ResourceLocation("vivecraft", name));
+        return TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("vivecraft", name));
     }
 }

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Matrix4f;
@@ -32,18 +33,17 @@ public class VRPassHelper {
     /**
      * renders a single RenderPass view
      *
-     * @param eye         RenderPass to render
-     * @param partialTick current partial tick for this frame
-     * @param nanoTime    time of this frame in nanoseconds
-     * @param renderLevel if the level should be rendered, or just the screen
+     * @param eye          RenderPass to render
+     * @param deltaTracker tracker to get the partial tick from
+     * @param renderLevel  if the level should be rendered, or just the screen
      */
-    public static void renderSingleView(RenderPass eye, float partialTick, long nanoTime, boolean renderLevel) {
+    public static void renderSingleView(RenderPass eye, DeltaTracker.Timer deltaTracker, boolean renderLevel) {
         RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 1.0F);
         RenderSystem.clear(GL13C.GL_COLOR_BUFFER_BIT | GL13C.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
         RenderSystem.enableDepthTest();
 
         // THIS IS WHERE EVERYTHING IS RENDERED
-        MC.gameRenderer.render(partialTick, nanoTime, renderLevel);
+        MC.gameRenderer.render(deltaTracker, renderLevel);
 
         RenderHelper.checkGLError("post game render " + eye);
 
@@ -69,7 +69,7 @@ public class VRPassHelper {
             }
 
             // do post-processing
-            ShaderHelper.doVrPostProcess(eye, rendertarget, partialTick);
+            ShaderHelper.doVrPostProcess(eye, rendertarget, deltaTracker.getGameTimeDeltaPartialTick(false));
 
             RenderHelper.checkGLError("post overlay" + eye);
             MC.getProfiler().pop();
@@ -107,11 +107,10 @@ public class VRPassHelper {
     /**
      * renders all passes, and submits the final frames to the VR runtime
      *
-     * @param renderLevel       if the level is being rendered
-     * @param nanoTime          nano time for the current frame
-     * @param actualPartialTick partial tick for rendering
+     * @param renderLevel  if the level is being rendered
+     * @param deltaTracker tracker to get the partial tick from
      */
-    public static void renderAndSubmit(boolean renderLevel, long nanoTime, float actualPartialTick) {
+    public static void renderAndSubmit(boolean renderLevel, DeltaTracker.Timer deltaTracker) {
         // still rendering
         MC.getProfiler().push("gameRenderer");
 
@@ -175,7 +174,7 @@ public class VRPassHelper {
             MC.mainRenderTarget = KeyboardHandler.FRAMEBUFFER;
             MC.mainRenderTarget.clear(Minecraft.ON_OSX);
             MC.mainRenderTarget.bindWrite(true);
-            RenderHelper.drawScreen(guiGraphics, actualPartialTick, KeyboardHandler.UI, true);
+            RenderHelper.drawScreen(guiGraphics, deltaTracker, KeyboardHandler.UI, true);
         }
 
         MC.getProfiler().popPush("Radial Menu");
@@ -183,7 +182,7 @@ public class VRPassHelper {
             MC.mainRenderTarget = RadialHandler.FRAMEBUFFER;
             MC.mainRenderTarget.clear(Minecraft.ON_OSX);
             MC.mainRenderTarget.bindWrite(true);
-            RenderHelper.drawScreen(guiGraphics, actualPartialTick, RadialHandler.UI, true);
+            RenderHelper.drawScreen(guiGraphics, deltaTracker, RadialHandler.UI, true);
         }
         MC.getProfiler().pop();
         RenderHelper.checkGLError("post 2d ");
@@ -220,7 +219,7 @@ public class VRPassHelper {
             MC.getProfiler().push("setup");
             MC.mainRenderTarget.bindWrite(true);
             MC.getProfiler().pop();
-            VRPassHelper.renderSingleView(renderpass, actualPartialTick, nanoTime, renderLevel);
+            VRPassHelper.renderSingleView(renderpass, deltaTracker, renderLevel);
             MC.getProfiler().pop();
 
             if (DATA_HOLDER.grabScreenShot) {
@@ -255,7 +254,7 @@ public class VRPassHelper {
         // now we are done with rendering
         MC.getProfiler().pop();
 
-        DATA_HOLDER.vrPlayer.postRender(actualPartialTick);
+        DATA_HOLDER.vrPlayer.postRender(deltaTracker.getGameTimeDeltaPartialTick(true));
         MC.getProfiler().push("Display/Reproject");
 
         try {

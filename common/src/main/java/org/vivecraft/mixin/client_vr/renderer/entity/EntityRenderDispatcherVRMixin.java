@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
@@ -78,8 +79,10 @@ public abstract class EntityRenderDispatcherVRMixin implements EntityRenderDispa
                 .subtract(source).normalize();
 
             return new Quaternionf()
-                .rotateY((float) -Math.atan2(-direction.x, direction.z))
-                .rotateX((float) -Math.asin(direction.y / direction.length()));
+                .rotationYXZ(
+                    Mth.PI - (float) Math.atan2(-direction.x, direction.z),
+                    (float) Math.asin(direction.y / direction.length()),
+                    0.0F);
         }
     }
 

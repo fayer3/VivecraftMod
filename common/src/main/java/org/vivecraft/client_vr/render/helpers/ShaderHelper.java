@@ -63,28 +63,27 @@ public class ShaderHelper {
      * @param format VertexFormat to use for rendering
      */
     private static void drawFullscreenQuad(VertexFormat format) {
-        BufferBuilder builder = Tesselator.getInstance().getBuilder();
-        builder.begin(VertexFormat.Mode.QUADS, format);
+        BufferBuilder builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, format);
 
         if (format == DefaultVertexFormat.POSITION_TEX) {
-            builder.vertex(-1.0, -1.0, 0.0).uv(0.0F, 0.0F).endVertex();
-            builder.vertex(1.0, -1.0, 0.0).uv(1.0F, 0.0F).endVertex();
-            builder.vertex(1.0, 1.0, 0.0).uv(1.0F, 1.0F).endVertex();
-            builder.vertex(-1.0, 1.0, 0.0).uv(0.0F, 1.0F).endVertex();
+            builder.addVertex(-1.0F, -1.0F, 0.0F).setUv(0.0F, 0.0F);
+            builder.addVertex(1.0F, -1.0F, 0.0F).setUv(1.0F, 0.0F);
+            builder.addVertex(1.0F, 1.0F, 0.0F).setUv(1.0F, 1.0F);
+            builder.addVertex(-1.0F, 1.0F, 0.0F).setUv(0.0F, 1.0F);
         } else if (format == DefaultVertexFormat.POSITION_TEX_COLOR) {
-            builder.vertex(-1.0, -1.0, 0.0).uv(0.0F, 0.0F)
-                .color(255, 255, 255, 255).endVertex();
-            builder.vertex(1.0, -1.0, 0.0).uv(1.0F, 0.0F)
-                .color(255, 255, 255, 255).endVertex();
-            builder.vertex(1.0, 1.0, 0.0).uv(1.0F, 1.0F)
-                .color(255, 255, 255, 255).endVertex();
-            builder.vertex(-1.0, 1.0, 0.0).uv(0.0F, 1.0F)
-                .color(255, 255, 255, 255).endVertex();
+            builder.addVertex(-1.0F, -1.0F, 0.0F).setUv(0.0F, 0.0F)
+                .setColor(255, 255, 255, 255);
+            builder.addVertex(1.0F, -1.0F, 0.0F).setUv(1.0F, 0.0F)
+                .setColor(255, 255, 255, 255);
+            builder.addVertex(1.0F, 1.0F, 0.0F).setUv(1.0F, 1.0F)
+                .setColor(255, 255, 255, 255);
+            builder.addVertex(-1.0F, 1.0F, 0.0F).setUv(0.0F, 1.0F)
+                .setColor(255, 255, 255, 255);
         } else {
             throw new IllegalStateException("Unexpected vertex format " + format);
         }
 
-        BufferUploader.draw(builder.end());
+        BufferUploader.draw(builder.buildOrThrow());
     }
 
     /**
@@ -479,14 +478,14 @@ public class ShaderHelper {
 
         instance.apply();
 
-        BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, instance.getVertexFormat());
+        BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator()
+            .begin(VertexFormat.Mode.QUADS, instance.getVertexFormat());
 
-        bufferbuilder.vertex(-1.0F, -1.0F, 0.0F).uv(xMin, yMin).endVertex();
-        bufferbuilder.vertex(1.0F, -1.0F, 0.0F).uv(xMax, yMin).endVertex();
-        bufferbuilder.vertex(1.0F, 1.0F, 0.0F).uv(xMax, yMax).endVertex();
-        bufferbuilder.vertex(-1.0F, 1.0F, 0.0F).uv(xMin, yMax).endVertex();
-        BufferUploader.draw(bufferbuilder.end());
+        bufferbuilder.addVertex(-1.0F, -1.0F, 0.0F).setUv(xMin, yMin);
+        bufferbuilder.addVertex(1.0F, -1.0F, 0.0F).setUv(xMax, yMin);
+        bufferbuilder.addVertex(1.0F, 1.0F, 0.0F).setUv(xMax, yMax);
+        bufferbuilder.addVertex(-1.0F, 1.0F, 0.0F).setUv(xMin, yMax);
+        BufferUploader.draw(bufferbuilder.buildOrThrow());
         instance.clear();
 
         RenderSystem.depthMask(true);

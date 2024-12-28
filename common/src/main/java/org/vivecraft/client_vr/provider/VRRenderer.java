@@ -252,23 +252,23 @@ public abstract class VRRenderer {
      * @param height height of the circle in screen pixels
      */
     private void drawCircle(float width, float height) {
-        BufferBuilder builder = Tesselator.getInstance().getBuilder();
-        builder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
+        BufferBuilder builder = Tesselator.getInstance()
+            .begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
         final float edges = 32.0F;
         float radius = width / 2.0F;
 
         // put middle vertex
-        builder.vertex(radius, radius, 0.0F).endVertex();
+        builder.addVertex(radius, radius, 0.0F);
 
         // put outer vertices
         for (int i = 0; i < edges + 1; i++) {
             float startAngle = (float) i / edges * Mth.TWO_PI;
-            builder.vertex(
+            builder.addVertex(
                 radius + Mth.cos(startAngle) * radius,
                 radius + Mth.sin(startAngle) * radius,
-                0.0F).endVertex();
+                0.0F);
         }
-        BufferUploader.drawWithShader(builder.end());
+        BufferUploader.drawWithShader(builder.buildOrThrow());
     }
 
     /**
@@ -282,21 +282,21 @@ public abstract class VRRenderer {
             return;
         }
 
-        BufferBuilder builder = Tesselator.getInstance().getBuilder();
-        builder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION);
+        BufferBuilder builder = Tesselator.getInstance()
+            .begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION);
 
         mc.getTextureManager().bindForSetup(RenderHelper.BLACK_TEXTURE);
         RenderSystem.setShaderTexture(0, RenderHelper.BLACK_TEXTURE);
 
         for (int i = 0; i < verts.length; i += 2) {
-            builder.vertex(
+            builder.addVertex(
                 verts[i] * this.renderScale + 0.5F,
                 verts[i + 1] * this.renderScale + 0.5F,
-                0.0F).endVertex();
+                0.0F);
         }
 
         RenderSystem.setShader(GameRenderer::getPositionShader);
-        BufferUploader.drawWithShader(builder.end());
+        BufferUploader.drawWithShader(builder.buildOrThrow());
     }
 
     /**
