@@ -43,7 +43,7 @@ public class VRWidgetHelper {
     /**
      * renders the third person camcorder
      */
-    public static void renderVRThirdPersonCamWidget(PoseStack poseStack) {
+    public static void renderVRThirdPersonCamWidget() {
         if (!DATA_HOLDER.vrSettings.mixedRealityRenderCameraModel) return;
         if (DATA_HOLDER.currentPass == RenderPass.LEFT || DATA_HOLDER.currentPass == RenderPass.RIGHT) {
             if ((DATA_HOLDER.vrSettings.displayMirrorMode == VRSettings.MirrorMode.MIXED_REALITY ||
@@ -57,7 +57,7 @@ public class VRWidgetHelper {
                     scale *= 1.03F;
                 }
 
-                renderVRCameraWidget(poseStack, -0.748F, -0.438F, -0.06F, scale, RenderPass.THIRD,
+                renderVRCameraWidget(-0.748F, -0.438F, -0.06F, scale, RenderPass.THIRD,
                     ClientDataHolderVR.THIRD_PERSON_CAMERA_MODEL, ClientDataHolderVR.THIRD_PERSON_CAMERA_DISPLAY_MODEL,
                     () -> {
                         DATA_HOLDER.vrRenderer.framebufferMR.bindRead();
@@ -76,7 +76,7 @@ public class VRWidgetHelper {
     /**
      * renders the screenshot camera
      */
-    public static void renderVRHandheldCameraWidget(PoseStack poseStack) {
+    public static void renderVRHandheldCameraWidget() {
         if (DATA_HOLDER.currentPass != RenderPass.CAMERA && DATA_HOLDER.cameraTracker.isVisible()) {
             float scale = 0.25F;
 
@@ -85,7 +85,7 @@ public class VRWidgetHelper {
                 scale *= 1.03F;
             }
 
-            renderVRCameraWidget(poseStack, -0.5F, -0.25F, -0.22F, scale, RenderPass.CAMERA,
+            renderVRCameraWidget(-0.5F, -0.25F, -0.22F, scale, RenderPass.CAMERA,
                 CameraTracker.CAMERA_MODEL, CameraTracker.CAMERA_DISPLAY_MODEL, () -> {
                     if (VREffectsHelper.getNearOpaqueBlock(
                         DATA_HOLDER.vrPlayer.vrdata_world_render.getEye(RenderPass.CAMERA).getPosition(),
@@ -103,7 +103,6 @@ public class VRWidgetHelper {
     /**
      * renders a camera model with screen
      *
-     * @param poseStack       PoseStack used for positioning
      * @param offsetX         model x offset
      * @param offsetY         model y offset
      * @param offsetZ         model z offset
@@ -115,12 +114,11 @@ public class VRWidgetHelper {
      * @param displayFaceFunc function that specifies if the view should be mirrored, normal or not shown at all
      */
     public static void renderVRCameraWidget(
-        PoseStack poseStack, float offsetX, float offsetY, float offsetZ, float scale, RenderPass renderPass,
-        ModelResourceLocation model, ModelResourceLocation displayModel, Runnable displayBindFunc,
-        Function<Direction, DisplayFace> displayFaceFunc)
+        float offsetX, float offsetY, float offsetZ, float scale, RenderPass renderPass, ModelResourceLocation model,
+        ModelResourceLocation displayModel, Runnable displayBindFunc, Function<Direction, DisplayFace> displayFaceFunc)
     {
 
-        poseStack.pushPose();
+        PoseStack poseStack = new PoseStack();
 
         // model position relative to the view position
         Vec3 widgetPosition = DATA_HOLDER.vrPlayer.vrdata_world_render.getEye(renderPass).getPosition();
@@ -132,7 +130,7 @@ public class VRWidgetHelper {
         poseStack.translate(widgetOffset.x, widgetOffset.y, widgetOffset.z);
 
         Matrix4f rotation = DATA_HOLDER.vrPlayer.vrdata_world_render.getEye(renderPass).getMatrix();
-        poseStack.mulPoseMatrix(rotation);
+        poseStack.last().pose().mul(rotation);
         poseStack.last().normal().mul(new Matrix3f(rotation));
 
         scale = scale * DATA_HOLDER.vrPlayer.vrdata_world_render.worldScale;
@@ -140,7 +138,7 @@ public class VRWidgetHelper {
 
         // show orientation
         if (DEBUG) {
-            DebugRenderHelper.renderLocalAxes(poseStack);
+            DebugRenderHelper.renderLocalAxes(poseStack.last().pose());
         }
 
         // apply model offset
@@ -235,8 +233,6 @@ public class VRWidgetHelper {
 
         MC.gameRenderer.lightTexture().turnOffLightLayer();
         RenderSystem.enableBlend();
-
-        poseStack.popPose();
     }
 
     public enum DisplayFace {

@@ -19,6 +19,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL30C;
@@ -31,6 +32,7 @@ import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.common.utils.MathUtils;
 import org.vivecraft.mixin.client.blaze3d.RenderSystemAccessor;
+import org.vivecraft.mod_compat_vr.shaders.ShadersHelper;
 
 import java.util.function.Supplier;
 
@@ -75,6 +77,17 @@ public class RenderHelper {
         Matrix4f modelView = getVRModelView(renderPass);
         poseStack.last().pose().mul(modelView);
         poseStack.last().normal().mul(new Matrix3f(modelView));
+    }
+
+    /**
+     * Applies the rotation from the given RenderPass to the given matrix
+     *
+     * @param renderPass RenderPass rotation to use
+     * @param matrix     Matrix4f to apply the rotation to
+     */
+    public static void applyVRModelView(RenderPass renderPass, Matrix4f matrix) {
+        Matrix4f modelView = getVRModelView(renderPass);
+        matrix.mul(modelView);
     }
 
     /**
@@ -164,17 +177,17 @@ public class RenderHelper {
     }
 
     /**
-     * sets up the poseStack to render at the given controller/tracker
+     * sets up the matrix to render at the given controller/tracker
      *
-     * @param c         controller/tracker to render at
-     * @param poseStack PoseStack to apply the position to
+     * @param c      controller/tracker to render at
+     * @param matrix Matrix4f to apply the position to
      */
-    public static void setupRenderingAtController(int c, PoseStack poseStack) {
+    public static void setupRenderingAtController(int c, Matrix4f matrix) {
         Vec3 aimSource = getControllerRenderPos(c);
         aimSource = aimSource.subtract(
             getSmoothCameraPosition(DATA_HOLDER.currentPass, DATA_HOLDER.vrPlayer.getVRDataWorld()));
         // move from head to hand origin.
-        poseStack.translate(aimSource.x, aimSource.y, aimSource.z);
+        matrix.translate((float) aimSource.x, (float) aimSource.y, (float) aimSource.z);
 
         float sc = DATA_HOLDER.vrPlayer.vrdata_world_render.worldScale;
 
@@ -183,18 +196,17 @@ public class RenderHelper {
             TelescopeTracker.isTelescope(MC.player.getUseItem()) &&
             TelescopeTracker.isTelescope(c == 0 ? MC.player.getMainHandItem() : MC.player.getOffhandItem()))
         {
-            poseStack.mulPoseMatrix(DATA_HOLDER.vrPlayer.vrdata_world_render.hmd.getMatrix().invert().transpose());
-            poseStack.mulPose(Axis.XP.rotationDegrees(90F));
+            matrix.mul(DATA_HOLDER.vrPlayer.vrdata_world_render.hmd.getMatrix().invert().transpose());
+            matrix.rotate(Axis.XP.rotationDegrees(90F));
             // move to the eye center, seems to be magic numbers that work for the vive at least
-            poseStack.translate((c == (DATA_HOLDER.vrSettings.reverseHands ? 1 : 0) ? 0.075F : -0.075F) * sc,
+            matrix.translate((c == (DATA_HOLDER.vrSettings.reverseHands ? 1 : 0) ? 0.075F : -0.075F) * sc,
                 -0.025F * sc,
                 0.0325F * sc);
         } else {
-            poseStack.mulPoseMatrix(
-                DATA_HOLDER.vrPlayer.vrdata_world_render.getController(c).getMatrix().invert().transpose());
+            matrix.mul(DATA_HOLDER.vrPlayer.vrdata_world_render.getController(c).getMatrix().invert().transpose());
         }
 
-        poseStack.scale(sc, sc, sc);
+        matrix.scale(sc, sc, sc);
     }
 
     /**
@@ -261,9 +273,9 @@ public class RenderHelper {
      */
     public static void drawScreen(GuiGraphics guiGraphics, float partialTick, Screen screen, boolean maxGuiScale) {
         // setup modelview for screen rendering
-        PoseStack poseStack = RenderSystem.getModelViewStack();
-        poseStack.pushPose();
-        poseStack.setIdentity();
+        Matrix4fStack poseStack = RenderSystem.getModelViewStack();
+        poseStack.pushMatrix();
+        poseStack.identity();
         poseStack.translate(0.0F, 0.0F, -11000.0F);
         RenderSystem.applyModelViewMatrix();
 
@@ -290,7 +302,7 @@ public class RenderHelper {
             GlStateManager.SourceFactor.ONE,
             GlStateManager.DestFactor.ONE);
 
-        poseStack.popPose();
+        poseStack.popMatrix();
         RenderSystem.applyModelViewMatrix();
 
         if (DATA_HOLDER.vrSettings.guiMipmaps) {
@@ -450,8 +462,15 @@ public class RenderHelper {
         Vector3f light0Old = RenderSystemAccessor.getShaderLightDirections()[0];
         Vector3f light1Old = RenderSystemAccessor.getShaderLightDirections()[1];
 
+        Vector3f normal = new Vector3f(0, 0, 1);
+
+        // weird iris behaviour
+        if (ShadersHelper.isShaderActive()) {
+            normal = new Matrix3f(matrix).transform(normal);
+        }
+
         // set lights to front
-        RenderSystem.setShaderLights(new Vector3f(0, 0, 1), new Vector3f(0, 0, 1));
+        RenderSystem.setShaderLights(normal, normal);
         RenderSystem.setupShaderLights(RenderSystem.getShader());
 
         bufferbuilder.vertex(matrix, -sizeX, -sizeY, 0)
@@ -492,26 +511,24 @@ public class RenderHelper {
     /**
      * draws a colored quad
      *
-     * @param pos       center position of the quad
-     * @param width     width of the quad
-     * @param height    height of the quad
-     * @param yaw       y rotation of the quad
-     * @param r         red 0-255
-     * @param g         green 0-255
-     * @param b         blue 0-255
-     * @param a         alpha 0-255
-     * @param poseStack PoseStack to use for positioning
+     * @param pos    center position of the quad
+     * @param width  width of the quad
+     * @param height height of the quad
+     * @param yaw    y rotation of the quad
+     * @param r      red 0-255
+     * @param g      green 0-255
+     * @param b      blue 0-255
+     * @param a      alpha 0-255
+     * @param matrix Matrix4f to use for positioning
      */
     public static void renderFlatQuad(
-        Vec3 pos, float width, float height, float yaw, int r, int g, int b, int a, PoseStack poseStack)
+        Vec3 pos, float width, float height, float yaw, int r, int g, int b, int a, Matrix4f matrix)
     {
         Tesselator tesselator = Tesselator.getInstance();
         tesselator.getBuilder().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
 
         Vec3 offset = (new Vec3(width * 0.5F, 0.0, height * 0.5F))
             .yRot(Mth.DEG_TO_RAD * -yaw);
-
-        Matrix4f matrix = poseStack.last().pose();
 
         tesselator.getBuilder().vertex(matrix, (float) (pos.x + offset.x), (float) pos.y, (float) (pos.z + offset.z))
             .color(r, g, b, a).normal(0.0F, 1.0F, 0.0F).endVertex();
@@ -527,40 +544,39 @@ public class RenderHelper {
     /**
      * adds a box to the given Tesselator
      *
-     * @param consumer  VertexConsumer to use
-     * @param start     start of the box, combined with end gives the axis the box is on
-     * @param end       end of the box, combined with start gives the axis the box is on
-     * @param xSize     X size of the box
-     * @param ySize     Y size of the box
-     * @param color     color of the box 0-255 per component
-     * @param alpha     transparency of the box 0-255
-     * @param poseStack PoseStack to use for positioning
+     * @param consumer VertexConsumer to use
+     * @param start    start of the box, combined with end gives the axis the box is on
+     * @param end      end of the box, combined with start gives the axis the box is on
+     * @param xSize    X size of the box
+     * @param ySize    Y size of the box
+     * @param color    color of the box 0-255 per component
+     * @param alpha    transparency of the box 0-255
+     * @param matrix   Matrix4f to use for positioning
      */
     public static void renderBox(
         VertexConsumer consumer, Vec3 start, Vec3 end, float xSize, float ySize, Vec3i color, byte alpha,
-        PoseStack poseStack)
+        Matrix4f matrix)
     {
-        renderBox(consumer, start, end, -xSize * 0.5F, xSize * 0.5F, -ySize * 0.5F, ySize * 0.5F, color, alpha,
-            poseStack);
+        renderBox(consumer, start, end, -xSize * 0.5F, xSize * 0.5F, -ySize * 0.5F, ySize * 0.5F, color, alpha, matrix);
     }
 
     /**
      * adds a box to the given Tesselator
      *
-     * @param consumer  VertexConsumer to use
-     * @param start     start of the box, combined with end gives the axis the box is on
-     * @param end       end of the box, combined with start gives the axis the box is on
-     * @param minX      X- size of the box
-     * @param maxX      X+ size of the box
-     * @param minY      Y- size of the box
-     * @param maxY      Y+ size of the box
-     * @param color     color of the box 0-255 per component
-     * @param alpha     transparency of the box 0-255
-     * @param poseStack PoseStack to use for positioning
+     * @param consumer VertexConsumer to use
+     * @param start    start of the box, combined with end gives the axis the box is on
+     * @param end      end of the box, combined with start gives the axis the box is on
+     * @param minX     X- size of the box
+     * @param maxX     X+ size of the box
+     * @param minY     Y- size of the box
+     * @param maxY     Y+ size of the box
+     * @param color    color of the box 0-255 per component
+     * @param alpha    transparency of the box 0-255
+     * @param matrix   Matrix4f to use for positioning
      */
     public static void renderBox(
         VertexConsumer consumer, Vec3 start, Vec3 end, float minX, float maxX, float minY, float maxY, Vec3i color,
-        byte alpha, PoseStack poseStack)
+        byte alpha, Matrix4f matrix)
     {
         Vec3 forward = start.subtract(end).normalize();
         Vec3 right = forward.cross(MathUtils.UP_D);
@@ -589,8 +605,6 @@ public class RenderHelper {
         Vec3 frontRightTop = end.add(right.x + up.x, right.y + up.y, right.z + up.z);
         Vec3 frontLeftBottom = end.add(left.x + down.x, left.y + down.y, left.z + down.z);
         Vec3 frontLeftTop = end.add(left.x + up.x, left.y + up.y, left.z + up.z);
-
-        Matrix4f matrix = poseStack.last().pose();
 
         addVertex(consumer, matrix, backRightBottom, color, alpha, forward);
         addVertex(consumer, matrix, backLeftBottom, color, alpha, forward);

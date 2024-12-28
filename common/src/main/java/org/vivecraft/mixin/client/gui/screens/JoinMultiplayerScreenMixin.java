@@ -34,7 +34,7 @@ public class JoinMultiplayerScreenMixin extends Screen {
                         ClientDataHolderVR.getInstance().completelyDisabled = true;
                         VRState.VR_ENABLED = false;
                         ConnectScreen.startConnecting(this, this.minecraft, ServerAddress.parseString(serverData.ip),
-                            serverData, false);
+                            serverData, false, null);
                     }));
 
             ci.cancel();

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import net.minecraft.client.Minecraft;
@@ -18,6 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -433,9 +433,8 @@ public class PhysicalKeyboard {
         }
     }
 
-    private void drawBox(BufferBuilder buf, AABB box, RGBAColor color, PoseStack poseStack) {
+    private void drawBox(BufferBuilder buf, AABB box, RGBAColor color, Matrix4f matrix) {
         // Alright let's draw a box
-        Matrix4f matrix = poseStack.last().pose();
         float minX = (float) box.minX, minY = (float) box.minY, minZ = (float) box.minZ;
         float maxX = (float) box.maxX, maxY = (float) box.maxY, maxZ = (float) box.maxZ;
 
@@ -525,8 +524,8 @@ public class PhysicalKeyboard {
         // Woo that was fun
     }
 
-    public void render(PoseStack poseStack) {
-        poseStack.pushPose();
+    public void render(Matrix4fStack poseStack) {
+        poseStack.pushMatrix();
         Vector3f center = this.getCenterPos();
         poseStack.translate(-center.x, -center.y, -center.z);
         RenderSystem.disableCull();
@@ -610,12 +609,12 @@ public class PhysicalKeyboard {
 
         // Build all the text
         for (Tuple<String, Vector3f> label : labels) {
-            poseStack.pushPose();
+            poseStack.pushMatrix();
             poseStack.translate(label.getB().x, label.getB().y, label.getB().z);
             poseStack.scale(textScale, textScale, 1.0F);
-            font.drawInBatch(label.getA(), 0.0F, 0.0F, 0xFFFFFFFF, false, poseStack.last().pose(), bufferSource,
+            font.drawInBatch(label.getA(), 0.0F, 0.0F, 0xFFFFFFFF, false, poseStack, bufferSource,
                 Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT, font.isBidirectional());
-            poseStack.popPose();
+            poseStack.popMatrix();
         }
 
         // Draw all the labels
@@ -625,7 +624,7 @@ public class PhysicalKeyboard {
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.defaultBlendFunc();
-        poseStack.popPose();
+        poseStack.popMatrix();
     }
 
     public void show() {

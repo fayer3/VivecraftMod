@@ -1,6 +1,9 @@
 package org.vivecraft.neoforge.packet;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import org.vivecraft.common.network.CommonNetworkHelper;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
 import org.vivecraft.common.network.packet.VivecraftPayload;
 import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
@@ -20,6 +23,11 @@ public record VivecraftPayloadBiDir(@Nullable VivecraftPayloadC2S C2SPayload,
                                     @Nullable VivecraftPayloadS2C S2CPayload,
                                     @Nullable RawVivecraftPayload rawPayload) implements VivecraftPayload
 {
+
+    public static StreamCodec<FriendlyByteBuf, VivecraftPayloadBiDir> CODEC = CustomPacketPayload.codec(
+        VivecraftPayloadBiDir::write, VivecraftPayloadBiDir::new);
+
+    public static Type<VivecraftPayloadBiDir> TYPE = new Type<>(CommonNetworkHelper.CHANNEL);
 
     public VivecraftPayloadBiDir(FriendlyByteBuf buffer) {
         this(null, null, RawVivecraftPayload.read(buffer));
@@ -83,5 +91,10 @@ public record VivecraftPayloadBiDir(@Nullable VivecraftPayloadC2S C2SPayload,
             return S2C;
         }
         throw new IllegalStateException("Vivecraft: BiDir packed has no S2CPayload");
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

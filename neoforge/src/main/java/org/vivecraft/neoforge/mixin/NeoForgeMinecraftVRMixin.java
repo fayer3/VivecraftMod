@@ -25,7 +25,7 @@ public class NeoForgeMinecraftVRMixin {
     @Shadow
     private float pausePartialTick;
 
-    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/event/EventHooks;onRenderTickEnd(F)V", shift = At.Shift.AFTER, remap = false), remap = true)
+    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;fireRenderFramePost(F)V", shift = At.Shift.AFTER, remap = false), remap = true)
     private void vivecraft$renderVRPassesNeoForge(
         boolean renderLevel, CallbackInfo ci, @Local(ordinal = 0) long nanoTime)
     {

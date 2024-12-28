@@ -9,13 +9,13 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -25,8 +25,6 @@ import org.vivecraft.client.Xplat;
 import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
 import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
 import org.vivecraft.fabric.mixin.world.level.biome.BiomeAccessor;
-import org.vivecraft.fabric.packet.VivecraftFabricPacketC2S;
-import org.vivecraft.fabric.packet.VivecraftFabricPacketS2C;
 
 import java.nio.file.Path;
 
@@ -80,12 +78,11 @@ public class XplatImpl implements Xplat {
     public static String getUseMethodName() {
         return FabricLoader.getInstance().getMappingResolver().mapMethodName(
             "intermediary",
-            "net.minecraft.class_4970", "method_9534",
+            "net.minecraft.class_4970", "method_55766",
             "(Lnet/minecraft/class_2680;" +
                 "Lnet/minecraft/class_1937;" +
                 "Lnet/minecraft/class_2338;" +
                 "Lnet/minecraft/class_1657;" +
-                "Lnet/minecraft/class_1268;" +
                 "Lnet/minecraft/class_3965;)" +
                 "Lnet/minecraft/class_1269;");
     }
@@ -122,16 +119,16 @@ public class XplatImpl implements Xplat {
         return biome.getSpecialEffects();
     }
 
-    public static double getItemEntityReach(double baseRange, ItemStack itemStack, EquipmentSlot slot) {
-        return baseRange;
+    public static boolean serverAcceptsPacket(ClientPacketListener connection, ResourceLocation id) {
+        return true;
     }
 
     public static Packet<?> getC2SPacket(VivecraftPayloadC2S payload) {
-        return ClientPlayNetworking.createC2SPacket(new VivecraftFabricPacketC2S(payload));
+        return ClientPlayNetworking.createC2SPacket(payload);
     }
 
     public static Packet<?> getS2CPacket(VivecraftPayloadS2C payload) {
-        return ServerPlayNetworking.createS2CPacket(new VivecraftFabricPacketS2C(payload));
+        return ServerPlayNetworking.createS2CPacket(payload);
     }
 
     public static boolean hasKeyModifier(KeyMapping keyMapping) {

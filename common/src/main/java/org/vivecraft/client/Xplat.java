@@ -3,11 +3,11 @@ package org.vivecraft.client;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -161,16 +161,15 @@ public interface Xplat {
     }
 
     /**
-     * modifies {@code baseRange} with any modifiers for the entity reach of the given ItemStack
+     * check if packets of the given channel id are allowed to be sent
      *
-     * @param baseRange base item reach to start with
-     * @param itemStack ItemStack to use the modifiers from
-     * @param slot      slot where the item is in
-     * @return modified range, if there are no changes then {@code baseRange} is returned
+     * @param connection connection to check for
+     * @param id         channel id to check
+     * @return if the connection accepts packets of the given id
      */
     @ExpectPlatform
-    static double getItemEntityReach(double baseRange, ItemStack itemStack, EquipmentSlot slot) {
-        return 0;
+    static boolean serverAcceptsPacket(ClientPacketListener connection, ResourceLocation id) {
+        return true;
     }
 
     /**

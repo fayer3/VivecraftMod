@@ -260,16 +260,13 @@ public class InteractTracker extends Tracker {
 
     private void addIfClassHasMethod(String name, Class<?> oclass) {
         try {
-            if (oclass.getMethod(name,
+            oclass.getDeclaredMethod(name,
                 BlockState.class,
                 net.minecraft.world.level.Level.class,
                 BlockPos.class,
                 net.minecraft.world.entity.player.Player.class,
-                InteractionHand.class,
-                BlockHitResult.class).getDeclaringClass() == oclass)
-            {
-                this.rightClickable.add(oclass);
-            }
+                BlockHitResult.class);
+            this.rightClickable.add(oclass);
         } catch (NoSuchMethodException ignored) {
         }
     }
@@ -315,7 +312,11 @@ public class InteractTracker extends Tracker {
                         .consumesAction() ||
                         this.mc.gameMode.interact(this.mc.player, this.inEntity[c], hand).consumesAction();
                 } else if (this.inBlockHit[c] != null) {
-                    success = this.mc.gameMode.useItemOn(this.mc.player, hand, this.inBlockHit[c]).consumesAction();
+                    // force main hand, since 1.20.5+ only checks no item interactions for the main hand
+                    ClientNetworking.sendActiveHand(hand);
+                    success = this.mc.gameMode.useItemOn(this.mc.player, InteractionHand.MAIN_HAND, this.inBlockHit[c])
+                        .consumesAction();
+                    ClientNetworking.sendActiveHand(InteractionHand.MAIN_HAND);
                 } else if (this.bukkit[c]) {
                     success = this.mc.gameMode.useItem(this.mc.player, hand).consumesAction();
                 }

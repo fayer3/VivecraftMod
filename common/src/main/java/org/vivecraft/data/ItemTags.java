@@ -23,6 +23,8 @@ public class ItemTags {
 
     public static final TagKey<Item> VIVECRAFT_HOES = tag("hoes");
 
+    public static final TagKey<Item> VIVECRAFT_MACES = tag("maces");
+
     public static final TagKey<Item> VIVECRAFT_MAPS = tag("maps");
 
     public static final TagKey<Item> VIVECRAFT_SCYTHES = tag("scythes");

@@ -4,10 +4,10 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import org.vivecraft.client.network.ClientNetworking;
-import org.vivecraft.common.network.CommonNetworkHelper;
 import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
 import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
 import org.vivecraft.server.ServerNetworking;
@@ -25,16 +25,18 @@ public class VivecraftMod implements ModInitializer {
             (dispatcher, registryAccess, environment) -> ServerUtil.registerCommands(dispatcher, registryAccess));
 
         // register packets
+
+        PayloadTypeRegistry.playS2C().register(VivecraftPayloadS2C.TYPE, VivecraftPayloadS2C.CODEC);
+        PayloadTypeRegistry.playC2S().register(VivecraftPayloadC2S.TYPE, VivecraftPayloadC2S.CODEC);
+
         // use channel registers to be compatible with other mod loaders
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-            ClientPlayNetworking.registerGlobalReceiver(CommonNetworkHelper.CHANNEL,
-                (client, handler, buffer, responseSender) -> client.execute(
-                    () -> ClientNetworking.handlePacket(VivecraftPayloadS2C.readPacket(buffer))));
+            ClientPlayNetworking.registerGlobalReceiver(VivecraftPayloadS2C.TYPE,
+                (payload, context) -> context.client().execute(() -> ClientNetworking.handlePacket(payload)));
         }
 
-        ServerPlayNetworking.registerGlobalReceiver(CommonNetworkHelper.CHANNEL,
-            (server, player, handler, buffer, responseSender) -> server.execute(
-                () -> ServerNetworking.handlePacket(VivecraftPayloadC2S.readPacket(buffer), player,
-                    responseSender::sendPacket)));
+        ServerPlayNetworking.registerGlobalReceiver(VivecraftPayloadC2S.TYPE, (payload, context) -> context.server()
+            .execute(
+                () -> ServerNetworking.handlePacket(payload, context.player(), context.responseSender()::sendPacket)));
     }
 }

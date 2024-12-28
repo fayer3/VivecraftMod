@@ -9,7 +9,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.UseOnContext;
@@ -23,7 +22,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.vivecraft.client.VivecraftVRMod;
-import org.vivecraft.client.Xplat;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.Vector3fHistory;
@@ -151,8 +149,7 @@ public class SwingTracker extends Tracker {
                 float entityReachAdd = 0.3F;
 
                 if (isHand) {
-                    double playerEntityReach = Xplat.getItemEntityReach(3.0, itemstack,
-                        c == 0 ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+                    double playerEntityReach = player.entityInteractionRange();
                     if (BetterCombatHelper.isLoaded()) {
                         // better combat overrides the player reach
                         playerEntityReach = BetterCombatHelper.getItemRange(playerEntityReach, itemstack);

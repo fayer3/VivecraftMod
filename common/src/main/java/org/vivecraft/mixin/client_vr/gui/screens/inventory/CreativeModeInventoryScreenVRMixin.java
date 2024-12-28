@@ -4,6 +4,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -11,8 +12,10 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.item.component.Unbreakable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -52,11 +55,10 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
     private void vivecraft$addCreativeItems(CreativeModeTab tab, NonNullList<ItemStack> items) {
         if (tab == BuiltInRegistries.CREATIVE_MODE_TAB.get(CreativeModeTabs.FOOD_AND_DRINKS) || tab == null) {
             ItemStack eatMeCake = new ItemStack(Items.PUMPKIN_PIE);
-            eatMeCake.setHoverName(Component.literal("EAT ME"));
+            eatMeCake.set(DataComponents.CUSTOM_NAME, Component.literal("EAT ME"));
 
-            ItemStack drinkMePotion = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);
-            drinkMePotion.setHoverName(Component.literal("DRINK ME"));
-            drinkMePotion.getOrCreateTag().putInt("HideFlags", 32);
+            ItemStack drinkMePotion = PotionContents.createItemStack(Items.POTION, Potions.WATER);
+            drinkMePotion.set(DataComponents.CUSTOM_NAME, Component.literal("DRINK ME"));
 
             items.add(eatMeCake);
             items.add(drinkMePotion);
@@ -64,15 +66,15 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
 
         if (tab == BuiltInRegistries.CREATIVE_MODE_TAB.get(CreativeModeTabs.TOOLS_AND_UTILITIES) || tab == null) {
             ItemStack boots = new ItemStack(Items.LEATHER_BOOTS);
-            boots.setHoverName(Component.translatableWithFallback("vivecraft.item.jumpboots", "Jump Boots"));
-            boots.getOrCreateTag().putBoolean("Unbreakable", true);
-            boots.getOrCreateTag().putInt("HideFlags", 4);
-            boots.getOrCreateTagElement(ItemStack.TAG_DISPLAY).putInt(ItemStack.TAG_COLOR, 0x8CE56F);
+            boots.set(DataComponents.CUSTOM_NAME,
+                Component.translatableWithFallback("vivecraft.item.jumpboots", "Jump Boots"));
+            boots.set(DataComponents.UNBREAKABLE, new Unbreakable(false));
+            boots.set(DataComponents.DYED_COLOR, new DyedItemColor(0x8CE56F, false));
 
             ItemStack claws = new ItemStack(Items.SHEARS);
-            claws.setHoverName(Component.translatableWithFallback("vivecraft.item.climbclaws", "Climb Claws"));
-            claws.getOrCreateTag().putBoolean("Unbreakable", true);
-            claws.getOrCreateTag().putInt("HideFlags", 4);
+            claws.set(DataComponents.CUSTOM_NAME,
+                Component.translatableWithFallback("vivecraft.item.climbclaws", "Climb Claws"));
+            claws.set(DataComponents.UNBREAKABLE, new Unbreakable(false));
 
             items.add(boots);
             items.add(claws);

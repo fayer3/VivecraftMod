@@ -7,11 +7,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -36,6 +40,7 @@ import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_vr.utils.external.jinfinadeck;
 import org.vivecraft.client_vr.utils.external.jkatvr;
 import org.vivecraft.common.network.packet.c2s.TeleportPayloadC2S;
+import org.vivecraft.data.Modifiers;
 
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin implements PlayerExtension {
@@ -178,11 +183,26 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
                 double oldZ = this.getZ();
                 super.move(type, pos);
 
-                if (ClientDataHolderVR.getInstance().vrSettings.walkUpBlocks) {
-                    this.setMaxUpStep(this.getBlockJumpFactor() == 1.0F ? 1.0F : 0.6F);
-                } else {
-                    this.setMaxUpStep(0.6F);
-                    this.updateAutoJump((float) (this.getX() - oldX), (float) (this.getZ() - oldZ));
+                AttributeInstance attributeInstance = this.getAttribute(Attributes.STEP_HEIGHT);
+                if (attributeInstance != null) {
+                    if (ClientDataHolderVR.getInstance().vrSettings.walkUpBlocks) {
+                        if (this.getBlockJumpFactor() == 1.0F) {
+                            if (attributeInstance.getModifier(Modifiers.WALK_UP_BLOCKS) == null) {
+                                attributeInstance.addTransientModifier(
+                                    new AttributeModifier(Modifiers.WALK_UP_BLOCKS, "walk up block", 0.4F,
+                                        AttributeModifier.Operation.ADD_VALUE));
+                            }
+                        } else {
+                            if (attributeInstance.getModifier(Modifiers.WALK_UP_BLOCKS) != null) {
+                                attributeInstance.removeModifier(Modifiers.WALK_UP_BLOCKS);
+                            }
+                        }
+                    } else {
+                        if (attributeInstance.getModifier(Modifiers.WALK_UP_BLOCKS) != null) {
+                            attributeInstance.removeModifier(Modifiers.WALK_UP_BLOCKS);
+                        }
+                        this.updateAutoJump((float) (this.getX() - oldX), (float) (this.getZ() - oldZ));
+                    }
                 }
 
                 VRPlayer.get().setRoomOrigin(
@@ -240,7 +260,7 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
      */
     @Override
     protected void vivecraft$beforeEat(CallbackInfoReturnable<ItemStack> cir, @Local(argsOnly = true) ItemStack food) {
-        if (VRState.VR_RUNNING && food.isEdible() && vivecraft$isLocalPlayer(this) &&
+        if (VRState.VR_RUNNING && food.get(DataComponents.FOOD) != null && vivecraft$isLocalPlayer(this) &&
             food.getHoverName().getString().equals("EAT ME"))
         {
             ClientDataHolderVR.getInstance().vrPlayer.wfMode = 0.5D;

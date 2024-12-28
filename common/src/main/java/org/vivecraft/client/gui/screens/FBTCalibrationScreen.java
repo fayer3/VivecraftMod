@@ -235,29 +235,29 @@ public class FBTCalibrationScreen extends Screen {
             // legs
             RenderHelper.renderBox(builder,
                 new Vec3(2, 0, 0), new Vec3(2, 12, 0),
-                4, 4, color, alpha, poseStack);
+                4, 4, color, alpha, poseStack.last().pose());
             RenderHelper.renderBox(builder,
                 new Vec3(-2, 0, 0), new Vec3(-2, 12, 0),
-                4, 4, color, alpha, poseStack);
+                4, 4, color, alpha, poseStack.last().pose());
             // body
             RenderHelper.renderBox(builder,
                 new Vec3(0, 12, 0), new Vec3(0, 24, 0),
-                8, 4, color, alpha, poseStack);
+                8, 4, color, alpha, poseStack.last().pose());
 
             // head
             RenderHelper.renderBox(builder,
                 new Vec3(0, 24, 0), new Vec3(0, 32, 0),
-                8, 8, color, alpha, poseStack);
+                8, 8, color, alpha, poseStack.last().pose());
 
             // arms
             RenderHelper.renderBox(builder,
                 new Vec3(6, 22, 0).subtract(this.leftHand.x * 2F, this.leftHand.y * 2F, this.leftHand.z * 2F),
                 new Vec3(6, 22, 0).add(this.leftHand.x * 10F, this.leftHand.y * 10F, this.leftHand.z * 10F),
-                4, 4, this.leftHandAtPosition ? colorActive : color, (byte) 200, poseStack);
+                4, 4, this.leftHandAtPosition ? colorActive : color, (byte) 200, poseStack.last().pose());
             RenderHelper.renderBox(builder,
                 new Vec3(-6, 22, 0).subtract(this.rightHand.x * 2F, this.rightHand.y * 2F, this.rightHand.z * 2F),
                 new Vec3(-6, 22, 0).add(this.rightHand.x * 10F, this.rightHand.y * 10F, this.rightHand.z * 10F),
-                4, 4, this.rightHandAtPosition ? colorActive : color, (byte) 200, poseStack);
+                4, 4, this.rightHandAtPosition ? colorActive : color, (byte) 200, poseStack.last().pose());
 
             BufferUploader.drawWithShader(builder.end());
 

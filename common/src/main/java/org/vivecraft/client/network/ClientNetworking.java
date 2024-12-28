@@ -80,7 +80,9 @@ public class ClientNetworking {
 
     public static void sendVersionInfo() {
         // send version string, with currently running
-        if (!ClientDataHolderVR.getInstance().completelyDisabled) {
+        if (!ClientDataHolderVR.getInstance().completelyDisabled &&
+            Xplat.serverAcceptsPacket(Minecraft.getInstance().getConnection(), CommonNetworkHelper.CHANNEL))
+        {
             Minecraft.getInstance().getConnection().send(createServerPacket(
                 new VersionPayloadC2S(
                     CommonDataHolder.getInstance().versionIdentifier,

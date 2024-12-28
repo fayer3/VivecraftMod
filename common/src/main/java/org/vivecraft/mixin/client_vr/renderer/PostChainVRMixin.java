@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -40,7 +40,7 @@ public class PostChainVRMixin {
 
     @Inject(method = "<init>", at = @At(value = "TAIL"))
     private void vivecraft$createVRChains(
-        TextureManager textureManager, ResourceManager resourceManager, RenderTarget screenTarget,
+        TextureManager textureManager, ResourceProvider resourceProvider, RenderTarget screenTarget,
         ResourceLocation name, CallbackInfo ci) throws IOException
     {
         if (VRState.VR_INITIALIZED && this.screenTarget == RenderPassManager.INSTANCE.vanillaRenderTarget) {
@@ -48,7 +48,8 @@ public class PostChainVRMixin {
                 // create one post chain for each active render pass
                 if (pass == RenderPass.GUI || WorldRenderPass.getByRenderPass(pass) == null) continue;
                 this.vivecraft$VRPostChains.put(pass,
-                    new PostChain(textureManager, resourceManager, WorldRenderPass.getByRenderPass(pass).target, name));
+                    new PostChain(textureManager, resourceProvider, WorldRenderPass.getByRenderPass(pass).target,
+                        name));
             }
         }
     }

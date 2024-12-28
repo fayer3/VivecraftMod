@@ -223,7 +223,8 @@ public class VRPlayerRenderer extends PlayerRenderer {
 
     @Override
     protected void setupRotations(
-        AbstractClientPlayer player, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick)
+        AbstractClientPlayer player, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick,
+        float scale)
     {
         if (ClientDataHolderVR.getInstance().currentPass != RenderPass.GUI &&
             ClientVRPlayers.getInstance().isVRPlayer(player))
@@ -237,6 +238,6 @@ public class VRPlayerRenderer extends PlayerRenderer {
         }
 
         // vanilla below here
-        super.setupRotations(player, poseStack, ageInTicks, rotationYaw, partialTick);
+        super.setupRotations(player, poseStack, ageInTicks, rotationYaw, partialTick, scale);
     }
 }

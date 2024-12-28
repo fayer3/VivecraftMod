@@ -5,6 +5,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -104,11 +105,11 @@ public class ClimbTracker extends Tracker {
     public static boolean isClaws(ItemStack itemStack) {
         if (itemStack == null || itemStack.isEmpty()) {
             return false;
-        } else if (!itemStack.hasCustomHoverName()) {
+        } else if (!itemStack.has(DataComponents.CUSTOM_NAME)) {
             return false;
         } else if (itemStack.getItem() != Items.SHEARS) {
             return false;
-        } else if (!itemStack.hasTag() || !itemStack.getTag().getBoolean("Unbreakable")) {
+        } else if (!itemStack.has(DataComponents.UNBREAKABLE)) {
             return false;
         } else {
             return itemStack.getHoverName().getString().equals("Climb Claws") ||

@@ -3,11 +3,11 @@ package org.vivecraft.client_vr.render.helpers;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL30C;
 import org.vivecraft.client.utils.ClientUtils;
@@ -128,9 +128,9 @@ public class VRPassHelper {
         MC.getProfiler().push("gui cursor");
         // draw cursor on Gui Layer
         if (MC.screen != null || !MC.mouseHandler.isMouseGrabbed()) {
-            PoseStack poseStack = RenderSystem.getModelViewStack();
-            poseStack.pushPose();
-            poseStack.setIdentity();
+            Matrix4fStack poseStack = RenderSystem.getModelViewStack();
+            poseStack.pushMatrix();
+            poseStack.identity();
             poseStack.translate(0.0f, 0.0f, -11000.0f);
             RenderSystem.applyModelViewMatrix();
 
@@ -151,7 +151,7 @@ public class VRPassHelper {
             RenderHelper.drawMouseMenuQuad(guiGraphics, x, y);
 
             guiGraphics.flush();
-            poseStack.popPose();
+            poseStack.popMatrix();
             RenderSystem.applyModelViewMatrix();
         }
 
@@ -160,7 +160,7 @@ public class VRPassHelper {
         ((MinecraftExtension) MC).vivecraft$drawProfiler();
 
         // pop pose that we pushed before the gui
-        RenderSystem.getModelViewStack().popPose();
+        RenderSystem.getModelViewStack().popMatrix();
         RenderSystem.applyModelViewMatrix();
 
         if (DATA_HOLDER.vrSettings.guiMipmaps) {

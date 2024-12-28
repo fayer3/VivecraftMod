@@ -13,6 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11C;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -53,26 +54,24 @@ public class VRArmHelper {
      * @param renderOff    if the offhand should be rendered
      * @param menuHandMain if the right hand should render as the menu hand
      * @param menuHandOff  if the left hand should render as the menu hand
-     * @param poseStack    PoseStack to use for positioning
      */
     public static void renderVRHands(
-        float partialTick, boolean renderMain, boolean renderOff, boolean menuHandMain, boolean menuHandOff,
-        PoseStack poseStack)
+        float partialTick, boolean renderMain, boolean renderOff, boolean menuHandMain, boolean menuHandOff)
     {
         if (!renderMain && !renderOff) return;
         MC.getProfiler().push("hands");
         ClientDataHolderVR.IS_FP_HAND = true;
 
-        VREffectsHelper.removeNausea(partialTick, poseStack);
+        VREffectsHelper.removeNausea(partialTick);
 
         if (renderMain) {
             // set main hand active, for the attack cooldown transparency
             ClientDataHolderVR.IS_MAIN_HAND = true;
 
             if (menuHandMain) {
-                renderMainMenuHand(0, false, poseStack);
+                renderMainMenuHand(0, false);
             } else {
-                renderVRHand_Main(poseStack, partialTick);
+                renderVRHand_Main(partialTick);
             }
 
             ClientDataHolderVR.IS_MAIN_HAND = false;
@@ -80,13 +79,13 @@ public class VRArmHelper {
 
         if (renderOff) {
             if (menuHandOff) {
-                renderMainMenuHand(1, false, poseStack);
+                renderMainMenuHand(1, false);
             } else {
-                renderVRHand_Offhand(poseStack, partialTick, true);
+                renderVRHand_Offhand(partialTick, true);
             }
         }
 
-        VREffectsHelper.reAddNausea(poseStack);
+        VREffectsHelper.reAddNausea();
 
         ClientDataHolderVR.IS_FP_HAND = false;
         MC.getProfiler().pop();
@@ -97,14 +96,13 @@ public class VRArmHelper {
      *
      * @param c           controller to render the hand for
      * @param depthAlways if depth testing should be disabled for rendering
-     * @param poseStack   PoseStack for positioning
      */
-    public static void renderMainMenuHand(int c, boolean depthAlways, PoseStack poseStack) {
+    public static void renderMainMenuHand(int c, boolean depthAlways) {
         RenderSystem.enableDepthTest();
         RenderSystem.defaultBlendFunc();
 
-        poseStack.pushPose();
-        RenderHelper.setupRenderingAtController(c, poseStack);
+        Matrix4f modelView = new Matrix4f();
+        RenderHelper.setupRenderingAtController(c, modelView);
 
         if (MC.getOverlay() == null) {
             MC.getTextureManager().bindForSetup(RenderHelper.WHITE_TEXTURE);
@@ -145,11 +143,9 @@ public class VRArmHelper {
         tesselator.getBuilder().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
 
         RenderHelper.renderBox(tesselator.getBuilder(), start, end, -0.02F, 0.02F, -0.0125F, 0.0125F, color, alpha,
-            poseStack);
+            modelView);
 
         BufferUploader.drawWithShader(tesselator.getBuilder().end());
-
-        poseStack.popPose();
 
         RenderSystem.depthFunc(GL11C.GL_LEQUAL);
     }
@@ -157,10 +153,9 @@ public class VRArmHelper {
     /**
      * renders the main minecraft hand
      *
-     * @param poseStack   PoseStack for positioning
      * @param partialTick current partial tick
      */
-    public static void renderVRHand_Main(PoseStack poseStack, float partialTick) {
+    public static void renderVRHand_Main(float partialTick) {
         // don't render claws with model arms
         if ((DATA_HOLDER.climbTracker.isClimbeyClimb() || ClimbTracker.isClaws(MC.player.getMainHandItem())) &&
             ClientDataHolderVR.getInstance().vrSettings.shouldRenderSelf &&
@@ -169,8 +164,8 @@ public class VRArmHelper {
             return;
         }
 
-        poseStack.pushPose();
-        RenderHelper.setupRenderingAtController(0, poseStack);
+        PoseStack poseStack = new PoseStack();
+        RenderHelper.setupRenderingAtController(0, poseStack.last().pose());
         ItemStack item = MC.player.getMainHandItem();
         ItemStack override = null; // physicalGuiManager.getHeldItemOverride();
 
@@ -207,25 +202,23 @@ public class VRArmHelper {
             // undo the thing we did before
             OptifineHelper.endEntities();
         }
-
-        poseStack.popPose();
     }
 
     /**
      * renders the offhand minecraft hand
      *
-     * @param poseStack      PoseStack for positioning
      * @param partialTick    current partial tick
      * @param renderTeleport if the teleport arc should be rendered
      */
-    public static void renderVRHand_Offhand(PoseStack poseStack, float partialTick, boolean renderTeleport) {
+    public static void renderVRHand_Offhand(float partialTick, boolean renderTeleport) {
+        PoseStack poseStack = new PoseStack();
         // don't render claws with model arms
         if (!ClientDataHolderVR.getInstance().vrSettings.shouldRenderSelf ||
             ClientDataHolderVR.getInstance().vrSettings.modelArmsMode != VRSettings.ModelArmsMode.COMPLETE ||
             !(DATA_HOLDER.climbTracker.isClimbeyClimb() || ClimbTracker.isClaws(MC.player.getOffhandItem())))
         {
             poseStack.pushPose();
-            RenderHelper.setupRenderingAtController(1, poseStack);
+            RenderHelper.setupRenderingAtController(1, poseStack.last().pose());
             ItemStack item = MC.player.getOffhandItem();
             ItemStack override = null; // physicalGuiManager.getOffhandOverride();
 
@@ -282,7 +275,7 @@ public class VRArmHelper {
                 !DATA_HOLDER.bowTracker.isActive(MC.player))
             {
                 poseStack.pushPose();
-                RenderHelper.setupRenderingAtController(1, poseStack);
+                RenderHelper.setupRenderingAtController(1, poseStack.last().pose());
 
                 Vec3 start = new Vec3(0.0D, 0.005D, 0.03D);
                 float max = 0.03F;
@@ -304,11 +297,12 @@ public class VRArmHelper {
                 if (size > 0.0F) {
                     // tp energy quad, slightly above the max energy quad
                     RenderHelper.renderFlatQuad(start.add(0.0D, 0.05001D, 0.0D), size, size, 0.0F,
-                        TP_LIMITED_COLOR.getX(), TP_LIMITED_COLOR.getY(), TP_LIMITED_COLOR.getZ(), 128, poseStack);
+                        TP_LIMITED_COLOR.getX(), TP_LIMITED_COLOR.getY(), TP_LIMITED_COLOR.getZ(), 128, poseStack.last()
+                            .pose());
                 }
                 // max energy quad
                 RenderHelper.renderFlatQuad(start.add(0.0D, 0.05D, 0.0D), max, max, 0.0F, TP_LIMITED_COLOR.getX(),
-                    TP_LIMITED_COLOR.getY(), TP_LIMITED_COLOR.getZ(), 50, poseStack);
+                    TP_LIMITED_COLOR.getY(), TP_LIMITED_COLOR.getZ(), 50, poseStack.last().pose());
 
                 poseStack.popPose();
             }
@@ -318,7 +312,7 @@ public class VRArmHelper {
                 RenderSystem.enableDepthTest();
 
                 if (DATA_HOLDER.teleportTracker.vrMovementStyle.arcAiming) {
-                    renderTeleportArc(poseStack);
+                    renderTeleportArc(poseStack.last().pose());
                 } /* else {
                     renderTeleportLine(poseStack);
                 }*/
@@ -373,9 +367,9 @@ public class VRArmHelper {
     /**
      * renders the teleport arc
      *
-     * @param poseStack PoseStack for positioning
+     * @param matrix Matrix4f for positioning
      */
-    public static void renderTeleportArc(PoseStack poseStack) {
+    public static void renderTeleportArc(Matrix4f matrix) {
         if (DATA_HOLDER.teleportTracker.vrMovementStyle.showBeam &&
             DATA_HOLDER.teleportTracker.isAiming() &&
             DATA_HOLDER.teleportTracker.movementTeleportArcSteps > 1)
@@ -443,7 +437,7 @@ public class VRArmHelper {
 
                 float shift = (float) progress * 2.0F;
                 RenderHelper.renderBox(tesselator.getBuilder(), start, end, -segmentHalfWidth, segmentHalfWidth,
-                    (-1.0F + shift) * segmentHalfWidth, (1.0F + shift) * segmentHalfWidth, color, alpha, poseStack);
+                    (-1.0F + shift) * segmentHalfWidth, (1.0F + shift) * segmentHalfWidth, color, alpha, matrix);
             }
 
             tesselator.end();
@@ -461,17 +455,17 @@ public class VRArmHelper {
                 y += offset;
 
                 RenderHelper.renderFlatQuad(targetPos.add(x, y, z), 0.6F, 0.6F, 0.0F, (int) (color.getX() * 1.03D),
-                    (int) (color.getY() * 1.03D), (int) (color.getZ() * 1.03D), 64, poseStack);
+                    (int) (color.getY() * 1.03D), (int) (color.getZ() * 1.03D), 64, matrix);
 
                 y += offset;
 
                 RenderHelper.renderFlatQuad(targetPos.add(x, y, z), 0.4F, 0.4F, 0.0F, (int) (color.getX() * 1.04D),
-                    (int) (color.getY() * 1.04D), (int) (color.getZ() * 1.04D), 64, poseStack);
+                    (int) (color.getY() * 1.04D), (int) (color.getZ() * 1.04D), 64, matrix);
 
                 y += offset;
 
                 RenderHelper.renderFlatQuad(targetPos.add(x, y, z), 0.2F, 0.2F, 0.0F, (int) (color.getX() * 1.05D),
-                    (int) (color.getY() * 1.05D), (int) (color.getZ() * 1.05D), 64, poseStack);
+                    (int) (color.getY() * 1.05D), (int) (color.getZ() * 1.05D), 64, matrix);
                 RenderSystem.enableCull();
             }
 

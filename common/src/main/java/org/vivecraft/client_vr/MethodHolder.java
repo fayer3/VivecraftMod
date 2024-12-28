@@ -20,7 +20,7 @@ public abstract class MethodHolder {
             newScreen instanceof WinScreen ||
             newScreen instanceof ReceivingLevelScreen ||
             newScreen instanceof ProgressScreen ||
-            newScreen instanceof GenericDirtMessageScreen ||
+            newScreen instanceof GenericMessageScreen ||
             Minecraft.getInstance().getOverlay() != null;
     }
 }
