@@ -224,7 +224,8 @@ public class ClientVRPlayers {
                                 } else {
                                     Vector3f pivot = rotInfo.headQuat.transform(0F, -0.2F, 0.1F, new Vector3f())
                                         .add(rotInfo.headPos);
-                                    float bend = ModelUtils.getBendProgress(player, rotInfo, pivot);
+                                    float bend = ModelUtils.getBendProgress(player.isAutoSpinAttack(),
+                                        player.isCrouching(), player.isPassenger(), rotInfo, pivot);
                                     if (ClientDataHolderVR.getInstance().vrSettings.playerModelType ==
                                         VRSettings.PlayerModelType.SPLIT_ARMS_LEGS)
                                     {

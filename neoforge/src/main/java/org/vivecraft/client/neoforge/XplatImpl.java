@@ -59,7 +59,8 @@ public class XplatImpl implements Xplat {
     }
 
     public static boolean enableRenderTargetStencil(RenderTarget renderTarget) {
-        renderTarget.enableStencil();
+        // TODO there is no stencil support yet
+        //renderTarget.enableStencil();
         return true;
     }
 

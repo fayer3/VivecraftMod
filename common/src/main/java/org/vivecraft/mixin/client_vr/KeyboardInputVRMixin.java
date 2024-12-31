@@ -1,13 +1,16 @@
 package org.vivecraft.mixin.client_vr;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
-import net.minecraft.client.player.Input;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.KeyboardInput;
+import net.minecraft.world.entity.player.Input;
 import org.joml.Vector2fc;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,7 +28,7 @@ import org.vivecraft.client_vr.provider.openvr_lwjgl.VRInputAction;
 import org.vivecraft.common.utils.MathUtils;
 
 @Mixin(KeyboardInput.class)
-public class KeyboardInputVRMixin extends Input {
+public class KeyboardInputVRMixin extends ClientInput {
 
     @Final
     @Shadow
@@ -51,36 +54,42 @@ public class KeyboardInputVRMixin extends Input {
         return Math.abs(MCVR.get().getInputAction(keyBinding).getAxis1DUseTracked());
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/KeyboardInput;calculateImpulse(ZZ)F", ordinal = 0))
-    private void vivecraft$noMovementWhenClimbing(CallbackInfo ci, @Share("climbing") LocalBooleanRef climbing) {
+    @WrapOperation(method = "tick", at = @At(value = "NEW", target = "net/minecraft/world/entity/player/Input"))
+    private Input vivecraft$noMovementWhenClimbing(
+        boolean forward, boolean backward, boolean left, boolean right, boolean jump, boolean shift, boolean sprint,
+        Operation<Input> original, @Share("climbing") LocalBooleanRef climbing)
+    {
         if (VRState.VR_RUNNING) {
             climbing.set(!Minecraft.getInstance().player.isInWater() &&
                 ClientDataHolderVR.getInstance().climbTracker.isClimbeyClimb() &&
                 ClientDataHolderVR.getInstance().climbTracker.isGrabbingLadder());
 
-            this.up = (this.up || VivecraftVRMod.INSTANCE.keyTeleportFallback.isDown()) && !climbing.get();
-            this.down &= !climbing.get();
-            this.left &= !climbing.get();
-            this.right &= !climbing.get();
+            forward = (forward || VivecraftVRMod.INSTANCE.keyTeleportFallback.isDown()) && !climbing.get();
+            backward &= !climbing.get();
+            left &= !climbing.get();
+            right &= !climbing.get();
+
+            ClientDataHolderVR dataHolder = ClientDataHolderVR.getInstance();
+
+            jump &= Minecraft.getInstance().screen == null && !climbing.get() &&
+                (dataHolder.vrPlayer.getFreeMove() || dataHolder.vrSettings.simulateFalling);
+
+            shift = Minecraft.getInstance().screen == null &&
+                (dataHolder.sneakTracker.sneakCounter > 0 || dataHolder.sneakTracker.sneakOverride || shift);
         }
+        return original.call(forward, backward, left, right, jump, shift, sprint);
     }
 
-    @Inject(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/KeyboardInput;shiftKeyDown:Z", shift = At.Shift.AFTER))
+    @Inject(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/KeyboardInput;leftImpulse:F", shift = At.Shift.AFTER))
     private void vivecraft$analogInput(
         CallbackInfo ci, @Local(argsOnly = true) boolean isSneaking, @Share("climbing") LocalBooleanRef climbing)
     {
         if (!VRState.VR_RUNNING) return;
 
-        ClientDataHolderVR dataHolder = ClientDataHolderVR.getInstance();
-
-        this.jumping &= Minecraft.getInstance().screen == null && !climbing.get() &&
-            (dataHolder.vrPlayer.getFreeMove() || dataHolder.vrSettings.simulateFalling);
-
-        this.shiftKeyDown = Minecraft.getInstance().screen == null &&
-            (dataHolder.sneakTracker.sneakCounter > 0 || dataHolder.sneakTracker.sneakOverride || this.shiftKeyDown);
-
         boolean setMovement = false;
         float forwardAxis = 0.0F;
+
+        ClientDataHolderVR dataHolder = ClientDataHolderVR.getInstance();
 
         if (!climbing.get() && !dataHolder.vrSettings.seated && Minecraft.getInstance().screen == null &&
             !KeyboardHandler.SHOWING)
@@ -140,14 +149,18 @@ public class KeyboardInputVRMixin extends Input {
             if (setMovement) {
                 this.vivecraft$wasAnalogMovement = true;
                 // just assuming all this below is needed for compatibility.
-                this.up = this.forwardImpulse > 0.0F;
-                this.down = this.forwardImpulse < 0.0F;
-                this.left = this.leftImpulse > 0.0F;
-                this.right = this.leftImpulse < 0.0F;
-                VRInputAction.setKeyBindState(this.options.keyUp, this.up);
-                VRInputAction.setKeyBindState(this.options.keyDown, this.down);
-                VRInputAction.setKeyBindState(this.options.keyLeft, this.left);
-                VRInputAction.setKeyBindState(this.options.keyRight, this.right);
+                boolean forward = this.forwardImpulse > 0.0F;
+                boolean backward = this.forwardImpulse < 0.0F;
+                boolean left = this.leftImpulse > 0.0F;
+                boolean right = this.leftImpulse < 0.0F;
+                VRInputAction.setKeyBindState(this.options.keyUp, forward);
+                VRInputAction.setKeyBindState(this.options.keyDown, backward);
+                VRInputAction.setKeyBindState(this.options.keyLeft, left);
+                VRInputAction.setKeyBindState(this.options.keyRight, right);
+
+                // need to make a new one , since it is a record
+                this.keyPresses = new Input(forward, backward, left, right, this.keyPresses.jump(),
+                    this.keyPresses.shift(), this.keyPresses.sprint());
 
                 if (dataHolder.vrSettings.autoSprint && !isSneaking) {
                     // Sprint only works for walk forwards obviously

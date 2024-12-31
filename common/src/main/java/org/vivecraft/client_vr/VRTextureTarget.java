@@ -2,7 +2,6 @@ package org.vivecraft.client_vr;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.Minecraft;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.client.extensions.RenderTargetExtension;
 
@@ -32,7 +31,7 @@ public class VRTextureTarget extends RenderTarget {
             // use our stencil only if the modloader doesn't support it
             ((RenderTargetExtension) this).vivecraft$setStencil(true);
         }
-        this.resize(width, height, Minecraft.ON_OSX);
+        this.resize(width, height);
 
         this.setClearColor(0, 0, 0, 0);
     }

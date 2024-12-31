@@ -1,13 +1,13 @@
 package org.vivecraft.client_vr.render;
 
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.FogParameters;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11C;
 import org.vivecraft.client.utils.TextUtils;
-import org.vivecraft.client_vr.extensions.WindowExtension;
 
 import java.util.ArrayList;
 
@@ -42,29 +42,28 @@ public class MirrorNotification {
      */
     public static void render() {
         if (System.currentTimeMillis() < MIRROR_NOTIFY_START + MIRROR_NOTIFY_LEN) {
-            int screenX = ((WindowExtension) (Object) MC.getWindow()).vivecraft$getActualScreenWidth();
-            int screenY = ((WindowExtension) (Object) MC.getWindow()).vivecraft$getActualScreenHeight();
+            int screenX = MC.mainRenderTarget.width;
+            int screenY = MC.mainRenderTarget.height;
 
             RenderSystem.viewport(0, 0, screenX, screenY);
             Matrix4f projection = new Matrix4f().setOrtho(0.0F, screenX,
                 screenY, 0.0F, 1000.0F, 21000.0F);
-            RenderSystem.setProjectionMatrix(projection, VertexSorting.ORTHOGRAPHIC_Z);
+            RenderSystem.setProjectionMatrix(projection, ProjectionType.ORTHOGRAPHIC);
 
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
             RenderSystem.getModelViewStack().translate(0, 0, -11000);
-            RenderSystem.applyModelViewMatrix();
 
-            RenderSystem.setShaderFogStart(Float.MAX_VALUE);
+            RenderSystem.setShaderFog(FogParameters.NO_FOG);
 
             GuiGraphics guiGraphics = new GuiGraphics(MC, MC.renderBuffers().bufferSource());
             guiGraphics.pose().scale(3, 3, 3);
 
             if (MIRROR_NOTIFY_CLEAR) {
                 RenderSystem.clearColor(0, 0, 0, 0);
-                RenderSystem.clear(GL11C.GL_COLOR_BUFFER_BIT | GL11C.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+                RenderSystem.clear(GL11C.GL_COLOR_BUFFER_BIT | GL11C.GL_DEPTH_BUFFER_BIT);
             } else {
-                RenderSystem.clear(GL11C.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+                RenderSystem.clear(GL11C.GL_DEPTH_BUFFER_BIT);
             }
 
             final int TEXT_WORDWRAP_LEN = screenX / 22;
@@ -84,7 +83,6 @@ public class MirrorNotification {
             guiGraphics.flush();
 
             RenderSystem.getModelViewStack().popMatrix();
-            RenderSystem.applyModelViewMatrix();
         }
     }
 }

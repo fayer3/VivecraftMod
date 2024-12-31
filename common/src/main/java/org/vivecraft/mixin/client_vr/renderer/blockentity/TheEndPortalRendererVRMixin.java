@@ -27,7 +27,7 @@ public class TheEndPortalRendererVRMixin {
                 false,
                 false,
                 RenderType.CompositeState.builder()
-                    .setShaderState(new RenderStateShard.ShaderStateShard(VRShaders::getRendertypeEndPortalVrShader))
+                    .setShaderState(new RenderStateShard.ShaderStateShard(VRShaders.RENDERTYPE_END_PORTAL_VR_SHADER))
                     .setTextureState(
                         RenderStateShard
                             .MultiTextureStateShard

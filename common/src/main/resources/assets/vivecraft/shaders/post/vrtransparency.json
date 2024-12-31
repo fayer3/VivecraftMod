@@ -1,18 +1,12 @@
 {
-  "blend": {
-    "func": "add",
-    "srcrgb": "one",
-    "dstrgb": "zero"
-  },
-  "vertex": "screenquad",
-  "fragment": "vrtransparency",
-  "attributes": ["Position"],
+  "vertex": "minecraft:post/screenquad",
+  "fragment": "vivecraft:post/vrtransparency",
   "samplers": [
     {
-      "name": "DiffuseSampler"
+      "name": "MainSampler"
     },
     {
-      "name": "DiffuseDepthSampler"
+      "name": "MainDepthSampler"
     },
     {
       "name": "TranslucentSampler"

@@ -9,7 +9,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
@@ -501,6 +501,7 @@ public class PhysicalKeyboard {
     }
 
     public void render(Matrix4fStack poseStack) {
+        if (this.keys.isEmpty()) return;
         poseStack.pushMatrix();
         Vector3f center = this.getCenterPos();
         poseStack.translate(-center.x, -center.y, -center.z);
@@ -547,10 +548,10 @@ public class PhysicalKeyboard {
         ArrayList<Tuple<String, Vector3f>> labels = new ArrayList<>();
         float textScale = 0.002F * this.scale;
 
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
 
-        this.mc.getTextureManager().bindForSetup(RenderHelper.WHITE_TEXTURE);
         RenderSystem.setShaderTexture(0, RenderHelper.WHITE_TEXTURE);
+        RenderSystem.bindTexture(RenderSystem.getShaderTexture(0));
 
         // Start building vertices for key boxes
         Tesselator tesselator = Tesselator.getInstance();
@@ -585,8 +586,7 @@ public class PhysicalKeyboard {
             poseStack.translate(label.getB().x, label.getB().y, label.getB().z);
             poseStack.scale(textScale, textScale, 1.0F);
             font.drawInBatch(label.getA(), 0.0F, 0.0F, 0xFFFFFFFF, false, poseStack,
-                this.mc.renderBuffers().bufferSource(), Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT,
-                font.isBidirectional());
+                this.mc.renderBuffers().bufferSource(), Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
             poseStack.popMatrix();
         }
 

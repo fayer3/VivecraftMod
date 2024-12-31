@@ -20,10 +20,10 @@ import java.util.function.BiFunction;
 
 public class ClientDataHolderVR {
 
-    public static final ModelResourceLocation THIRD_PERSON_CAMERA_MODEL = new ModelResourceLocation(
-        ResourceLocation.fromNamespaceAndPath("vivecraft", "camcorder"), "standalone");
-    public static final ModelResourceLocation THIRD_PERSON_CAMERA_DISPLAY_MODEL = new ModelResourceLocation(
-        ResourceLocation.fromNamespaceAndPath("vivecraft", "camcorder_display"), "standalone");
+    public static final ModelResourceLocation THIRD_PERSON_CAMERA_MODEL = ModelResourceLocation.inventory(
+        ResourceLocation.fromNamespaceAndPath("vivecraft", "camcorder"));
+    public static final ModelResourceLocation THIRD_PERSON_CAMERA_DISPLAY_MODEL = ModelResourceLocation.inventory(
+        ResourceLocation.fromNamespaceAndPath("vivecraft", "camcorder_display"));
 
     public static boolean KAT_VR;
     public static boolean INFINADECK;

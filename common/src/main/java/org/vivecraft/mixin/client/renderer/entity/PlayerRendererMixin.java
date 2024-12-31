@@ -6,37 +6,65 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.vivecraft.client.ClientVRPlayers;
 import org.vivecraft.client.extensions.EntityRenderDispatcherExtension;
+import org.vivecraft.client.extensions.EntityRenderStateExtension;
 import org.vivecraft.client.extensions.RenderLayerExtension;
 import org.vivecraft.client.render.VRPlayerRenderer;
 import org.vivecraft.client.utils.RenderLayerType;
+import org.vivecraft.client.utils.ScaleHelper;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.settings.VRSettings;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 @Mixin(PlayerRenderer.class)
-public abstract class PlayerRendererMixin extends LivingEntityRendererMixin<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+public abstract class PlayerRendererMixin extends LivingEntityRendererMixin<AbstractClientPlayer, PlayerRenderState, PlayerModel> {
 
     protected PlayerRendererMixin(EntityRendererProvider.Context context) {
         super(context);
     }
 
-    @ModifyArg(method = "setupRotations(Lnet/minecraft/client/player/AbstractClientPlayer;Lcom/mojang/blaze3d/vertex/PoseStack;FFFF)V", at = @At(value = "INVOKE", target = "Ljava/lang/Math;acos(D)D"))
-    private double vivecraft$fixFlicker(double acos) {
+    @ModifyArg(method = "extractFlightData", at = @At(value = "INVOKE", target = "Ljava/lang/Math;acos(D)D"))
+    private static double vivecraft$fixFlicker(double acos) {
         // because of imprecision issues this can cause nans
         // is fixed in 1.21.4
         return Math.min(1.0, acos);
+    }
+
+    @Inject(method = "extractRenderState(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;F)V", at = @At("TAIL"))
+    private void vivecraft$addRotInfo(
+        AbstractClientPlayer entity, PlayerRenderState reusedState, float partialTick, CallbackInfo ci)
+    {
+        // don't do any animations for dummy players
+        if (entity.getClass() == LocalPlayer.class || entity.getClass() == RemotePlayer.class) {
+            ((EntityRenderStateExtension) reusedState).vivecraft$setRotInfo(
+                ClientVRPlayers.getInstance().getRotationsForPlayer(entity.getUUID()));
+        } else {
+            ((EntityRenderStateExtension) reusedState).vivecraft$setRotInfo(null);
+        }
+
+        ((EntityRenderStateExtension) reusedState).vivecraft$setMainPlayer(
+            VRState.VR_RUNNING && entity == Minecraft.getInstance().player);
+
+        ((EntityRenderStateExtension) reusedState).vivecraft$setTotalScale(
+            ScaleHelper.getEntityEyeHeightScale(entity, partialTick));
     }
 
     /**
@@ -48,7 +76,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRendererMixin<Abst
     @Override
     @SuppressWarnings("unchecked")
     protected void vivecraft$onAddLayer(
-        RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> renderLayer,
+        RenderLayer<PlayerRenderState, PlayerModel> renderLayer,
         CallbackInfoReturnable<Boolean> cir)
     {
         // check if the layer gets added from the PlayerRenderer, we don't want to copy, if we add it to the VRPlayerRenderer
@@ -60,18 +88,18 @@ public abstract class PlayerRendererMixin extends LivingEntityRendererMixin<Abst
         {
 
             // try to find a suitable constructor, so we can create a new Object without issues
-            Constructor<RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>> constructor = null;
+            Constructor<RenderLayer<PlayerRenderState, PlayerModel>> constructor = null;
             RenderLayerType type = RenderLayerType.OTHER;
             for (Constructor<?> c : renderLayer.getClass().getConstructors()) {
                 if (c.getParameterCount() == 1 && RenderLayerParent.class.isAssignableFrom(c.getParameterTypes()[0])) {
-                    constructor = (Constructor<RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>>) c;
+                    constructor = (Constructor<RenderLayer<PlayerRenderState, PlayerModel>>) c;
                     type = RenderLayerType.PARENT_ONLY;
                     break;
                 } else if (c.getParameterCount() == 2 &&
                     RenderLayerParent.class.isAssignableFrom(c.getParameterTypes()[0]) &&
                     EntityModelSet.class.isAssignableFrom(c.getParameterTypes()[1]))
                 {
-                    constructor = (Constructor<RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>>) c;
+                    constructor = (Constructor<RenderLayer<PlayerRenderState, PlayerModel>>) c;
                     type = RenderLayerType.PARENT_MODELSET;
                 } else if (c.getParameterCount() == 3 &&
                     RenderLayerParent.class.isAssignableFrom(c.getParameterTypes()[0]) &&
@@ -79,7 +107,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRendererMixin<Abst
                     HumanoidModel.class.isAssignableFrom(c.getParameterTypes()[2]) &&
                     renderLayer instanceof HumanoidArmorLayer)
                 {
-                    constructor = (Constructor<RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>>) c;
+                    constructor = (Constructor<RenderLayer<PlayerRenderState, PlayerModel>>) c;
                     type = RenderLayerType.PARENT_MODEL_MODEL;
                 }
             }
@@ -110,14 +138,14 @@ public abstract class PlayerRendererMixin extends LivingEntityRendererMixin<Abst
     @SuppressWarnings("unchecked")
     @Unique
     private void vivecraft$addLayerClone(
-        RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> renderLayer, VRPlayerRenderer target)
+        RenderLayer<PlayerRenderState, PlayerModel> renderLayer, VRPlayerRenderer target)
     {
         // only add layers once
         if (target.hasLayerType(renderLayer)) return;
         try {
             VRSettings.LOGGER.warn("Vivecraft: Copying layer: {} with Object.copy, this could cause issues",
                 renderLayer.getClass());
-            RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> newLayer = (RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>) ((RenderLayerExtension) renderLayer).clone();
+            RenderLayer<PlayerRenderState, PlayerModel> newLayer = (RenderLayer<PlayerRenderState, PlayerModel>) ((RenderLayerExtension) renderLayer).clone();
             newLayer.renderer = target;
             target.addLayer(newLayer);
         } catch (CloneNotSupportedException e) {
@@ -130,8 +158,8 @@ public abstract class PlayerRendererMixin extends LivingEntityRendererMixin<Abst
      */
     @Unique
     private void vivecraft$addLayerConstructor(
-        RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> renderLayer,
-        Constructor<RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>> constructor,
+        RenderLayer<PlayerRenderState, PlayerModel> renderLayer,
+        Constructor<RenderLayer<PlayerRenderState, PlayerModel>> constructor,
         RenderLayerType type, VRPlayerRenderer target)
     {
         // only add layers once

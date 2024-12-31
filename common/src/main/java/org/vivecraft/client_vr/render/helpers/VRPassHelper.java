@@ -1,19 +1,19 @@
 package org.vivecraft.client_vr.render.helpers;
 
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.util.profiling.Profiler;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL30C;
 import org.vivecraft.client.utils.ClientUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
-import org.vivecraft.client_vr.extensions.MinecraftExtension;
 import org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler;
 import org.vivecraft.client_vr.gameplay.screenhandlers.RadialHandler;
 import org.vivecraft.client_vr.render.RenderConfigException;
@@ -39,7 +39,7 @@ public class VRPassHelper {
      */
     public static void renderSingleView(RenderPass eye, DeltaTracker.Timer deltaTracker, boolean renderLevel) {
         RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 1.0F);
-        RenderSystem.clear(GL13C.GL_COLOR_BUFFER_BIT | GL13C.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+        RenderSystem.clear(GL13C.GL_COLOR_BUFFER_BIT | GL13C.GL_DEPTH_BUFFER_BIT);
         RenderSystem.enableDepthTest();
 
         // THIS IS WHERE EVERYTHING IS RENDERED
@@ -49,17 +49,17 @@ public class VRPassHelper {
 
         if (DATA_HOLDER.currentPass == RenderPass.LEFT || DATA_HOLDER.currentPass == RenderPass.RIGHT) {
             // copies the rendered scene to eye tex with fsaa and other postprocessing effects.
-            MC.getProfiler().push("postProcessEye");
+            Profiler.get().push("postProcessEye");
             RenderTarget rendertarget = MC.getMainRenderTarget();
 
             if (DATA_HOLDER.vrSettings.useFsaa) {
-                MC.getProfiler().push("fsaa");
+                Profiler.get().push("fsaa");
                 ShaderHelper.doFSAA(DATA_HOLDER.vrRenderer.framebufferVrRender,
                     DATA_HOLDER.vrRenderer.fsaaFirstPassResultFBO,
                     DATA_HOLDER.vrRenderer.fsaaLastPassResultFBO);
                 rendertarget = DATA_HOLDER.vrRenderer.fsaaLastPassResultFBO;
                 RenderHelper.checkGLError("fsaa " + eye);
-                MC.getProfiler().pop();
+                Profiler.get().pop();
             }
 
             if (eye == RenderPass.LEFT) {
@@ -72,18 +72,18 @@ public class VRPassHelper {
             ShaderHelper.doVrPostProcess(eye, rendertarget, deltaTracker.getGameTimeDeltaPartialTick(false));
 
             RenderHelper.checkGLError("post overlay" + eye);
-            MC.getProfiler().pop();
+            Profiler.get().pop();
         }
 
         if (DATA_HOLDER.currentPass == RenderPass.CAMERA) {
-            MC.getProfiler().push("cameraCopy");
+            Profiler.get().push("cameraCopy");
             DATA_HOLDER.vrRenderer.cameraFramebuffer.bindWrite(true);
             RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 1.0F);
-            RenderSystem.clear(GL13C.GL_COLOR_BUFFER_BIT | GL13C.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+            RenderSystem.clear(GL13C.GL_COLOR_BUFFER_BIT | GL13C.GL_DEPTH_BUFFER_BIT);
             DATA_HOLDER.vrRenderer.cameraRenderFramebuffer.blitToScreen(
                 DATA_HOLDER.vrRenderer.cameraFramebuffer.viewWidth,
                 DATA_HOLDER.vrRenderer.cameraFramebuffer.viewHeight);
-            MC.getProfiler().pop();
+            Profiler.get().pop();
         }
 
         if (DATA_HOLDER.currentPass == RenderPass.THIRD &&
@@ -112,9 +112,9 @@ public class VRPassHelper {
      */
     public static void renderAndSubmit(boolean renderLevel, DeltaTracker.Timer deltaTracker) {
         // still rendering
-        MC.getProfiler().push("gameRenderer");
+        Profiler.get().push("gameRenderer");
 
-        MC.getProfiler().push("VR guis");
+        Profiler.get().push("VR guis");
 
         // some mods mess with the depth mask?
         RenderSystem.depthMask(true);
@@ -124,20 +124,19 @@ public class VRPassHelper {
         // to render gui stuff
         GuiGraphics guiGraphics = new GuiGraphics(MC, MC.renderBuffers().bufferSource());
 
-        MC.getProfiler().push("gui cursor");
+        Profiler.get().push("gui cursor");
         // draw cursor on Gui Layer
         if (MC.screen != null || !MC.mouseHandler.isMouseGrabbed()) {
             Matrix4fStack poseStack = RenderSystem.getModelViewStack();
             poseStack.pushMatrix();
             poseStack.identity();
             poseStack.translate(0.0f, 0.0f, -11000.0f);
-            RenderSystem.applyModelViewMatrix();
 
             Matrix4f guiProjection = (new Matrix4f()).setOrtho(
                 0.0F, MC.getWindow().getGuiScaledWidth(),
                 MC.getWindow().getGuiScaledHeight(), 0.0F,
                 1000.0F, 21000.0F);
-            RenderSystem.setProjectionMatrix(guiProjection, VertexSorting.ORTHOGRAPHIC_Z);
+            RenderSystem.setProjectionMatrix(guiProjection, ProjectionType.ORTHOGRAPHIC);
 
             int x = (int) (
                 MC.mouseHandler.xpos() * (double) MC.getWindow().getGuiScaledWidth() /
@@ -151,16 +150,10 @@ public class VRPassHelper {
 
             guiGraphics.flush();
             poseStack.popMatrix();
-            RenderSystem.applyModelViewMatrix();
         }
-
-        MC.getProfiler().popPush("fps pie");
-        // draw debug pie
-        ((MinecraftExtension) MC).vivecraft$drawProfiler();
 
         // pop pose that we pushed before the gui
         RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.applyModelViewMatrix();
 
         if (DATA_HOLDER.vrSettings.guiMipmaps) {
             // update mipmaps
@@ -169,26 +162,26 @@ public class VRPassHelper {
             MC.mainRenderTarget.unbindRead();
         }
 
-        MC.getProfiler().popPush("2D Keyboard");
+        Profiler.get().popPush("2D Keyboard");
         if (KeyboardHandler.SHOWING && !DATA_HOLDER.vrSettings.physicalKeyboard) {
             MC.mainRenderTarget = KeyboardHandler.FRAMEBUFFER;
-            MC.mainRenderTarget.clear(Minecraft.ON_OSX);
+            MC.mainRenderTarget.clear();
             MC.mainRenderTarget.bindWrite(true);
             RenderHelper.drawScreen(guiGraphics, deltaTracker, KeyboardHandler.UI, true);
         }
 
-        MC.getProfiler().popPush("Radial Menu");
+        Profiler.get().popPush("Radial Menu");
         if (RadialHandler.isShowing()) {
             MC.mainRenderTarget = RadialHandler.FRAMEBUFFER;
-            MC.mainRenderTarget.clear(Minecraft.ON_OSX);
+            MC.mainRenderTarget.clear();
             MC.mainRenderTarget.bindWrite(true);
             RenderHelper.drawScreen(guiGraphics, deltaTracker, RadialHandler.UI, true);
         }
-        MC.getProfiler().pop();
+        Profiler.get().pop();
         RenderHelper.checkGLError("post 2d ");
 
         // done with guis
-        MC.getProfiler().pop();
+        Profiler.get().pop();
 
         // render the different vr passes
         List<RenderPass> list = DATA_HOLDER.vrRenderer.getRenderPasses();
@@ -215,12 +208,12 @@ public class VRPassHelper {
                 case CAMERA -> RenderPassManager.setWorldRenderPass(WorldRenderPass.CAMERA);
             }
 
-            MC.getProfiler().push("Eye:" + DATA_HOLDER.currentPass);
-            MC.getProfiler().push("setup");
+            Profiler.get().push("Eye:" + DATA_HOLDER.currentPass);
+            Profiler.get().push("setup");
             MC.mainRenderTarget.bindWrite(true);
-            MC.getProfiler().pop();
+            Profiler.get().pop();
             VRPassHelper.renderSingleView(renderpass, deltaTracker, renderLevel);
-            MC.getProfiler().pop();
+            Profiler.get().pop();
 
             if (DATA_HOLDER.grabScreenShot) {
                 boolean flag;
@@ -244,7 +237,7 @@ public class VRPassHelper {
 
                     MC.mainRenderTarget.unbindWrite();
                     ClientUtils.takeScreenshot(rendertarget);
-                    MC.getWindow().updateDisplay();
+                    MC.getWindow().updateDisplay(null);
                     DATA_HOLDER.grabScreenShot = false;
                 }
             }
@@ -252,17 +245,17 @@ public class VRPassHelper {
             DATA_HOLDER.isFirstPass = false;
         }
         // now we are done with rendering
-        MC.getProfiler().pop();
+        Profiler.get().pop();
 
         DATA_HOLDER.vrPlayer.postRender(deltaTracker.getGameTimeDeltaPartialTick(true));
-        MC.getProfiler().push("Display/Reproject");
+        Profiler.get().push("Display/Reproject");
 
         try {
             DATA_HOLDER.vrRenderer.endFrame();
         } catch (RenderConfigException exception) {
             VRSettings.LOGGER.error("Vivecraft: error ending frame: {}", exception.error.getString());
         }
-        MC.getProfiler().pop();
+        Profiler.get().pop();
         RenderHelper.checkGLError("post submit");
     }
 }

@@ -32,8 +32,8 @@ import org.vivecraft.server.config.ClimbeyBlockmode;
 import java.util.*;
 
 public class ClimbTracker extends Tracker {
-    public static final ModelResourceLocation CLAWS_MODEL = new ModelResourceLocation(
-        ResourceLocation.fromNamespaceAndPath("vivecraft", "item/climb_claws"), "standalone");
+    public static final ModelResourceLocation CLAWS_MODEL = ModelResourceLocation.inventory(
+        ResourceLocation.fromNamespaceAndPath("vivecraft", "climb_claws"));
 
     public Set<Block> blocklist = new HashSet<>();
     public ClimbeyBlockmode serverBlockmode = ClimbeyBlockmode.DISABLED;

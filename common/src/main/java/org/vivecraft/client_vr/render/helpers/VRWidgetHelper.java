@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -152,9 +152,9 @@ public class VRWidgetHelper {
         // we use block models, so the camera texture is on the regular block atlas
         RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
         if (MC.level != null) {
-            RenderSystem.setShader(GameRenderer::getRendertypeEntityCutoutNoCullShader);
+            RenderSystem.setShader(CoreShaders.RENDERTYPE_ENTITY_CUTOUT_NO_CULL);
         } else {
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
         }
         MC.gameRenderer.lightTexture().turnOnLightLayer();
 
@@ -169,7 +169,7 @@ public class VRWidgetHelper {
         // render camera display
         RenderSystem.disableBlend();
         displayBindFunc.run();
-        RenderSystem.setShader(GameRenderer::getRendertypeEntitySolidShader);
+        RenderSystem.setShader(CoreShaders.RENDERTYPE_ENTITY_SOLID);
 
         bufferBuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
 

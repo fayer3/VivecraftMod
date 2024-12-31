@@ -1,7 +1,6 @@
 package org.vivecraft.client_xr.render_pass;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import net.minecraft.client.Minecraft;
 import org.vivecraft.client_vr.render.RenderPass;
 
 public class WorldRenderPass implements AutoCloseable {
@@ -47,7 +46,7 @@ public class WorldRenderPass implements AutoCloseable {
      * @param height new height
      */
     public void resize(int width, int height) {
-        this.target.resize(width, height, Minecraft.ON_OSX);
+        this.target.resize(width, height);
     }
 
     /**

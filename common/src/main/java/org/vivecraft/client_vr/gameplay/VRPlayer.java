@@ -684,7 +684,7 @@ public class VRPlayer {
                 player.setYHeadRot(player.getYRot());
                 player.setXRot(-data.getController(1).getPitch());
             }
-        } else if ((player.isSprinting() && (player.input.jumping || this.mc.options.keyJump.isDown())) ||
+        } else if ((player.isSprinting() && (player.input.keyPresses.jump() || this.mc.options.keyJump.isDown())) ||
             player.isFallFlying() || (player.isSwimming() && player.zza > 0.0F))
         {
             // Server-side movement

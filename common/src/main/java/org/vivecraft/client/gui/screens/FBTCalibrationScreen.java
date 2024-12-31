@@ -6,7 +6,7 @@ import com.mojang.math.Axis;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -188,7 +188,7 @@ public class FBTCalibrationScreen extends Screen {
             poseStack.scale(min, -min, min);
             poseStack.mulPose(Axis.YP.rotation(Mth.PI));
 
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_COLOR);
 
             // arms outline
             BufferBuilder builder = Tesselator.getInstance()

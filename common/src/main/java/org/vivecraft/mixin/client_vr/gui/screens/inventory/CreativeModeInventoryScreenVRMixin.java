@@ -1,8 +1,8 @@
 package org.vivecraft.mixin.client_vr.gui.screens.inventory;
 
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CreativeModeInventoryScreen.class)
-public abstract class CreativeModeInventoryScreenVRMixin extends EffectRenderingInventoryScreen<CreativeModeInventoryScreen.ItemPickerMenu> {
+public abstract class CreativeModeInventoryScreenVRMixin extends AbstractContainerScreen<CreativeModeInventoryScreen.ItemPickerMenu> {
 
     @Shadow
     private EditBox searchBox;
@@ -53,7 +53,9 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
 
     @Unique
     private void vivecraft$addCreativeItems(CreativeModeTab tab, NonNullList<ItemStack> items) {
-        if (tab == BuiltInRegistries.CREATIVE_MODE_TAB.get(CreativeModeTabs.FOOD_AND_DRINKS) || tab == null) {
+        if (tab == BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(CreativeModeTabs.FOOD_AND_DRINKS) ||
+            tab == null)
+        {
             ItemStack eatMeCake = new ItemStack(Items.PUMPKIN_PIE);
             eatMeCake.set(DataComponents.CUSTOM_NAME, Component.literal("EAT ME"));
 
@@ -64,7 +66,9 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
             items.add(drinkMePotion);
         }
 
-        if (tab == BuiltInRegistries.CREATIVE_MODE_TAB.get(CreativeModeTabs.TOOLS_AND_UTILITIES) || tab == null) {
+        if (tab == BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(CreativeModeTabs.TOOLS_AND_UTILITIES) ||
+            tab == null)
+        {
             ItemStack boots = new ItemStack(Items.LEATHER_BOOTS);
             boots.set(DataComponents.CUSTOM_NAME,
                 Component.translatableWithFallback("vivecraft.item.jumpboots", "Jump Boots"));

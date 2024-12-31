@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -74,12 +74,12 @@ public abstract class EntityRenderDispatcherMixin implements ResourceManagerRelo
             (headBox = Utils.getEntityHeadHitbox(entity, 0.0)) != null)
         {
             // raw head box
-            LevelRenderer.renderLineBox(poseStack, buffer,
+            ShapeRenderer.renderLineBox(poseStack, buffer,
                 headBox.move(-entity.getX(), -entity.getY(), -entity.getZ()),
                 1.0f, 1.0f, 0.0f, 1.0f);
             // inflated head box for arrows
             AABB headBoxArrow = Utils.getEntityHeadHitbox(entity, 0.3);
-            LevelRenderer.renderLineBox(poseStack, buffer,
+            ShapeRenderer.renderLineBox(poseStack, buffer,
                 headBoxArrow.move(-entity.getX(), -entity.getY(), -entity.getZ()),
                 1.0f, 0.0f, 0.0f, 1.0f);
         }
@@ -87,7 +87,7 @@ public abstract class EntityRenderDispatcherMixin implements ResourceManagerRelo
 
     @Inject(method = "getRenderer", at = @At("HEAD"), cancellable = true)
     private void vivecraft$getVRPlayerRenderer(
-        Entity entity, CallbackInfoReturnable<EntityRenderer<AbstractClientPlayer>> cir)
+        Entity entity, CallbackInfoReturnable<EntityRenderer> cir)
     {
         // don't do any animations for dummy players
         if (entity instanceof AbstractClientPlayer player &&

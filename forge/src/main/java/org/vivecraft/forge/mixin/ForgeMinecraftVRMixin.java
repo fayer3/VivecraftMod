@@ -16,12 +16,12 @@ public class ForgeMinecraftVRMixin {
 
     @Shadow
     @Final
-    private DeltaTracker.Timer timer;
+    private DeltaTracker.Timer deltaTracker;
 
     @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/event/ForgeEventFactoryClient;onRenderTickEnd(Lnet/minecraft/client/DeltaTracker;)V", shift = At.Shift.AFTER, remap = false), remap = true)
     private void vivecraft$renderVRPassesForge(boolean renderLevel, CallbackInfo ci) {
         if (VRState.VR_RUNNING) {
-            VRPassHelper.renderAndSubmit(renderLevel, this.timer);
+            VRPassHelper.renderAndSubmit(renderLevel, this.deltaTracker);
         }
     }
 }

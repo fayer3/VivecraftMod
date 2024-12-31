@@ -3,6 +3,7 @@ package org.vivecraft.client_vr.provider.nullvr;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
 import org.apache.commons.lang3.tuple.Triple;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
@@ -123,7 +124,7 @@ public class NullVR extends MCVR {
     public void poll(long frameIndex) {
         if (this.initialized) {
 
-            this.mc.getProfiler().push("updatePose");
+            Profiler.get().push("updatePose");
 
             // don't permanently change the sensitivity
             float xSens = this.dh.vrSettings.xSensitivity;
@@ -177,10 +178,10 @@ public class NullVR extends MCVR {
                     this.hmdRotation.set3x3(GuiHandler.GUI_ROTATION_ROOM);
                 }
             }
-            this.mc.getProfiler().popPush("hmdSampling");
+            Profiler.get().popPush("hmdSampling");
             this.hmdSampling();
 
-            this.mc.getProfiler().pop();
+            Profiler.get().pop();
         }
     }
 

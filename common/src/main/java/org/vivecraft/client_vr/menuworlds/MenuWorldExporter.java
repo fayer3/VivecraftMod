@@ -7,6 +7,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -51,7 +52,7 @@ public class MenuWorldExporter {
         BlockStateMapper blockStateMapper = new BlockStateMapper();
         PaletteBiomeMapper biomeMapper = new PaletteBiomeMapper();
 
-        int yMin = level.getMinBuildHeight();
+        int yMin = level.getMinY();
         int ySize = level.getHeight();
         int[] blocks = new int[xSize * ySize * zSize];
         byte[] skylightmap = new byte[xSize * ySize * zSize];
@@ -399,7 +400,7 @@ public class MenuWorldExporter {
                 CompoundTag tag = CompoundTag.TYPE.load(dis, NbtAccounter.unlimitedHeap());
                 tag = (CompoundTag) DATA_FIXER.update(References.BLOCK_STATE, new Dynamic<>(NbtOps.INSTANCE, tag),
                     dataVersion, SharedConstants.getCurrentVersion().getDataVersion().getVersion()).getValue();
-                this.paletteMap.add(NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), tag));
+                this.paletteMap.add(NbtUtils.readBlockState(BuiltInRegistries.BLOCK, tag));
             }
         }
 
@@ -472,13 +473,15 @@ public class MenuWorldExporter {
                     effectsBuilder::grassColorModifier);
 
                 if (dis.readBoolean()) {
-                    ParticleType<?> particleType = BuiltInRegistries.PARTICLE_TYPE.get(
+                    Optional<Holder.Reference<ParticleType<?>>> particleTypeRef = BuiltInRegistries.PARTICLE_TYPE.get(
                         ResourceLocation.parse(dis.readUTF()));
                     float probability = dis.readFloat();
-                    if (particleType instanceof ParticleOptions) {
-                        effectsBuilder.ambientParticle(
-                            new AmbientParticleSettings((ParticleOptions) particleType, probability));
-                    }
+                    particleTypeRef.ifPresent(particleType -> {
+                        if (particleType.value() instanceof ParticleOptions) {
+                            effectsBuilder.ambientParticle(
+                                new AmbientParticleSettings((ParticleOptions) particleType.value(), probability));
+                        }
+                    });
                 }
 
                 Biome biome = builder.specialEffects(effectsBuilder.build()).generationSettings(
@@ -493,7 +496,7 @@ public class MenuWorldExporter {
             for (int i = 0; i < this.paletteMap.size(); i++) {
                 Biome biome = this.paletteMap.byId(i);
 
-                dos.writeUTF(registryAccess.registryOrThrow(Registries.BIOME).getKey(biome).toString());
+                dos.writeUTF(registryAccess.lookupOrThrow(Registries.BIOME).getKey(biome).toString());
 
                 Biome.ClimateSettings climateSettings = Xplat.getBiomeClimateSettings(biome);
 
@@ -1005,7 +1008,8 @@ public class MenuWorldExporter {
                 .specialEffects(
                     new BiomeSpecialEffects.Builder().fogColor(1787717).waterColor(4159204).waterFogColor(329011)
                         .skyColor(7254527).ambientParticle(new AmbientParticleSettings(
-                            (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse("minecraft:ash")),
+                            (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse("minecraft:ash"))
+                                .orElseThrow().value(),
                             0.006250f)).build()).generationSettings(
                     DUMMY_GENERATION_SETTINGS).mobSpawnSettings(DUMMY_MOB_SPAWN_SETTINGS).build());
             // crimson_forest
@@ -1014,7 +1018,8 @@ public class MenuWorldExporter {
                     new BiomeSpecialEffects.Builder().fogColor(3343107).waterColor(4159204).waterFogColor(329011)
                         .skyColor(7254527).ambientParticle(new AmbientParticleSettings(
                             (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.get(
-                                ResourceLocation.parse("minecraft:crimson_spore")), 0.025000f)).build()).generationSettings(
+                                ResourceLocation.parse("minecraft:crimson_spore")).orElseThrow().value(), 0.025000f))
+                        .build()).generationSettings(
                     DUMMY_GENERATION_SETTINGS).mobSpawnSettings(DUMMY_MOB_SPAWN_SETTINGS).build());
             // warped_forest
             MAP.put(172, new Biome.BiomeBuilder().hasPrecipitation(false).temperature(2.000000f).downfall(0.000000f)
@@ -1022,7 +1027,8 @@ public class MenuWorldExporter {
                     new BiomeSpecialEffects.Builder().fogColor(1705242).waterColor(4159204).waterFogColor(329011)
                         .skyColor(7254527).ambientParticle(new AmbientParticleSettings(
                             (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.get(
-                                ResourceLocation.parse("minecraft:warped_spore")), 0.014280f)).build()).generationSettings(
+                                ResourceLocation.parse("minecraft:warped_spore")).orElseThrow().value(), 0.014280f))
+                        .build()).generationSettings(
                     DUMMY_GENERATION_SETTINGS).mobSpawnSettings(DUMMY_MOB_SPAWN_SETTINGS).build());
             // basalt_deltas
             MAP.put(173, new Biome.BiomeBuilder().hasPrecipitation(false).temperature(2.000000f).downfall(0.000000f)
@@ -1030,7 +1036,8 @@ public class MenuWorldExporter {
                     new BiomeSpecialEffects.Builder().fogColor(6840176).waterColor(4159204).waterFogColor(4341314)
                         .skyColor(7254527).ambientParticle(new AmbientParticleSettings(
                             (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.get(
-                                ResourceLocation.parse("minecraft:white_ash")), 0.118093f)).build()).generationSettings(
+                                ResourceLocation.parse("minecraft:white_ash")).orElseThrow().value(), 0.118093f)).build())
+                .generationSettings(
                     DUMMY_GENERATION_SETTINGS).mobSpawnSettings(DUMMY_MOB_SPAWN_SETTINGS).build());
         }
 

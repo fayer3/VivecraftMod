@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.vivecraft.client.gui.screens.UpdateScreen;
 import org.vivecraft.client.utils.UpdateChecker;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -32,12 +33,12 @@ public abstract class TitleScreenMixin extends Screen {
      * injects after the multiplayer button to be in the right spot for the tab navigation
      */
     @Inject(method = "createNormalMenuOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/TitleScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", shift = At.Shift.AFTER, ordinal = 1))
-    private void vivecraft$initFullGame(CallbackInfo ci) {
+    private void vivecraft$initFullGame(CallbackInfoReturnable<Integer> cir) {
         vivecraft$addVRModeButton();
     }
 
     @Inject(method = "createDemoMenuOptions", at = @At("TAIL"))
-    private void vivecraft$initDemo(CallbackInfo ci) {
+    private void vivecraft$initDemo(CallbackInfoReturnable<Integer> cir) {
         vivecraft$addVRModeButton();
     }
 

@@ -1,11 +1,12 @@
 package org.vivecraft.client.utils;
 
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
 import org.joml.*;
 import org.vivecraft.client.ClientVRPlayers;
+import org.vivecraft.client.extensions.EntityRenderStateExtension;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.render.VRFirstPersonArmSwing;
 import org.vivecraft.common.utils.MathUtils;
@@ -69,27 +70,32 @@ public class ModelUtils {
      * @param target Polygon to copy the UV to
      */
     private static void copyUV(ModelPart.Polygon source, ModelPart.Polygon target) {
-        for (int i = 0; i < source.vertices.length; i++) {
-            ModelPart.Vertex newVertex = new ModelPart.Vertex(target.vertices[i].pos, source.vertices[i].u,
-                source.vertices[i].v);
+        for (int i = 0; i < source.vertices().length; i++) {
+            ModelPart.Vertex newVertex = new ModelPart.Vertex(target.vertices()[i].pos(), source.vertices()[i].u(),
+                source.vertices()[i].v());
             // Optifine has custom internal polygon data which also needs to be modified
             if (OptifineHelper.isOptifineLoaded()) {
-                OptifineHelper.copyRenderPositions(target.vertices[i], newVertex);
+                OptifineHelper.copyRenderPositions(target.vertices()[i], newVertex);
             }
-            target.vertices[i] = newVertex;
+            target.vertices()[i] = newVertex;
         }
     }
 
     /**
      * calculates how far down the player is bending over
      *
-     * @param entity  Player entity to check for
-     * @param rotInfo RotInfo for the given player
+     * @param isSpinAttack if the player is using the spin attack
+     * @param isCrouching  if the player is crouching
+     * @param isPassanger  if the player is a passanger
+     * @param rotInfo      RotInfo for the given player
      * @return 0-1 of how far the player is bending over
      */
-    public static float getBendProgress(LivingEntity entity, ClientVRPlayers.RotInfo rotInfo, Vector3fc headPivot) {
+    public static float getBendProgress(
+        boolean isSpinAttack, boolean isCrouching, boolean isPassanger, ClientVRPlayers.RotInfo rotInfo,
+        Vector3fc headPivot)
+    {
         // no bending when spinning
-        if (entity.isAutoSpinAttack()) return 0.0F;
+        if (isSpinAttack) return 0.0F;
 
         // default player eye height, -0.2 neck offset
         float eyeHeight = 1.42F * rotInfo.worldScale;
@@ -98,10 +104,10 @@ public class ModelUtils {
 
         float progress = heightOffset / -eyeHeight;
 
-        if (entity.isCrouching()) {
+        if (isCrouching) {
             progress = Math.max(progress, 0.125F);
         }
-        if (entity.isPassenger()) {
+        if (isPassanger) {
             // don't go below sitting position
             progress = Math.min(progress, 0.5F);
         }
@@ -111,7 +117,7 @@ public class ModelUtils {
     /**
      * converts a player local point to player model space
      *
-     * @param player        player this position is from
+     * @param renderState   RenderState of the player this position is from
      * @param position      Position to convert
      * @param rotInfo       player VR info
      * @param bodyYaw       players Y rotation
@@ -119,12 +125,12 @@ public class ModelUtils {
      * @param out           Vector3f to store the result in
      */
     public static void worldToModel(
-        LivingEntity player, Vector3fc position, ClientVRPlayers.RotInfo rotInfo, float bodyYaw,
+        HumanoidRenderState renderState, Vector3fc position, ClientVRPlayers.RotInfo rotInfo, float bodyYaw,
         boolean useWorldScale, Vector3f out)
     {
         out.set(position);
 
-        if (player.isAutoSpinAttack()) {
+        if (renderState.isAutoSpinAttack) {
             out.y += 1F;
         }
 
@@ -132,10 +138,11 @@ public class ModelUtils {
             // the main player has the entity scale in its world scale
             out.div(rotInfo.worldScale);
         } else {
-            out.div(ScaleHelper.getEntityEyeHeightScale(player, ClientUtils.getCurrentPartialTick()));
+            out.div(((EntityRenderStateExtension) renderState).vivecraft$getTotalScale());
         }
         if (MCAHelper.isLoaded()) {
-            MCAHelper.undoPlayerScale(player, out);
+            // TODO MCA isn't updated yet so no clue how to do this
+            // MCAHelper.undoPlayerScale(player, out);
         }
 
         final float scale = 0.9375F * rotInfo.heightScale;
@@ -172,7 +179,7 @@ public class ModelUtils {
     /**
      * converts a player model space point to player local space
      *
-     * @param player        player this position is from
+     * @param renderState   RenderState of the player this position is from
      * @param modelPosition source point in model space
      * @param rotInfo       player VR info
      * @param bodyYaw       players Y rotation
@@ -182,17 +189,18 @@ public class ModelUtils {
      * @return {@code out} vector
      */
     public static Vector3f modelToWorld(
-        LivingEntity player, Vector3fc modelPosition, ClientVRPlayers.RotInfo rotInfo, float bodyYaw,
+        HumanoidRenderState renderState, Vector3fc modelPosition, ClientVRPlayers.RotInfo rotInfo, float bodyYaw,
         boolean applyScale, boolean useWorldScale, Vector3f out)
     {
-        return modelToWorld(player, modelPosition.x(), modelPosition.y(), modelPosition.z(), rotInfo, bodyYaw,
+        return modelToWorld(renderState, modelPosition.x(), modelPosition.y(), modelPosition.z(), rotInfo,
+            bodyYaw,
             applyScale, useWorldScale, out);
     }
 
     /**
      * converts a player model space point to player local space
      *
-     * @param player        player this position is from
+     * @param renderState   RenderState of the player this position is from
      * @param x             x coordinate of the source point
      * @param y             y coordinate of the source point
      * @param z             z coordinate of the source point
@@ -204,7 +212,7 @@ public class ModelUtils {
      * @return {@code out} vector
      */
     public static Vector3f modelToWorld(
-        LivingEntity player, float x, float y, float z, ClientVRPlayers.RotInfo rotInfo, float bodyYaw,
+        HumanoidRenderState renderState, float x, float y, float z, ClientVRPlayers.RotInfo rotInfo, float bodyYaw,
         boolean applyScale, boolean useWorldScale, Vector3f out)
     {
         final float scale = 0.9375F * rotInfo.heightScale;
@@ -214,7 +222,8 @@ public class ModelUtils {
             .add(0.0F, 1.501F * scale, 0.0F);
 
         if (MCAHelper.isLoaded()) {
-            MCAHelper.applyPlayerScale(player, out);
+            // TODO MCA isn't updated yet so no clue how to do this
+            // MCAHelper.applyPlayerScale(player, out);
         }
 
         if (applyScale) {
@@ -222,7 +231,7 @@ public class ModelUtils {
                 // the main player has the entity scale in its world scale
                 out.mul(rotInfo.worldScale);
             } else {
-                out.mul(ScaleHelper.getEntityEyeHeightScale(player, ClientUtils.getCurrentPartialTick()));
+                out.mul(((EntityRenderStateExtension) renderState).vivecraft$getTotalScale());
             }
         }
 
@@ -232,7 +241,7 @@ public class ModelUtils {
     /**
      * sets the matrix {@code tempM} so that the ModelPart {@code part} points at the given player local world space point
      *
-     * @param player        player this position is from
+     * @param renderState   RenderState of the player this position is from
      * @param part          ModelPart to use as the pivot point
      * @param target        target point the {@code part} should face, player local in world space
      * @param targetRot     target rotation the {@code part} should respect
@@ -244,11 +253,12 @@ public class ModelUtils {
      * @param tempM         Matrix3f object to work with, contains the rotation after the call
      */
     public static void pointModelAtLocal(
-        LivingEntity player, ModelPart part, Vector3fc target, Quaternionfc targetRot, ClientVRPlayers.RotInfo rotInfo,
+        HumanoidRenderState renderState, ModelPart part, Vector3fc target, Quaternionfc targetRot,
+        ClientVRPlayers.RotInfo rotInfo,
         float bodyYaw, boolean useWorldScale, Vector3f tempVDir, Vector3f tempVUp, Matrix3f tempM)
     {
         // convert target to model
-        worldToModel(player, target, rotInfo, bodyYaw, useWorldScale, tempVDir);
+        worldToModel(renderState, target, rotInfo, bodyYaw, useWorldScale, tempVDir);
 
         // calculate direction
         tempVDir.sub(part.x, part.y, part.z);
@@ -362,7 +372,7 @@ public class ModelUtils {
      * @param bodyYaw       players Y rotation
      * @param jointDown     if the joint should go up or down
      * @param jointPos      available joint position, can be {@code null}
-     * @param player        player the {@code jointPos} is from
+     * @param renderState   RenderState of the player the {@code jointPos} is from
      * @param rotInfo       player VR info
      * @param useWorldScale when set will cancel out the worldScale, instead of entity scale
      * @param tempV         Vector3f object to work with, contains the joint direction after the call
@@ -370,14 +380,15 @@ public class ModelUtils {
      */
     public static void estimateJointDir(
         ModelPart upper, ModelPart lower, Quaternionfc lowerRot, float bodyYaw, boolean jointDown,
-        @Nullable Vector3fc jointPos, LivingEntity player, ClientVRPlayers.RotInfo rotInfo, boolean useWorldScale,
+        @Nullable Vector3fc jointPos, HumanoidRenderState renderState, ClientVRPlayers.RotInfo rotInfo,
+        boolean useWorldScale,
         Vector3f tempV, Vector3f tempV2)
     {
         if (jointPos != null) {
             // use mid arm point to joint direction
             tempV.set(upper.x + lower.x, upper.y + lower.y, upper.z + lower.z)
                 .mul(0.5F);
-            ModelUtils.worldToModel(player, jointPos, rotInfo, bodyYaw, useWorldScale, tempV2);
+            ModelUtils.worldToModel(renderState, jointPos, rotInfo, bodyYaw, useWorldScale, tempV2);
             tempV2.sub(tempV, tempV);
         } else {
             // point the elbow away from the hand direction
@@ -514,21 +525,23 @@ public class ModelUtils {
     /**
      * applies the swimming rotation offset to the provided ModelParts
      *
-     * @param player Player that is swimming
-     * @param xRot   rotation of the player, in radians
-     * @param tempV  first Vector3f object to work with
-     * @param tempV2 second Vector3f object to work with, contains the global player offset after the call
-     * @param parts  list of ModelParts to modify
+     * @param renderState RenderState of the player that is swimming
+     * @param xRot        rotation of the player, in radians
+     * @param tempV       first Vector3f object to work with
+     * @param tempV2      second Vector3f object to work with, contains the global player offset after the call
+     * @param parts       list of ModelParts to modify
      */
     public static void applySwimRotationOffset(
-        LivingEntity player, float xRot, Vector3f tempV, Vector3f tempV2, ModelPart... parts)
+        HumanoidRenderState renderState, float xRot, Vector3f tempV, Vector3f tempV2, ModelPart... parts)
     {
         // fetch those once to not have to calculate it fore each part
         float sin = Mth.sin(xRot);
         float cos = Mth.cos(xRot);
 
         // calculate rotation offset, since the player model is offset while swimming
-        if (player.isVisuallySwimming() && !player.isAutoSpinAttack() && !player.isFallFlying()) {
+        if (renderState.isVisuallySwimming && !renderState.isAutoSpinAttack &&
+            !renderState.isFallFlying)
+        {
             tempV2.set(0.0F, 17.06125F, 5.125F);
             // tempV2.rotateX(-xRot);
             MathUtils.rotateX(tempV2, -sin, cos);

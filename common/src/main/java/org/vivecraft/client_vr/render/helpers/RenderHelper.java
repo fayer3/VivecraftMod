@@ -1,5 +1,6 @@
 package org.vivecraft.client_vr.render.helpers;
 
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -9,9 +10,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderProgram;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
@@ -34,8 +36,6 @@ import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.common.utils.MathUtils;
 import org.vivecraft.mixin.client.blaze3d.RenderSystemAccessor;
 import org.vivecraft.mod_compat_vr.shaders.ShadersHelper;
-
-import java.util.function.Supplier;
 
 public class RenderHelper {
 
@@ -280,7 +280,6 @@ public class RenderHelper {
         poseStack.pushMatrix();
         poseStack.identity();
         poseStack.translate(0.0F, 0.0F, -11000.0F);
-        RenderSystem.applyModelViewMatrix();
 
         double guiScale = maxGuiScale ? GuiHandler.GUI_SCALE_FACTOR_MAX : MC.getWindow().getGuiScale();
 
@@ -288,7 +287,7 @@ public class RenderHelper {
             0.0F, (float) (MC.getMainRenderTarget().width / guiScale),
             (float) (MC.getMainRenderTarget().height / guiScale), 0.0F,
             1000.0F, 21000.0F);
-        RenderSystem.setProjectionMatrix(guiProjection, VertexSorting.ORTHOGRAPHIC_Z);
+        RenderSystem.setProjectionMatrix(guiProjection, ProjectionType.ORTHOGRAPHIC);
 
         RenderSystem.blendFuncSeparate(
             GlStateManager.SourceFactor.SRC_ALPHA,
@@ -306,7 +305,6 @@ public class RenderHelper {
             GlStateManager.DestFactor.ONE);
 
         poseStack.popMatrix();
-        RenderSystem.applyModelViewMatrix();
 
         if (DATA_HOLDER.vrSettings.guiMipmaps) {
             // update mipmaps for Gui layer
@@ -316,7 +314,6 @@ public class RenderHelper {
         }
     }
 
-
     /**
      * draws the crosshair at the specified location on the screen
      *
@@ -325,22 +322,11 @@ public class RenderHelper {
      * @param mouseY      y coordinate in screen pixel coordinates
      */
     public static void drawMouseMenuQuad(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        RenderSystem.enableBlend();
-        RenderSystem.disableDepthTest();
-        // Turns out all we needed was some blendFuncSeparate magic :)
-        // Also color DestFactor of ZERO produces better results with non-white crosshairs
-        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ZERO,
-            GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
-
         float size = 15.0F * Math.max(ClientDataHolderVR.getInstance().vrSettings.menuCrosshairScale,
             1.0F / (float) MC.getWindow().getGuiScale());
 
-        guiGraphics.blitSprite(Gui.CROSSHAIR_SPRITE, (int) (mouseX - size * 0.5F + 1), (int) (mouseY - size * 0.5F + 1),
-            (int) size, (int) size);
-
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableDepthTest();
-        RenderSystem.disableBlend();
+        guiGraphics.blitSprite(RenderType::crosshair, Gui.CROSSHAIR_SPRITE, (int) (mouseX - size * 0.5F + 1),
+            (int) (mouseY - size * 0.5F + 1), (int) size, (int) size);
     }
 
     /**
@@ -358,7 +344,7 @@ public class RenderHelper {
         float sizeX = size * 0.5F;
         float sizeY = sizeX * displayHeight / displayWidth;
 
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(CoreShaders.POSITION_TEX);
         RenderSystem.setShaderColor(color[0], color[1], color[2], color[3]);
 
         BufferBuilder bufferbuilder = Tesselator.getInstance()
@@ -412,7 +398,7 @@ public class RenderHelper {
         boolean flipY)
     {
         drawSizedQuadWithLightmap(displayWidth, displayHeight, size, packedLight, color, matrix,
-            GameRenderer::getRendertypeEntityCutoutNoCullShader, flipY);
+            CoreShaders.RENDERTYPE_ENTITY_CUTOUT_NO_CULL, flipY);
     }
 
     /**
@@ -429,7 +415,7 @@ public class RenderHelper {
     {
         RenderSystem.disableBlend();
         drawSizedQuadWithLightmap(displayWidth, displayHeight, size, LightTexture.FULL_BRIGHT, color, matrix,
-            GameRenderer::getRendertypeEntitySolidShader, false);
+            CoreShaders.RENDERTYPE_ENTITY_SOLID, false);
     }
 
     /**
@@ -446,7 +432,7 @@ public class RenderHelper {
      */
     public static void drawSizedQuadWithLightmap(
         float displayWidth, float displayHeight, float size, int packedLight, float[] color, Matrix4f matrix,
-        Supplier<ShaderInstance> shader, boolean flipY)
+        ShaderProgram shader, boolean flipY)
     {
         float sizeX = size * 0.5F;
         float sizeY = sizeX * displayHeight / displayWidth;

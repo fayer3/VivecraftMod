@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -114,7 +115,7 @@ public class SwingTracker extends Tracker {
             speedTreshhold *= 1.5F;
         }
 
-        this.mc.getProfiler().push("updateSwingAttack");
+        Profiler.get().push("updateSwingAttack");
 
         int trackers = 2;
 
@@ -300,15 +301,19 @@ public class SwingTracker extends Tracker {
                                 blockstate.getBlock() instanceof AttachedStemBlock ||
                                 blockstate.is(BlockTags.VIVECRAFT_CROPS) ||
                                 // check if the item can use the block
-                                item.useOn(new UseOnContext(player,
+                                (item.useOn(new UseOnContext(player,
                                     c == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND,
-                                    blockHit)).shouldSwing()
+                                    blockHit)) instanceof InteractionResult.Success success &&
+                                    success.swingSource() == InteractionResult.SwingSource.CLIENT
+                                )
                             ))
                         {
                             // don't try to break crops with hoes
                             // actually use the item on the block
                             boolean useSuccessful = this.mc.gameMode.useItemOn(player,
-                                i == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND, blockHit).shouldSwing();
+                                i == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND,
+                                blockHit) instanceof InteractionResult.Success success &&
+                                success.swingSource() == InteractionResult.SwingSource.CLIENT;
                             if (itemstack.is(ItemTags.VIVECRAFT_SCYTHES) && !useSuccessful) {
                                 // some scythes just need to be used
                                 this.mc.gameMode.useItem(player,
@@ -384,7 +389,7 @@ public class SwingTracker extends Tracker {
         // reset hitting hand
         ClientNetworking.sendActiveLimb(Limb.MAIN_HAND);
 
-        this.mc.getProfiler().pop();
+        Profiler.get().pop();
     }
 
     private boolean getIsHittingBlock() {

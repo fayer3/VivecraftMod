@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -30,6 +31,7 @@ import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.extensions.EntityRenderDispatcherVRExtension;
 import org.vivecraft.client_vr.gameplay.trackers.BowTracker;
 import org.vivecraft.client_vr.gameplay.trackers.ClimbTracker;
+import org.vivecraft.client_vr.gameplay.trackers.SwingTracker;
 import org.vivecraft.client_vr.gameplay.trackers.TelescopeTracker;
 import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.client_vr.render.VRArmRenderer;
@@ -240,7 +242,7 @@ public abstract class ItemInHandRendererVRMixin {
     private void vivecraft$vrPlayerArm(
         PoseStack poseStack, MultiBufferSource buffer, int combinedLight, float swingProgress, HumanoidArm side)
     {
-        AbstractClientPlayer player = this.minecraft.player;
+        LocalPlayer player = this.minecraft.player;
         boolean rightHand = side == HumanoidArm.RIGHT;
         boolean mainHand = side == player.getMainArm();
         float offsetDirection = rightHand ? 1.0F : -1.0F;
@@ -276,10 +278,14 @@ public abstract class ItemInHandRendererVRMixin {
         poseStack.translate((slim ? -0.34375F : -0.375F) * offsetDirection, 0.0F, slim ? 0.78125F : 0.75F);
         poseStack.mulPose(Axis.XP.rotationDegrees(-90));
         poseStack.mulPose(Axis.YP.rotationDegrees(180));
+
+        vrArmRenderer.armAlpha = SwingTracker.getItemFade(player, ItemStack.EMPTY);
+        ResourceLocation skin = player.getSkin().texture();
+
         if (rightHand) {
-            vrArmRenderer.renderRightHand(poseStack, buffer, combinedLight, player);
+            vrArmRenderer.renderRightHand(poseStack, buffer, combinedLight, skin, true);
         } else {
-            vrArmRenderer.renderLeftHand(poseStack, buffer, combinedLight, player);
+            vrArmRenderer.renderLeftHand(poseStack, buffer, combinedLight, skin, true);
         }
         poseStack.popPose();
     }

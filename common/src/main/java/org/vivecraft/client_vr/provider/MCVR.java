@@ -2,11 +2,13 @@ package org.vivecraft.client_vr.provider;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.ScrollWheelHandler;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.TorchBlock;
@@ -463,7 +465,9 @@ public abstract class MCVR {
             if (this.mc.screen == null) {
                 InputSimulator.scrollMouse(0.0D, dir * 4);
             } else {
-                this.mc.player.getInventory().swapPaint(dir);
+                this.mc.player.getInventory().setSelectedHotbarSlot(
+                    ScrollWheelHandler.getNextScrollWheelSelection(dir, this.mc.player.getInventory().selected,
+                        Inventory.getSelectionSize()));
             }
         }
     }

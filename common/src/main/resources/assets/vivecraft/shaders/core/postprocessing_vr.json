@@ -1,12 +1,6 @@
 {
-  "blend": {
-    "func": "add",
-    "srcrgb": "srcalpha",
-    "dstrgb": "1-srcalpha"
-  },
-  "vertex": "passthrough_vr",
-  "fragment": "postprocessing_vr",
-  "attributes": ["Position", "UV0"],
+  "vertex": "vivecraft:core/passthrough_vr",
+  "fragment": "vivecraft:core/postprocessing_vr",
   "samplers": [
     {
       "name": "Sampler0"

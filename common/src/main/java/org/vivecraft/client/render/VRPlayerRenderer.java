@@ -1,29 +1,22 @@
 package org.vivecraft.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.phys.Vec3;
 import org.vivecraft.client.ClientVRPlayers;
+import org.vivecraft.client.extensions.EntityRenderStateExtension;
 import org.vivecraft.client.render.armor.VRArmorLayer;
 import org.vivecraft.client.render.armor.VRArmorModel_WithArms;
 import org.vivecraft.client.render.armor.VRArmorModel_WithArmsLegs;
-import org.vivecraft.client.utils.ScaleHelper;
 import org.vivecraft.client_vr.ClientDataHolderVR;
-import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.render.RenderPass;
-import org.vivecraft.client_vr.settings.VRSettings;
-import org.vivecraft.mod_compat_vr.immersiveportals.ImmersivePortalsHelper;
-import org.vivecraft.mod_compat_vr.shaders.ShadersHelper;
 
 public class VRPlayerRenderer extends PlayerRenderer {
     // Vanilla model
@@ -68,11 +61,11 @@ public class VRPlayerRenderer extends PlayerRenderer {
     public VRPlayerRenderer(EntityRendererProvider.Context context, boolean slim, ModelType type) {
         super(context, slim);
         this.model = switch (type) {
-            case VANILLA -> new VRPlayerModel<>(slim ? VR_LAYER_DEF_SLIM.bakeRoot() : VR_LAYER_DEF.bakeRoot(), slim);
+            case VANILLA -> new VRPlayerModel(slim ? VR_LAYER_DEF_SLIM.bakeRoot() : VR_LAYER_DEF.bakeRoot(), slim);
             case SPLIT_ARMS ->
-                new VRPlayerModel_WithArms<>(slim ? VR_LAYER_DEF_ARMS_SLIM.bakeRoot() : VR_LAYER_DEF_ARMS.bakeRoot(),
+                new VRPlayerModel_WithArms(slim ? VR_LAYER_DEF_ARMS_SLIM.bakeRoot() : VR_LAYER_DEF_ARMS.bakeRoot(),
                     slim);
-            case SPLIT_ARMS_LEGS -> new VRPlayerModel_WithArmsLegs<>(
+            case SPLIT_ARMS_LEGS -> new VRPlayerModel_WithArmsLegs(
                 slim ? VR_LAYER_DEF_ARMS_LEGS_SLIM.bakeRoot() : VR_LAYER_DEF_ARMS_LEGS.bakeRoot(), slim);
         };
 
@@ -90,12 +83,12 @@ public class VRPlayerRenderer extends PlayerRenderer {
                 this.addLayer(new VRArmorLayer<>(this,
                     new VRArmorModel_WithArms<>(VRArmorLayer.VR_ARMOR_DEF_ARMS_INNER.bakeRoot()),
                     new VRArmorModel_WithArms<>(VRArmorLayer.VR_ARMOR_DEF_ARMS_OUTER.bakeRoot()),
-                    context.getModelManager()));
+                    context.getEquipmentRenderer()));
             } else {
                 this.addLayer(new VRArmorLayer<>(this,
                     new VRArmorModel_WithArmsLegs<>(VRArmorLayer.VR_ARMOR_DEF_ARMS_LEGS_INNER.bakeRoot()),
                     new VRArmorModel_WithArmsLegs<>(VRArmorLayer.VR_ARMOR_DEF_ARMS_LEGS_OUTER.bakeRoot()),
-                    context.getModelManager()));
+                    context.getEquipmentRenderer()));
             }
         }
     }
@@ -114,130 +107,31 @@ public class VRPlayerRenderer extends PlayerRenderer {
     }
 
     @Override
-    public void render(
-        AbstractClientPlayer player, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource buffer,
-        int packedLight)
-    {
-
-        poseStack.pushPose();
-
-        ClientVRPlayers.RotInfo rotInfo = ClientVRPlayers.getInstance().getRotationsForPlayer(player.getUUID());
-        if (rotInfo != null) {
-            float scale = rotInfo.heightScale;
-            if (VRState.VR_RUNNING && player == Minecraft.getInstance().player) {
-                // remove entity scale, since the entity is already scaled by that before
-                scale *= rotInfo.worldScale / ScaleHelper.getEntityEyeHeightScale(player, partialTick);
-            }
-
-            if (player.isAutoSpinAttack()) {
-                // offset player to head
-                float offset = player.getViewXRot(partialTick) / 90F * 0.2F;
-                poseStack.translate(0, rotInfo.headPos.y() + offset, 0);
-            }
-
-            poseStack.scale(scale, scale, scale);
-        }
-
-        super.render(player, entityYaw, partialTick, poseStack, buffer, packedLight);
-
-        poseStack.popPose();
-    }
-
-    @Override
-    public Vec3 getRenderOffset(AbstractClientPlayer player, float partialTick) {
+    public Vec3 getRenderOffset(PlayerRenderState renderState) {
         // idk why we do this anymore
         // this changes the offset to only apply when swimming, instead of crouching
-        if (VRState.VR_RUNNING && player == Minecraft.getInstance().player) {
-            return player.isVisuallySwimming() ?
+        if (((EntityRenderStateExtension) renderState).vivecraft$isMainPlayer()) {
+            return renderState.isVisuallySwimming ?
                 new Vec3(0.0F, -0.125F * ClientDataHolderVR.getInstance().vrPlayer.worldScale, 0.0F) : Vec3.ZERO;
         } else {
-            return player.isVisuallySwimming() ? new Vec3(0.0D, -0.125D, 0.0D) : Vec3.ZERO;
-        }
-    }
-
-    @Override
-    public void setModelProperties(AbstractClientPlayer player) {
-        super.setModelProperties(player);
-
-        // no crouch hip movement when roomscale crawling
-        this.getModel().crouching &= !player.isVisuallySwimming();
-
-        if (player == Minecraft.getInstance().player &&
-            ClientDataHolderVR.getInstance().currentPass == RenderPass.CAMERA &&
-            ClientDataHolderVR.getInstance().cameraTracker.isQuickMode() &&
-            ClientDataHolderVR.getInstance().grabScreenShot)
-        {
-            // player hands block the camera, so disable them for the screenshot
-            hideHand(HumanoidArm.LEFT, true);
-            hideHand(HumanoidArm.RIGHT, true);
-        }
-        if (player == Minecraft.getInstance().player &&
-            ClientDataHolderVR.getInstance().vrSettings.shouldRenderSelf &&
-            !ShadersHelper.isRenderingShadows() &&
-            !(ImmersivePortalsHelper.isLoaded() && ImmersivePortalsHelper.isRenderingPortal()) &&
-            RenderPass.isFirstPerson(ClientDataHolderVR.getInstance().currentPass))
-        {
-            // hide the head or you won't see anything
-            this.getModel().head.visible = false;
-            this.getModel().hat.visible = false;
-
-            // hide model arms when not using them
-            if (ClientDataHolderVR.getInstance().vrSettings.modelArmsMode !=
-                VRSettings.ModelArmsMode.COMPLETE)
-            {
-                // keep the shoulders when in shoulder mode
-                hideHand(HumanoidArm.LEFT, ClientDataHolderVR.getInstance().vrSettings.modelArmsMode ==
-                    VRSettings.ModelArmsMode.OFF);
-                hideHand(HumanoidArm.RIGHT, ClientDataHolderVR.getInstance().vrSettings.modelArmsMode ==
-                    VRSettings.ModelArmsMode.OFF);
-            } else {
-                boolean leftHanded = ClientDataHolderVR.getInstance().vrSettings.reverseHands;
-                if (ClientDataHolderVR.getInstance().menuHandOff) {
-                    hideHand(leftHanded ? HumanoidArm.RIGHT : HumanoidArm.LEFT, false);
-                }
-                if (ClientDataHolderVR.getInstance().menuHandMain) {
-                    hideHand(leftHanded ? HumanoidArm.LEFT : HumanoidArm.RIGHT, false);
-                }
-            }
-        }
-    }
-
-    private void hideHand(HumanoidArm arm, boolean completeArm) {
-        if (this.getModel() instanceof VRPlayerModel<?> vrModel) {
-            if (arm == HumanoidArm.LEFT) {
-                vrModel.hideLeftArm(completeArm);
-            } else {
-                vrModel.hideRightArm(completeArm);
-            }
-        } else {
-            // this is just for the case someone replaces the model
-            if (arm == HumanoidArm.LEFT) {
-                getModel().leftArm.visible = false;
-                getModel().leftSleeve.visible = false;
-            } else {
-                getModel().rightArm.visible = false;
-                getModel().rightSleeve.visible = false;
-            }
+            return renderState.isVisuallySwimming ? new Vec3(0.0D, -0.125D, 0.0D) : Vec3.ZERO;
         }
     }
 
     @Override
     protected void setupRotations(
-        AbstractClientPlayer player, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick,
-        float scale)
+        PlayerRenderState renderState, PoseStack poseStack, float rotationYaw, float scale)
     {
-        if (ClientDataHolderVR.getInstance().currentPass != RenderPass.GUI &&
-            ClientVRPlayers.getInstance().isVRPlayer(player))
-        {
-            if (player == Minecraft.getInstance().player) {
+        ClientVRPlayers.RotInfo rotInfo = ((EntityRenderStateExtension) renderState).vivecraft$getRotInfo();
+        if (ClientDataHolderVR.getInstance().currentPass != RenderPass.GUI && rotInfo != null) {
+            if (((EntityRenderStateExtension) renderState).vivecraft$isMainPlayer()) {
                 rotationYaw = ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld().getBodyYaw();
             } else {
-                ClientVRPlayers.RotInfo rotInfo = ClientVRPlayers.getInstance().getRotationsForPlayer(player.getUUID());
                 rotationYaw = Mth.RAD_TO_DEG * rotInfo.getBodyYawRad();
             }
         }
 
         // vanilla below here
-        super.setupRotations(player, poseStack, ageInTicks, rotationYaw, partialTick, scale);
+        super.setupRotations(renderState, poseStack, rotationYaw, scale);
     }
 }
