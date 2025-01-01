@@ -2,7 +2,6 @@ package org.vivecraft.client_vr.gameplay.trackers;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -32,8 +31,8 @@ import org.vivecraft.server.config.ClimbeyBlockmode;
 import java.util.*;
 
 public class ClimbTracker extends Tracker {
-    public static final ModelResourceLocation CLAWS_MODEL = ModelResourceLocation.inventory(
-        ResourceLocation.fromNamespaceAndPath("vivecraft", "climb_claws"));
+    public static final ResourceLocation CLAWS_MODEL = ResourceLocation.fromNamespaceAndPath("vivecraft",
+        "climb_claws");
 
     public Set<Block> blocklist = new HashSet<>();
     public ClimbeyBlockmode serverBlockmode = ClimbeyBlockmode.DISABLED;

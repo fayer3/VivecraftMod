@@ -30,7 +30,7 @@ public class GuiBlacklistEditor extends GuiListScreen {
     @Override
     protected void init() {
         clearWidgets();
-        double scrollAmount = this.list != null ? this.list.getScrollAmount() : 0.0D;
+        double scrollAmount = this.list != null ? this.list.scrollAmount() : 0.0D;
 
         this.list = new SettingsList(this, this.minecraft, getEntries());
         this.list.setScrollAmount(scrollAmount);

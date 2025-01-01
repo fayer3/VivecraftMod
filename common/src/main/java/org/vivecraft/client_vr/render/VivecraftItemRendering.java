@@ -5,8 +5,8 @@ import com.mojang.math.Axis;
 import net.minecraft.Util;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.*;
@@ -27,16 +27,19 @@ import org.vivecraft.data.ItemTags;
 public class VivecraftItemRendering {
     private static final ClientDataHolderVR DH = ClientDataHolderVR.getInstance();
 
+    private static final ItemStackRenderState ITEM_STACK_RENDER_STATE = new ItemStackRenderState();
+
+
     /**
      * determines how the given ItemStack should be rendered
      *
-     * @param itemStack    ItemStack to identify
-     * @param player       Player holding the ItemStack
-     * @param itemRenderer ItemRenderer to query the item model from
+     * @param itemStack         ItemStack to identify
+     * @param player            Player holding the ItemStack
+     * @param itemModelResolver ItemModelResolver to query the item model from
      * @return ItemTransformType that specifies how the item should be rendered
      */
     public static VivecraftItemTransformType getTransformType(
-        ItemStack itemStack, AbstractClientPlayer player, ItemRenderer itemRenderer)
+        ItemStack itemStack, AbstractClientPlayer player, ItemModelResolver itemModelResolver)
     {
         VivecraftItemTransformType itemTransformType = VivecraftItemTransformType.Item;
         Item item = itemStack.getItem();
@@ -51,9 +54,10 @@ public class VivecraftItemRendering {
             if (block instanceof TorchBlock) {
                 itemTransformType = VivecraftItemTransformType.Block_Stick;
             } else {
-                BakedModel bakedmodel = itemRenderer.getModel(itemStack, player.level(), player, 0);
+                itemModelResolver.updateForLiving(ITEM_STACK_RENDER_STATE, itemStack, ItemDisplayContext.GUI, false,
+                    player);
 
-                if (bakedmodel.isGui3d()) {
+                if (ITEM_STACK_RENDER_STATE.isGui3d()) {
                     itemTransformType = VivecraftItemTransformType.Block_3D;
                 } else {
                     itemTransformType = VivecraftItemTransformType.Block_Item;

@@ -2,7 +2,6 @@ package org.vivecraft.mixin.client_vr;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import net.minecraft.client.KeyMapping;
@@ -80,10 +79,8 @@ public class KeyboardInputVRMixin extends ClientInput {
         return original.call(forward, backward, left, right, jump, shift, sprint);
     }
 
-    @Inject(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/KeyboardInput;leftImpulse:F", shift = At.Shift.AFTER))
-    private void vivecraft$analogInput(
-        CallbackInfo ci, @Local(argsOnly = true) boolean isSneaking, @Share("climbing") LocalBooleanRef climbing)
-    {
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void vivecraft$analogInput(CallbackInfo ci, @Share("climbing") LocalBooleanRef climbing) {
         if (!VRState.VR_RUNNING) return;
 
         boolean setMovement = false;
@@ -162,7 +159,7 @@ public class KeyboardInputVRMixin extends ClientInput {
                 this.keyPresses = new Input(forward, backward, left, right, this.keyPresses.jump(),
                     this.keyPresses.shift(), this.keyPresses.sprint());
 
-                if (dataHolder.vrSettings.autoSprint && !isSneaking) {
+                if (dataHolder.vrSettings.autoSprint && !this.keyPresses.shift()) {
                     // Sprint only works for walk forwards obviously
                     if (forwardAxis >= dataHolder.vrSettings.autoSprintThreshold) {
                         Minecraft.getInstance().player.setSprinting(true);

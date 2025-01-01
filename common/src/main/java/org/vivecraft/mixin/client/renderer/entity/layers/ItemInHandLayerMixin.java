@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,7 +25,7 @@ public abstract class ItemInHandLayerMixin extends RenderLayer {
 
     @Inject(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/ArmedModel;translateToHand(Lnet/minecraft/world/entity/HumanoidArm;Lcom/mojang/blaze3d/vertex/PoseStack;)V", shift = At.Shift.AFTER))
     private void vivecraft$firstPersonItemScale(
-        CallbackInfo ci, @Local(argsOnly = true) LivingEntityRenderState renderState,
+        CallbackInfo ci, @Local(argsOnly = true) ArmedEntityRenderState renderState,
         @Local(argsOnly = true) PoseStack poseStack)
     {
         if (((EntityRenderStateExtension) renderState).vivecraft$isMainPlayer() &&

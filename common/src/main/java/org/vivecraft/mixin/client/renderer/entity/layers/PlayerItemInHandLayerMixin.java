@@ -14,11 +14,11 @@ import org.vivecraft.mod_compat_vr.shaders.ShadersHelper;
 
 @Mixin(PlayerItemInHandLayer.class)
 public class PlayerItemInHandLayerMixin {
-    @ModifyExpressionValue(method = "renderArmWithItem(Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;Lnet/minecraft/world/entity/HumanoidArm;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
+    @ModifyExpressionValue(method = "renderArmWithItem(Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;Lnet/minecraft/client/renderer/item/ItemStackRenderState;Lnet/minecraft/world/entity/HumanoidArm;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/item/ItemStackRenderState;isEmpty()Z", ordinal = 1))
     private boolean vivecraft$noSpyglassInFirstPerson(
-        boolean isSpyglass, @Local(argsOnly = true) PlayerRenderState renderState)
+        boolean heldOnHead, @Local(argsOnly = true) PlayerRenderState renderState)
     {
-        return isSpyglass && !(((EntityRenderStateExtension) renderState).vivecraft$isMainPlayer() &&
+        return heldOnHead && !(((EntityRenderStateExtension) renderState).vivecraft$isMainPlayer() &&
             ClientDataHolderVR.getInstance().vrSettings.shouldRenderSelf &&
             RenderPass.isFirstPerson(ClientDataHolderVR.getInstance().currentPass) &&
             !ShadersHelper.isRenderingShadows() &&

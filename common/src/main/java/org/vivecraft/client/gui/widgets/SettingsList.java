@@ -45,8 +45,8 @@ public class SettingsList extends ContainerObjectSelectionList<SettingsList.Base
      */
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.isValidMouseClick(button)) {
-            this.updateScrollingState(mouseX, mouseY, button);
+        if (this.isValidClickButton(button)) {
+            this.updateScrolling(mouseX, mouseY, button);
             if (this.isMouseOver(mouseX, mouseY)) {
                 SettingsList.BaseEntry hovered = this.getEntryAtPositionFixed(mouseX, mouseY);
                 if (hovered != null && hovered.mouseClicked(mouseX, mouseY, button)) {
@@ -69,15 +69,15 @@ public class SettingsList extends ContainerObjectSelectionList<SettingsList.Base
      * just checks if the position is left of the scrollbar, instead of some weird left limit
      */
     private SettingsList.BaseEntry getEntryAtPositionFixed(double mouseX, double mouseY) {
-        int listY = Mth.floor(mouseY - this.getY()) - this.headerHeight + (int) this.getScrollAmount() - 4;
+        int listY = Mth.floor(mouseY - this.getY()) - this.headerHeight + (int) this.scrollAmount() - 4;
         int hoveredItem = listY / this.itemHeight;
-        return mouseX < this.getScrollbarPosition() && hoveredItem >= 0 && listY >= 0 &&
+        return mouseX < this.scrollBarX() && hoveredItem >= 0 && listY >= 0 &&
             hoveredItem < this.getItemCount() ? this.children().get(hoveredItem) : null;
     }
 
     @Override
-    protected int getScrollbarPosition() {
-        return super.getScrollbarPosition() + 8;
+    protected int scrollBarX() {
+        return super.scrollBarX() + 8;
     }
 
     @Override

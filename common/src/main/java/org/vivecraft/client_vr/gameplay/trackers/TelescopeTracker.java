@@ -2,7 +2,6 @@ package org.vivecraft.client_vr.gameplay.trackers;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
@@ -17,8 +16,8 @@ import org.vivecraft.common.utils.MathUtils;
 import org.vivecraft.data.ItemTags;
 
 public class TelescopeTracker extends Tracker {
-    public static final ModelResourceLocation SCOPE_MODEL = ModelResourceLocation.inventory(
-        ResourceLocation.fromNamespaceAndPath("vivecraft", "spyglass_in_hand"));
+    public static final ResourceLocation SCOPE_MODEL = ResourceLocation.fromNamespaceAndPath("vivecraft",
+        "spyglass_in_hand");
     private static final float LENS_DIST_MAX = 0.05F;
     private static final float LENS_DIST_MIN = 0.185F;
     private static final float LENS_DOT_MAX = 0.9F;

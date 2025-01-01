@@ -747,8 +747,7 @@ public class MenuWorldRenderer {
                     float f7 = Mth.sin(f6);
                     float f8 = Mth.cos(f6);
                     bufferBuilder
-                        .addVertex(poseStack, f7 * 120.0F, f8 * 120.0F,
-                            -f8 * 40.0F * ARGB.from8BitChannel(ARGB.alpha(sunriseColor)))
+                        .addVertex(poseStack, f7 * 120.0F, f8 * 120.0F, -f8 * 40.0F * ARGB.alphaFloat(sunriseColor))
                         .setColor(ARGB.transparent(sunriseColor));
                 }
 
@@ -1524,11 +1523,11 @@ public class MenuWorldRenderer {
                     } catch (Exception ignore) {}
 
                     if (sunriseColor != 0) {
-                        f5 = f5 * ARGB.from8BitChannel(ARGB.alpha(sunriseColor));
-                        this.fogRed = this.fogRed * (1.0F - f5) + ARGB.from8BitChannel(ARGB.red(sunriseColor)) * f5;
+                        f5 = f5 * ARGB.alphaFloat(sunriseColor);
+                        this.fogRed = this.fogRed * (1.0F - f5) + ARGB.redFloat(sunriseColor) * f5;
                         this.fogGreen =
-                            this.fogGreen * (1.0F - f5) + ARGB.from8BitChannel(ARGB.green(sunriseColor)) * f5;
-                        this.fogBlue = this.fogBlue * (1.0F - f5) + ARGB.from8BitChannel(ARGB.blue(sunriseColor)) * f5;
+                            this.fogGreen * (1.0F - f5) + ARGB.greenFloat(sunriseColor) * f5;
+                        this.fogBlue = this.fogBlue * (1.0F - f5) + ARGB.blueFloat(sunriseColor) * f5;
                     }
                 }
             }
