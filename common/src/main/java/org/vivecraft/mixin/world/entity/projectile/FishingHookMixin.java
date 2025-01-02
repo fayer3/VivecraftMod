@@ -23,7 +23,7 @@ public abstract class FishingHookMixin extends Entity {
         super(entityType, level);
     }
 
-    @WrapOperation(method = "<init>(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getXRot()F"))
+    @WrapOperation(method = "<init>(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;IILnet/minecraft/world/item/ItemStack;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getXRot()F"))
     private float vivecraft$modifyXRot(
         Player instance, Operation<Float> original, @Share("dir") LocalRef<Vec3> controllerDir,
         @Share("pos") LocalRef<Vec3> controllerPos)
@@ -42,7 +42,7 @@ public abstract class FishingHookMixin extends Entity {
         return original.call(instance);
     }
 
-    @WrapOperation(method = "<init>(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getYRot()F"))
+    @WrapOperation(method = "<init>(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;IILnet/minecraft/world/item/ItemStack;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getYRot()F"))
     private float vivecraft$modifyYRot(
         Player instance, Operation<Float> original, @Share("dir") LocalRef<Vec3> controllerDir)
     {
@@ -53,7 +53,7 @@ public abstract class FishingHookMixin extends Entity {
         }
     }
 
-    @WrapOperation(method = "<init>(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/FishingHook;moveTo(DDDFF)V"))
+    @WrapOperation(method = "<init>(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;IILnet/minecraft/world/item/ItemStack;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/FishingHook;moveTo(DDDFF)V"))
     private void vivecraft$modifyMoveTo(
         FishingHook instance, double x, double y, double z, float yRot, float xRot, Operation<Void> original,
         @Share("dir") LocalRef<Vec3> controllerDir, @Share("pos") LocalRef<Vec3> controllerPos)

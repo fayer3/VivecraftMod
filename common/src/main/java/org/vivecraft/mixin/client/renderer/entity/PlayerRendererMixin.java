@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.vivecraft.client.ClientVRPlayers;
@@ -38,6 +39,13 @@ public abstract class PlayerRendererMixin extends LivingEntityRendererMixin<Abst
 
     protected PlayerRendererMixin(EntityRendererProvider.Context context) {
         super(context);
+    }
+
+    @ModifyArg(method = "extractFlightData", at = @At(value = "INVOKE", target = "Ljava/lang/Math;acos(D)D"))
+    private static double vivecraft$fixFlicker(double acos) {
+        // because of imprecision issues this can cause nans
+        // is fixed in 1.21.4
+        return Math.min(1.0, acos);
     }
 
     @Inject(method = "extractRenderState(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;F)V", at = @At("TAIL"))

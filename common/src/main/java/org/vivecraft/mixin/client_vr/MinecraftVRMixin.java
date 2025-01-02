@@ -13,7 +13,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.ChatFormatting;
-import net.minecraft.ReportedException;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.*;
@@ -82,6 +81,7 @@ import org.vivecraft.common.network.packet.c2s.VRActivePayloadC2S;
 import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -186,8 +186,8 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
                 if (OptifineHelper.isOptifineLoaded()) {
                     // with optifine this texture somehow fails to load, so manually reload it
                     try {
-                        this.textureManager.getTexture(Gui.CROSSHAIR_SPRITE);
-                    } catch (ReportedException e) {
+                        this.textureManager.getTexture(Gui.CROSSHAIR_SPRITE).load(this.resourceManager);
+                    } catch (IOException e) {
                         // if there was an error, just reload everything
                         reloadResourcePacks();
                     }

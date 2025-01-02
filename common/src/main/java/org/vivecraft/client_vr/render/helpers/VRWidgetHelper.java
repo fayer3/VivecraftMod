@@ -7,15 +7,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -37,7 +35,6 @@ public class VRWidgetHelper {
 
     private static final RandomSource RANDOM = RandomSource.create();
     private static final ResourceLocation TRANSPARENT_TEXTURE = ResourceLocation.parse("vivecraft:transparent");
-    private static final ItemStackRenderState ITEM_STACK_RENDER_STATE = new ItemStackRenderState();
     public static boolean DEBUG = false;
 
     /**
@@ -114,8 +111,8 @@ public class VRWidgetHelper {
      * @param displayFaceFunc function that specifies if the view should be mirrored, normal or not shown at all
      */
     public static void renderVRCameraWidget(
-        float offsetX, float offsetY, float offsetZ, float scale, RenderPass renderPass, ResourceLocation model,
-        ResourceLocation displayModel, Runnable displayBindFunc, Function<Direction, DisplayFace> displayFaceFunc)
+        float offsetX, float offsetY, float offsetZ, float scale, RenderPass renderPass, ModelResourceLocation model,
+        ModelResourceLocation displayModel, Runnable displayBindFunc, Function<Direction, DisplayFace> displayFaceFunc)
     {
 
         PoseStack poseStack = new PoseStack();
@@ -153,7 +150,7 @@ public class VRWidgetHelper {
         RenderSystem.defaultBlendFunc();
 
         // we use block models, so the camera texture is on the regular block atlas
-        RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+        RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
         if (MC.level != null) {
             RenderSystem.setShader(CoreShaders.RENDERTYPE_ENTITY_CUTOUT_NO_CULL);
         } else {
@@ -162,86 +159,71 @@ public class VRWidgetHelper {
         MC.gameRenderer.lightTexture().turnOnLightLayer();
 
         // render camera model
-        BufferBuilder bufferBuilder;
+        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
 
-        ITEM_STACK_RENDER_STATE.clear();
-        MC.getModelManager().getItemModel(model)
-            .update(ITEM_STACK_RENDER_STATE, ItemStack.EMPTY, MC.getItemModelResolver(), ItemDisplayContext.GROUND,
-                null, null, 0);
-
-        if (!ITEM_STACK_RENDER_STATE.isEmpty() && ITEM_STACK_RENDER_STATE.layers[0].model != null) {
-            bufferBuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
-            MC.getBlockRenderer().getModelRenderer()
-                .renderModel(poseStack.last(), bufferBuilder, null, ITEM_STACK_RENDER_STATE.layers[0].model, 1.0F, 1.0F,
-                    1.0F, combinedLight, OverlayTexture.NO_OVERLAY);
-            BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
-        }
+        MC.getBlockRenderer().getModelRenderer()
+            .renderModel(poseStack.last(), bufferBuilder, null, MC.getModelManager().getModel(model), 1.0F, 1.0F, 1.0F,
+                combinedLight, OverlayTexture.NO_OVERLAY);
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
 
         // render camera display
         RenderSystem.disableBlend();
         displayBindFunc.run();
         RenderSystem.setShader(CoreShaders.RENDERTYPE_ENTITY_SOLID);
 
-        ITEM_STACK_RENDER_STATE.clear();
-        MC.getModelManager().getItemModel(displayModel)
-            .update(ITEM_STACK_RENDER_STATE, ItemStack.EMPTY, MC.getItemModelResolver(), ItemDisplayContext.GROUND,
-                null, null, 0);
+        bufferBuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
 
-        if (!ITEM_STACK_RENDER_STATE.isEmpty() && ITEM_STACK_RENDER_STATE.layers[0].model != null) {
-            bufferBuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
-
-            // need to render this manually, because the uvs in the model are for the atlas texture, and not fullscreen
-            for (BakedQuad bakedquad : ITEM_STACK_RENDER_STATE.layers[0].model.getQuads(null, null, RANDOM)) {
-                if (displayFaceFunc.apply(bakedquad.getDirection()) != DisplayFace.NONE &&
-                    bakedquad.getSprite().contents().name().equals(TRANSPARENT_TEXTURE))
-                {
-                    int[] vertexList = bakedquad.getVertices();
-                    boolean mirrored = displayFaceFunc.apply(bakedquad.getDirection()) == DisplayFace.MIRROR;
-                    int step = vertexList.length / 4;
-                    bufferBuilder.addVertex(
-                            poseStack.last().pose(),
-                            Float.intBitsToFloat(vertexList[0]),
-                            Float.intBitsToFloat(vertexList[1]),
-                            Float.intBitsToFloat(vertexList[2]))
-                        .setColor(1.0F, 1.0F, 1.0F, 1.0F)
-                        .setUv(mirrored ? 1.0F : 0.0F, 1.0F)
-                        .setOverlay(OverlayTexture.NO_OVERLAY)
-                        .setLight(LightTexture.FULL_BRIGHT)
-                        .setNormal(0.0F, 1.0F, 0.0F);
-                    bufferBuilder.addVertex(
-                            poseStack.last().pose(),
-                            Float.intBitsToFloat(vertexList[step]),
-                            Float.intBitsToFloat(vertexList[step + 1]),
-                            Float.intBitsToFloat(vertexList[step + 2]))
-                        .setColor(1.0F, 1.0F, 1.0F, 1.0F)
-                        .setUv(mirrored ? 1.0F : 0.0F, 0.0F)
-                        .setOverlay(OverlayTexture.NO_OVERLAY)
-                        .setLight(LightTexture.FULL_BRIGHT)
-                        .setNormal(0.0F, 1.0F, 0.0F);
-                    bufferBuilder.addVertex(
-                            poseStack.last().pose(),
-                            Float.intBitsToFloat(vertexList[step * 2]),
-                            Float.intBitsToFloat(vertexList[step * 2 + 1]),
-                            Float.intBitsToFloat(vertexList[step * 2 + 2]))
-                        .setColor(1.0F, 1.0F, 1.0F, 1.0F)
-                        .setUv(mirrored ? 0.0F : 1.0F, 0.0F)
-                        .setOverlay(OverlayTexture.NO_OVERLAY)
-                        .setLight(LightTexture.FULL_BRIGHT)
-                        .setNormal(0.0F, 1.0F, 0.0F);
-                    bufferBuilder.addVertex(
-                            poseStack.last().pose(),
-                            Float.intBitsToFloat(vertexList[step * 3]),
-                            Float.intBitsToFloat(vertexList[step * 3 + 1]),
-                            Float.intBitsToFloat(vertexList[step * 3 + 2]))
-                        .setColor(1.0F, 1.0F, 1.0F, 1.0F)
-                        .setUv(mirrored ? 0.0F : 1.0F, 1.0F)
-                        .setOverlay(OverlayTexture.NO_OVERLAY)
-                        .setLight(LightTexture.FULL_BRIGHT)
-                        .setNormal(0.0F, 1.0F, 0.0F);
-                }
+        // need to render this manually, because the uvs in the model are for the atlas texture, and not fullscreen
+        for (BakedQuad bakedquad : MC.getModelManager().getModel(displayModel).getQuads(null, null, RANDOM)) {
+            if (displayFaceFunc.apply(bakedquad.getDirection()) != DisplayFace.NONE &&
+                bakedquad.getSprite().contents().name().equals(TRANSPARENT_TEXTURE))
+            {
+                int[] vertexList = bakedquad.getVertices();
+                boolean mirrored = displayFaceFunc.apply(bakedquad.getDirection()) == DisplayFace.MIRROR;
+                int step = vertexList.length / 4;
+                bufferBuilder.addVertex(
+                        poseStack.last().pose(),
+                        Float.intBitsToFloat(vertexList[0]),
+                        Float.intBitsToFloat(vertexList[1]),
+                        Float.intBitsToFloat(vertexList[2]))
+                    .setColor(1.0F, 1.0F, 1.0F, 1.0F)
+                    .setUv(mirrored ? 1.0F : 0.0F, 1.0F)
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(LightTexture.FULL_BRIGHT)
+                    .setNormal(0.0F, 1.0F, 0.0F);
+                bufferBuilder.addVertex(
+                        poseStack.last().pose(),
+                        Float.intBitsToFloat(vertexList[step]),
+                        Float.intBitsToFloat(vertexList[step + 1]),
+                        Float.intBitsToFloat(vertexList[step + 2]))
+                    .setColor(1.0F, 1.0F, 1.0F, 1.0F)
+                    .setUv(mirrored ? 1.0F : 0.0F, 0.0F)
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(LightTexture.FULL_BRIGHT)
+                    .setNormal(0.0F, 1.0F, 0.0F);
+                bufferBuilder.addVertex(
+                        poseStack.last().pose(),
+                        Float.intBitsToFloat(vertexList[step * 2]),
+                        Float.intBitsToFloat(vertexList[step * 2 + 1]),
+                        Float.intBitsToFloat(vertexList[step * 2 + 2]))
+                    .setColor(1.0F, 1.0F, 1.0F, 1.0F)
+                    .setUv(mirrored ? 0.0F : 1.0F, 0.0F)
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(LightTexture.FULL_BRIGHT)
+                    .setNormal(0.0F, 1.0F, 0.0F);
+                bufferBuilder.addVertex(
+                        poseStack.last().pose(),
+                        Float.intBitsToFloat(vertexList[step * 3]),
+                        Float.intBitsToFloat(vertexList[step * 3 + 1]),
+                        Float.intBitsToFloat(vertexList[step * 3 + 2]))
+                    .setColor(1.0F, 1.0F, 1.0F, 1.0F)
+                    .setUv(mirrored ? 0.0F : 1.0F, 1.0F)
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(LightTexture.FULL_BRIGHT)
+                    .setNormal(0.0F, 1.0F, 0.0F);
             }
-            BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
         }
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
 
         MC.gameRenderer.lightTexture().turnOffLightLayer();
         RenderSystem.enableBlend();

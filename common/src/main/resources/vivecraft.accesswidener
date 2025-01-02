@@ -96,7 +96,3 @@ accessible method net/minecraft/world/item/BrushItem spawnDustParticles (Lnet/mi
 
 # do not kick climbing players
 accessible field net/minecraft/server/network/ServerGamePacketListenerImpl aboveGroundTickCount I
-
-# to render the camera widget with dispaly
-accessible field net/minecraft/client/renderer/item/ItemStackRenderState layers [Lnet/minecraft/client/renderer/item/ItemStackRenderState$LayerRenderState;
-accessible field net/minecraft/client/renderer/item/ItemStackRenderState$LayerRenderState model Lnet/minecraft/client/resources/model/BakedModel;

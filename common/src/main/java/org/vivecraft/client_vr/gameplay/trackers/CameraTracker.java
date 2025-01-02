@@ -2,6 +2,7 @@ package org.vivecraft.client_vr.gameplay.trackers;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -14,9 +15,10 @@ import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.common.utils.MathUtils;
 
 public class CameraTracker extends Tracker {
-    public static final ResourceLocation CAMERA_MODEL = ResourceLocation.fromNamespaceAndPath("vivecraft", "camera");
-    public static final ResourceLocation CAMERA_DISPLAY_MODEL = ResourceLocation.fromNamespaceAndPath("vivecraft",
-        "camera_display");
+    public static final ModelResourceLocation CAMERA_MODEL = ModelResourceLocation.inventory(
+        ResourceLocation.fromNamespaceAndPath("vivecraft", "camera"));
+    public static final ModelResourceLocation CAMERA_DISPLAY_MODEL = ModelResourceLocation.inventory(
+        ResourceLocation.fromNamespaceAndPath("vivecraft", "camera_display"));
 
     private boolean visible = false;
     private Vec3 position = Vec3.ZERO;

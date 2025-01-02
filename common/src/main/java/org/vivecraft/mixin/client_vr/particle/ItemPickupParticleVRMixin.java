@@ -25,7 +25,7 @@ public class ItemPickupParticleVRMixin {
     @Shadow
     private Entity itemEntity;
 
-    @WrapOperation(method = "renderCustom", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(DDD)D", ordinal = 0))
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(DDD)D", ordinal = 0))
     private double vivecraft$updateX(
         double delta, double start, double end, Operation<Double> original,
         @Share("controllerPos") LocalRef<Vec3> controllerPos)
@@ -38,7 +38,7 @@ public class ItemPickupParticleVRMixin {
         }
     }
 
-    @WrapOperation(method = "renderCustom", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(DDD)D", ordinal = 1))
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(DDD)D", ordinal = 1))
     private double vivecraft$updateY(
         double delta, double start, double end, Operation<Double> original,
         @Share("controllerPos") LocalRef<Vec3> controllerPos)
@@ -48,7 +48,7 @@ public class ItemPickupParticleVRMixin {
             original.call(delta, start, end);
     }
 
-    @WrapOperation(method = "renderCustom", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(DDD)D", ordinal = 2))
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(DDD)D", ordinal = 2))
     private double vivecraft$updateZ(
         double delta, double start, double end, Operation<Double> original,
         @Share("controllerPos") LocalRef<Vec3> controllerPos)

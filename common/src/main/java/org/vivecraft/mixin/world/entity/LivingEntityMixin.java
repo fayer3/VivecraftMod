@@ -16,7 +16,7 @@ import org.vivecraft.server.ServerVivePlayer;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin {
-    @WrapOperation(method = "hasLineOfSight(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/ClipContext$Block;Lnet/minecraft/world/level/ClipContext$Fluid;D)Z", at = @At(value = "NEW", target = "net/minecraft/world/phys/Vec3", ordinal = 0))
+    @WrapOperation(method = "hasLineOfSight(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/ClipContext$Block;Lnet/minecraft/world/level/ClipContext$Fluid;Ljava/util/function/DoubleSupplier;)Z", at = @At(value = "NEW", target = "net/minecraft/world/phys/Vec3", ordinal = 0))
     private Vec3 vivecraft$modifyOwnHeadPos(double x, double y, double z, Operation<Vec3> original) {
         if ((Object) this instanceof ServerPlayer player) {
             ServerVivePlayer serverVivePlayer = ServerVRPlayers.getVivePlayer(player);
@@ -27,7 +27,7 @@ public class LivingEntityMixin {
         return original.call(x, y, z);
     }
 
-    @WrapOperation(method = "hasLineOfSight(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/ClipContext$Block;Lnet/minecraft/world/level/ClipContext$Fluid;D)Z", at = @At(value = "NEW", target = "net/minecraft/world/phys/Vec3", ordinal = 1))
+    @WrapOperation(method = "hasLineOfSight(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/ClipContext$Block;Lnet/minecraft/world/level/ClipContext$Fluid;Ljava/util/function/DoubleSupplier;)Z", at = @At(value = "NEW", target = "net/minecraft/world/phys/Vec3", ordinal = 1))
     private Vec3 vivecraft$modifyOtherHeadPos(
         double x, double y, double z, Operation<Vec3> original, @Local(argsOnly = true) Entity other)
     {
@@ -42,7 +42,8 @@ public class LivingEntityMixin {
         return original.call(x, y, z);
     }
 
-    @WrapOperation(method = "isLookingAtMe", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getViewVector(F)Lnet/minecraft/world/phys/Vec3;"))
+    // no remap needed to make the * work for neoforge
+    @WrapOperation(method = {"method_64619*", "isLookingAtMe*"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getViewVector(F)Lnet/minecraft/world/phys/Vec3;", remap = true), remap = false)
     private Vec3 vivecraft$hmdDir(
         LivingEntity instance, float partialTick, Operation<Vec3> original, @Share("hmdPos") LocalRef<Vec3> hmdPos)
     {
@@ -55,21 +56,24 @@ public class LivingEntityMixin {
         }
     }
 
-    @WrapOperation(method = "isLookingAtMe", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getX()D", ordinal = 1))
+    // no remap needed to make the * work for neoforge
+    @WrapOperation(method = {"method_64619*", "isLookingAtMe*"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getX()D", ordinal = 1, remap = true), remap = false)
     private double vivecraft$hmdPosX(
         LivingEntity instance, Operation<Double> original, @Share("hmdPos") LocalRef<Vec3> hmdPos)
     {
         return hmdPos.get() != null ? hmdPos.get().x : original.call(instance);
     }
 
-    @WrapOperation(method = "isLookingAtMe", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getEyeY()D"))
+    // no remap needed to make the * work for neoforge
+    @WrapOperation(method = {"method_64619*", "isLookingAtMe*"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getEyeY()D", remap = true), remap = false)
     private double vivecraft$hmdPosY(
         LivingEntity instance, Operation<Double> original, @Share("hmdPos") LocalRef<Vec3> hmdPos)
     {
         return hmdPos.get() != null ? hmdPos.get().y : original.call(instance);
     }
 
-    @WrapOperation(method = "isLookingAtMe", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getZ()D", ordinal = 1))
+    // no remap needed to make the * work for neoforge
+    @WrapOperation(method = {"method_64619*", "isLookingAtMe*"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getZ()D", ordinal = 1, remap = true), remap = false)
     private double vivecraft$hmdPosZ(
         LivingEntity instance, Operation<Double> original, @Share("hmdPos") LocalRef<Vec3> hmdPos)
     {
