@@ -212,11 +212,13 @@ public abstract class GuiVROptionsBase extends Screen {
             }
         }
 
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        this.renderBackground(guiGraphics);
 
         if (this.visibleList != null) {
             this.visibleList.render(guiGraphics, mouseX, mouseY, partialTick);
         }
+
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         guiGraphics.drawCenteredString(this.font, Component.translatable(this.vrTitle), this.width / 2, 15, 0xFFFFFF);
 
@@ -265,12 +267,12 @@ public abstract class GuiVROptionsBase extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollY) {
         if (this.visibleList != null) {
-            this.visibleList.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+            this.visibleList.mouseScrolled(mouseX, mouseY, scrollY);
         }
 
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        return super.mouseScrolled(mouseX, mouseY, scrollY);
     }
 
     @Override

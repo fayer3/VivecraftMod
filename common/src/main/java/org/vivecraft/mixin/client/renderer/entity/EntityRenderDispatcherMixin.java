@@ -93,7 +93,7 @@ public abstract class EntityRenderDispatcherMixin implements ResourceManagerRelo
         if (entity instanceof AbstractClientPlayer player &&
             (player.getClass() == LocalPlayer.class || player.getClass() == RemotePlayer.class))
         {
-            String skinType = player.getSkin().model().id();
+            String skinType = player.getModelName();
             ClientVRPlayers.RotInfo rotInfo = ClientVRPlayers.getInstance().getRotationsForPlayer(player.getUUID());
             if (rotInfo != null) {
                 VRPlayerRenderer vrPlayerRenderer;

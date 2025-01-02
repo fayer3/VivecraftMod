@@ -184,9 +184,20 @@ public class MCOpenVR extends MCVR {
         super(mc, dh, VivecraftVRMod.INSTANCE);
         OME = this;
         // make sure the lwjgl version is the right one
-        // check that the right lwjgl version is loaded that we ship the OpenVR part of, or stuff breaks
-        final String lwjglVersion = "3.3.2";
-        if (!Version.getVersion().startsWith(lwjglVersion)) {
+        // versions after 3.3.2 changed internals that are incompatible
+        final String max = "3.3.2";
+        final int maxMajor = 3;
+        final int maxMinor = 3;
+        final int maxPatch = 2;
+        String[] versionString = Version.getVersion().substring(0, 5).split("\\.", 3);
+        int[] version = new int[versionString.length];
+        for (int i = 0; i < versionString.length; i++) {
+            version[i] = Integer.parseInt(versionString[i]);
+        }
+        if ((version[0] > maxMajor) ||
+            (version[0] == maxMajor && version[1] > maxMinor) ||
+            (version[0] == maxMajor && version[1] == maxMinor && version[2] > maxPatch))
+        {
             String suppliedJar = "";
             try {
                 suppliedJar = new File(
@@ -197,7 +208,7 @@ public class MCOpenVR extends MCVR {
 
             throw new RenderConfigException(Component.translatable("vivecraft.messages.vriniterror"),
                 Component.translatable("vivecraft.messages.rendersetupfailed",
-                    I18n.get("vivecraft.messages.invalidlwjgl", Version.getVersion(), lwjglVersion, suppliedJar),
+                    I18n.get("vivecraft.messages.invalidlwjgl", Version.getVersion(), max, suppliedJar),
                     "OpenVR_LWJGL"));
         }
 

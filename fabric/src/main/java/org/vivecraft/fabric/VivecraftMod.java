@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import org.vivecraft.client.Xplat;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.common.network.CommonNetworkHelper;
 import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
@@ -28,13 +29,17 @@ public class VivecraftMod implements ModInitializer {
         // use channel registers to be compatible with other mod loaders
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             ClientPlayNetworking.registerGlobalReceiver(CommonNetworkHelper.CHANNEL,
-                (client, handler, buffer, responseSender) -> client.execute(
-                    () -> ClientNetworking.handlePacket(VivecraftPayloadS2C.readPacket(buffer))));
+                (client, handler, buffer, responseSender) -> {
+                    VivecraftPayloadS2C packet = VivecraftPayloadS2C.readPacket(buffer);
+                    client.execute(() -> ClientNetworking.handlePacket(packet));
+                });
         }
 
         ServerPlayNetworking.registerGlobalReceiver(CommonNetworkHelper.CHANNEL,
-            (server, player, handler, buffer, responseSender) -> server.execute(
-                () -> ServerNetworking.handlePacket(VivecraftPayloadC2S.readPacket(buffer), player,
-                    responseSender::sendPacket)));
+            (server, player, handler, buffer, responseSender) -> {
+                VivecraftPayloadC2S packet = VivecraftPayloadC2S.readPacket(buffer);
+                server.execute(() -> ServerNetworking.handlePacket(packet, player,
+                    p -> responseSender.sendPacket(Xplat.getS2CPacket(p))));
+            });
     }
 }

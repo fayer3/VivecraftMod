@@ -147,7 +147,7 @@ public class TextScrollWidget extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollY) {
         if (scrollY < 0.0 && this.currentLine < this.scrollSteps) {
             this.currentLine++;
         } else if (scrollY > 0.0 && this.currentLine > 0) {
@@ -162,7 +162,7 @@ public class TextScrollWidget extends AbstractWidget {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_UP || keyCode == GLFW.GLFW_KEY_DOWN) {
-            if (mouseScrolled(0, 0, 0, keyCode == GLFW.GLFW_KEY_UP ? 1 : -1)) {
+            if (mouseScrolled(0, 0, keyCode == GLFW.GLFW_KEY_UP ? 1 : -1)) {
                 return true;
             }
         }

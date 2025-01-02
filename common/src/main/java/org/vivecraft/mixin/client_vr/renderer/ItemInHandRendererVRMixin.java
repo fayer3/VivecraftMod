@@ -244,9 +244,9 @@ public abstract class ItemInHandRendererVRMixin {
         boolean mainHand = side == player.getMainArm();
         float offsetDirection = rightHand ? 1.0F : -1.0F;
 
-        RenderSystem.setShaderTexture(0, player.getSkin().texture());
+        RenderSystem.setShaderTexture(0, player.getSkinTextureLocation());
         VRArmRenderer vrArmRenderer = ((EntityRenderDispatcherVRExtension) this.entityRenderDispatcher).vivecraft$getArmSkinMap()
-            .get(player.getSkin().model().id());
+            .get(player.getModelName());
 
         poseStack.pushPose();
 
@@ -259,7 +259,7 @@ public abstract class ItemInHandRendererVRMixin {
         }
 
         poseStack.scale(0.4f, 0.4F, 0.4F);
-        boolean slim = player.getSkin().model().id().equals("slim");
+        boolean slim = player.getModelName().equals("slim");
 
             /*
              x offset: (arm x origin + arm x offset + arm x dimension * 0.5) / 16

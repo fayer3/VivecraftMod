@@ -588,7 +588,7 @@ public class GuiHandler {
                         // hud on wrist
                         scale = 0.4F;
 
-                        boolean slim = MC.player.getSkin().model().id().equals("slim");
+                        boolean slim = MC.player.getModelName().equals("slim");
 
                         float xOffset = -0.136F;
 

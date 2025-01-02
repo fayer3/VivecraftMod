@@ -1,11 +1,10 @@
 package org.vivecraft.common.network.packet;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import org.vivecraft.common.network.CommonNetworkHelper;
 
-public interface VivecraftPayload extends CustomPacketPayload {
+public interface VivecraftPayload {
 
     /**
      * writes this data packet to the given buffer

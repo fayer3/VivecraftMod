@@ -1,10 +1,10 @@
 package org.vivecraft.forge;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.ChannelBuilder;
-import net.minecraftforge.network.EventNetworkChannel;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.event.EventNetworkChannel;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.common.network.CommonNetworkHelper;
@@ -18,10 +18,10 @@ public class Vivecraft {
     public static final String MODID = "vivecraft";
 
     public static final EventNetworkChannel VIVECRAFT_NETWORK_CHANNEL =
-        ChannelBuilder.named(CommonNetworkHelper.CHANNEL)
-            .acceptedVersions((status, version) -> true)
-            .optional()
-            .networkProtocolVersion(0)
+        NetworkRegistry.ChannelBuilder.named(CommonNetworkHelper.CHANNEL)
+            .clientAcceptedVersions(status -> true)
+            .serverAcceptedVersions(status -> true)
+            .networkProtocolVersion(() -> "0")
             .eventNetworkChannel();
 
     public Vivecraft() {
@@ -29,22 +29,26 @@ public class Vivecraft {
         ServerConfig.init(null);
 
         VIVECRAFT_NETWORK_CHANNEL.addListener(event -> {
-            if (event.getSource().isServerSide()) {
-                handleServerVivePacket(event.getPayload(), event.getSource());
-            } else {
-                handleClientVivePacket(event.getPayload(), event.getSource());
+            if (event.getPayload() != null) {
+                if (event.getSource().get().getDirection().getOriginationSide().isClient()) {
+                    handleServerVivePacket(event.getPayload(), event.getSource().get());
+                } else {
+                    handleClientVivePacket(event.getPayload(), event.getSource().get());
+                }
             }
-            event.getSource().setPacketHandled(true);
+            event.getSource().get().setPacketHandled(true);
         });
     }
 
-    private static void handleClientVivePacket(FriendlyByteBuf buffer, CustomPayloadEvent.Context context) {
-        context.enqueueWork(() -> ClientNetworking.handlePacket(VivecraftPayloadS2C.readPacket(buffer)));
+    private static void handleClientVivePacket(FriendlyByteBuf buffer, NetworkEvent.Context context) {
+        VivecraftPayloadS2C packet = VivecraftPayloadS2C.readPacket(buffer);
+        context.enqueueWork(() -> ClientNetworking.handlePacket(packet));
     }
 
-    private static void handleServerVivePacket(FriendlyByteBuf buffer, CustomPayloadEvent.Context context) {
+    private static void handleServerVivePacket(FriendlyByteBuf buffer, NetworkEvent.Context context) {
+        VivecraftPayloadC2S packet = VivecraftPayloadC2S.readPacket(buffer);
         context.enqueueWork(
-            () -> ServerNetworking.handlePacket(VivecraftPayloadC2S.readPacket(buffer), context.getSender(),
-                p -> context.getConnection().send(Xplat.getS2CPacket(p))));
+            () -> ServerNetworking.handlePacket(packet, context.getSender(),
+                p -> context.getNetworkManager().send(Xplat.getS2CPacket(p))));
     }
 }

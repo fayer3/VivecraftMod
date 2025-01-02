@@ -80,10 +80,8 @@ import org.vivecraft.client_vr.settings.VRHotkeys;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_xr.render_pass.RenderPassManager;
 import org.vivecraft.common.network.packet.c2s.VRActivePayloadC2S;
-import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -205,16 +203,6 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
             if (this.vivecraft$resourcepacks == null) {
                 // first load
                 this.vivecraft$resourcepacks = this.resourceManager.listPacks().map(PackResources::packId).toList();
-
-                if (OptifineHelper.isOptifineLoaded()) {
-                    // with optifine this texture somehow fails to load, so manually reload it
-                    try {
-                        this.textureManager.getTexture(Gui.CROSSHAIR_SPRITE).load(this.resourceManager);
-                    } catch (IOException e) {
-                        // if there was an error, just reload everything
-                        reloadResourcePacks();
-                    }
-                }
             } else if (!this.vivecraft$resourcepacks.equals(newPacks) &&
                 ClientDataHolderVR.getInstance().menuWorldRenderer != null &&
                 ClientDataHolderVR.getInstance().menuWorldRenderer.isReady())
@@ -231,7 +219,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
         return overlay;
     }
 
-    @Inject(method = "onGameLoadFinished", at = @At("TAIL"))
+    @Inject(method = "setInitialScreen", at = @At("TAIL"))
     private void vivecraft$showGarbageCollectorScreen(CallbackInfo ci) {
         // set the Garbage collector screen here, when it got reset after loading, but don't set it when using quickplay, because it would be removed after loading has finished
         if (VRState.VR_INITIALIZED && !ClientDataHolderVR.getInstance().incorrectGarbageCollector.isEmpty() &&
@@ -570,6 +558,10 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
         if (VRState.VR_RUNNING) {
             if (ClientDataHolderVR.getInstance().menuWorldRenderer.isReady() && MethodHolder.isInMenuRoom()) {
                 ClientDataHolderVR.getInstance().menuWorldRenderer.tick();
+                if (this.level == null) {
+                    // vanilla doesn't tick it when the level is null;
+                    this.textureManager.tick();
+                }
             }
 
             this.profiler.push("vrProcessInputs");

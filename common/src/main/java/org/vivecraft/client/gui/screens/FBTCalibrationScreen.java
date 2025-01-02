@@ -159,6 +159,7 @@ public class FBTCalibrationScreen extends Screen {
         this.unlabeledTrackersWarningText.visible = !this.calibrated && this.usingUnlabeledTrackers;
         this.unlabeledTrackersConfirmationText.visible = this.calibrated && this.usingUnlabeledTrackers;
 
+        this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         if (this.calibrated && this.usingUnlabeledTrackers) {

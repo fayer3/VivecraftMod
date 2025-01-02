@@ -1,17 +1,16 @@
 package org.vivecraft.mixin.client_vr.multiplayer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.CommonListenerCookie;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,16 +23,14 @@ import org.vivecraft.client_vr.provider.ControllerType;
 import org.vivecraft.client_vr.settings.VRSettings;
 
 @Mixin(ClientPacketListener.class)
-public abstract class ClientPacketListenerVRMixin extends ClientCommonPacketListenerImpl {
+public abstract class ClientPacketListenerVRMixin {
 
     @Unique
     private String vivecraft$lastMsg = null;
 
-    protected ClientPacketListenerVRMixin(
-        Minecraft minecraft, Connection connection, CommonListenerCookie commonListenerCookie)
-    {
-        super(minecraft, connection, commonListenerCookie);
-    }
+    @Final
+    @Shadow
+    private Minecraft minecraft;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void vivecraft$init(CallbackInfo ci) {

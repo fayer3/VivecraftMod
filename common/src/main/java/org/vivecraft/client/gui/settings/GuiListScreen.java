@@ -43,7 +43,7 @@ public abstract class GuiListScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void renderBackground(GuiGraphics guiGraphics) {
         this.renderDirtBackground(guiGraphics);
     }
 
@@ -53,8 +53,9 @@ public abstract class GuiListScreen extends Screen {
             init();
             this.reinit = false;
         }
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        this.renderBackground(guiGraphics);
         this.list.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
         guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 8, 0xFFFFFF);
     }
 }

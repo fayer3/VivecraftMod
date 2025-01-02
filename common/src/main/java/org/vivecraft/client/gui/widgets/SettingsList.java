@@ -29,7 +29,7 @@ public class SettingsList extends ContainerObjectSelectionList<SettingsList.Base
     int maxNameWidth;
 
     public SettingsList(Screen parent, Minecraft minecraft, List<SettingsList.BaseEntry> entries) {
-        super(minecraft, parent.width + 45, parent.height - 52, 20, 20);
+        super(minecraft, parent.width + 45, parent.height, 20, parent.height - 32, 20);
         this.parent = parent;
         for (SettingsList.BaseEntry entry : entries) {
             int i;
@@ -45,20 +45,18 @@ public class SettingsList extends ContainerObjectSelectionList<SettingsList.Base
      */
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.isValidMouseClick(button)) {
-            this.updateScrollingState(mouseX, mouseY, button);
-            if (this.isMouseOver(mouseX, mouseY)) {
-                SettingsList.BaseEntry hovered = this.getEntryAtPositionFixed(mouseX, mouseY);
-                if (hovered != null && hovered.mouseClicked(mouseX, mouseY, button)) {
-                    if (this.getFocused() != hovered && this.getFocused() != null) {
-                        // unselect old entry
-                        this.getFocused().setFocused(null);
-                    }
-
-                    this.setFocused(hovered);
-                    this.setDragging(true);
-                    return true;
+        this.updateScrollingState(mouseX, mouseY, button);
+        if (this.isMouseOver(mouseX, mouseY)) {
+            SettingsList.BaseEntry hovered = this.getEntryAtPositionFixed(mouseX, mouseY);
+            if (hovered != null && hovered.mouseClicked(mouseX, mouseY, button)) {
+                if (this.getFocused() != hovered && this.getFocused() != null) {
+                    // unselect old entry
+                    this.getFocused().setFocused(null);
                 }
+
+                this.setFocused(hovered);
+                this.setDragging(true);
+                return true;
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -69,7 +67,7 @@ public class SettingsList extends ContainerObjectSelectionList<SettingsList.Base
      * just checks if the position is left of the scrollbar, instead of some weird left limit
      */
     private SettingsList.BaseEntry getEntryAtPositionFixed(double mouseX, double mouseY) {
-        int listY = Mth.floor(mouseY - this.getY()) - this.headerHeight + (int) this.getScrollAmount() - 4;
+        int listY = Mth.floor(mouseY - this.y0) - this.headerHeight + (int) this.getScrollAmount() - 4;
         int hoveredItem = listY / this.itemHeight;
         return mouseX < this.getScrollbarPosition() && hoveredItem >= 0 && listY >= 0 &&
             hoveredItem < this.getItemCount() ? this.children().get(hoveredItem) : null;

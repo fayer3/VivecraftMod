@@ -18,7 +18,7 @@ public abstract class OptionsVRMixin {
         return VivecraftVRMod.INSTANCE.initializeBindings((KeyMapping[]) original.call(array1, array2));
     }
 
-    @ModifyExpressionValue(method = "buildPlayerInformation", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/OptionInstance;get()Ljava/lang/Object;", ordinal = 3))
+    @ModifyExpressionValue(method = "broadcastOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/OptionInstance;get()Ljava/lang/Object;", ordinal = 3))
     private Object vivecraft$alwaysRightMain(Object arm) {
         return VRState.VR_RUNNING ? HumanoidArm.RIGHT : arm;
     }

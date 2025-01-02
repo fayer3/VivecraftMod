@@ -44,10 +44,10 @@ public abstract class EditBoxVRMixin extends AbstractWidget {
         super(x, y, width, height, message);
     }
 
-    @Inject(method = "renderWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(III)I"))
+    @Inject(method = "renderWidget", at = @At(value = "INVOKE", target = "Ljava/lang/String;length()I", ordinal = 1))
     private void vivecraft$renderKeyboardHint(
         GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci,
-        @Local String content, @Local(ordinal = 4) int xPos, @Local(ordinal = 5) int yPos)
+        @Local String content, @Local(ordinal = 5) int xPos, @Local(ordinal = 6) int yPos)
     {
         if (VRState.VR_RUNNING && content.isEmpty() && !ClientDataHolderVR.getInstance().vrSettings.seated &&
             !KeyboardHandler.SHOWING)

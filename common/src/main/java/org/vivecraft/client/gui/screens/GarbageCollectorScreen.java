@@ -62,7 +62,7 @@ public class GarbageCollectorScreen extends Screen {
             .build());
 
         this.addRenderableWidget(new Button.Builder(Component.translatable("vivecraft.gui.openguide"),
-            ConfirmLinkScreen.confirmLink(this, GUIDE_URL))
+            ConfirmLinkScreen.confirmLink(GUIDE_URL, this, true))
             .pos(this.width / 2 - 75, this.height - 32)
             .size(150, 20)
             .build());
@@ -70,6 +70,7 @@ public class GarbageCollectorScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
     }

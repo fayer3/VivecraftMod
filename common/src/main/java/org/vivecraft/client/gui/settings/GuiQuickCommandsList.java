@@ -12,7 +12,7 @@ public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsLi
     protected ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();
 
     public GuiQuickCommandsList(GuiQuickCommandEditor parent, Minecraft mc) {
-        super(mc, parent.width, parent.height - 64, 32, 20);
+        super(mc, parent.width, parent.height, 32, parent.height - 32, 20);
 
         for (String command : this.dataholder.vrSettings.vrQuickCommands) {
             this.minecraft.font.width(command);
@@ -81,12 +81,12 @@ public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsLi
         }
 
         @Override
-        public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-            if (this.btnDelete.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
+        public boolean mouseScrolled(double mouseX, double mouseY, double scrollY) {
+            if (this.btnDelete.mouseScrolled(mouseX, mouseY, scrollY)) {
                 return true;
             } else {
-                return this.txt.mouseScrolled(mouseX, mouseY, scrollX, scrollY) ||
-                    super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+                return this.txt.mouseScrolled(mouseX, mouseY, scrollY) ||
+                    super.mouseScrolled(mouseX, mouseY, scrollY);
             }
         }
 

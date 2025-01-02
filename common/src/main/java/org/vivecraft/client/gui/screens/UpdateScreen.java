@@ -28,14 +28,14 @@ public class UpdateScreen extends Screen {
 
         this.addRenderableWidget(
             new Button.Builder(Component.translatable("vivecraft.gui.downloadfrom", Component.literal("Modrinth")),
-                ConfirmLinkScreen.confirmLink(this, "https://modrinth.com/mod/vivecraft"))
+                ConfirmLinkScreen.confirmLink("https://modrinth.com/mod/vivecraft", this, true))
                 .pos(this.width / 2 - 155, this.height - 56)
                 .size(150, 20)
                 .build());
 
         this.addRenderableWidget(
             new Button.Builder(Component.translatable("vivecraft.gui.downloadfrom", Component.literal("CurseForge")),
-                ConfirmLinkScreen.confirmLink(this, "https://www.curseforge.com/minecraft/mc-mods/vivecraft"))
+                ConfirmLinkScreen.confirmLink("https://www.curseforge.com/minecraft/mc-mods/vivecraft", this, true))
                 .pos(this.width / 2 + 5, this.height - 56)
                 .size(150, 20)
                 .build());
@@ -49,6 +49,7 @@ public class UpdateScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
     }

@@ -23,6 +23,7 @@ import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.network.NetworkDirection;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
@@ -120,13 +121,13 @@ public class XplatImpl implements Xplat {
     public static Packet<?> getC2SPacket(VivecraftPayloadC2S payload) {
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         payload.write(buffer);
-        return NetworkDirection.PLAY_TO_SERVER.buildPacket(buffer, payload.id()).getThis();
+        return NetworkDirection.PLAY_TO_SERVER.buildPacket(new ImmutablePair<>(buffer, 0), payload.id()).getThis();
     }
 
     public static Packet<?> getS2CPacket(VivecraftPayloadS2C payload) {
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         payload.write(buffer);
-        return NetworkDirection.PLAY_TO_CLIENT.buildPacket(buffer, payload.id()).getThis();
+        return NetworkDirection.PLAY_TO_CLIENT.buildPacket(new ImmutablePair<>(buffer, 0), payload.id()).getThis();
     }
 
     public static boolean hasKeyModifier(KeyMapping keyMapping) {

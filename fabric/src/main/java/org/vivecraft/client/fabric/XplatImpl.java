@@ -1,6 +1,7 @@
 package org.vivecraft.client.fabric;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
@@ -12,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -25,8 +27,6 @@ import org.vivecraft.client.Xplat;
 import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
 import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
 import org.vivecraft.fabric.mixin.world.level.biome.BiomeAccessor;
-import org.vivecraft.fabric.packet.VivecraftFabricPacketC2S;
-import org.vivecraft.fabric.packet.VivecraftFabricPacketS2C;
 
 import java.nio.file.Path;
 
@@ -127,11 +127,15 @@ public class XplatImpl implements Xplat {
     }
 
     public static Packet<?> getC2SPacket(VivecraftPayloadC2S payload) {
-        return ClientPlayNetworking.createC2SPacket(new VivecraftFabricPacketC2S(payload));
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        payload.write(buffer);
+        return ClientPlayNetworking.createC2SPacket(payload.id(), buffer);
     }
 
     public static Packet<?> getS2CPacket(VivecraftPayloadS2C payload) {
-        return ServerPlayNetworking.createS2CPacket(new VivecraftFabricPacketS2C(payload));
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        payload.write(buffer);
+        return ServerPlayNetworking.createS2CPacket(payload.id(), buffer);
     }
 
     public static boolean hasKeyModifier(KeyMapping keyMapping) {

@@ -320,8 +320,10 @@ public class RenderHelper {
         float size = 15.0F * Math.max(ClientDataHolderVR.getInstance().vrSettings.menuCrosshairScale,
             1.0F / (float) MC.getWindow().getGuiScale());
 
-        guiGraphics.blitSprite(Gui.CROSSHAIR_SPRITE, (int) (mouseX - size * 0.5F + 1), (int) (mouseY - size * 0.5F + 1),
-            (int) size, (int) size);
+        int x = (int) (mouseX - size * 0.5F + 1);
+        int y = (int) (mouseY - size * 0.5F + 1);
+
+        guiGraphics.blit(Gui.GUI_ICONS_LOCATION, x, y, (int) size, (int) size, 0, 0, 15, 15, 256, 256);
 
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();

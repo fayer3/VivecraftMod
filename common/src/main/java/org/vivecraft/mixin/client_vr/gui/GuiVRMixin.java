@@ -45,11 +45,11 @@ public abstract class GuiVRMixin implements GuiExtension {
     private Minecraft minecraft;
 
     @Shadow
-    @Final
-    private static ResourceLocation HOTBAR_SELECTION_SPRITE;
+    protected abstract Player getCameraPlayer();
 
     @Shadow
-    protected abstract Player getCameraPlayer();
+    @Final
+    private static ResourceLocation WIDGETS_LOCATION;
 
     @Inject(method = "renderVignette", at = @At("HEAD"), cancellable = true)
     private void vivecraft$cancelVignette(CallbackInfo ci) {
@@ -114,7 +114,7 @@ public abstract class GuiVRMixin implements GuiExtension {
         }
     }
 
-    @Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 1, shift = At.Shift.AFTER))
+    @Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V", ordinal = 1, shift = At.Shift.AFTER))
     private void vivecraft$hotbarContextIndicator(CallbackInfo ci, @Local(argsOnly = true) GuiGraphics guiGraphics) {
         if (VRState.VR_RUNNING && ClientDataHolderVR.getInstance().interactTracker.hotbar >= 0 &&
             ClientDataHolderVR.getInstance().interactTracker.hotbar < 9 &&
@@ -123,9 +123,9 @@ public abstract class GuiVRMixin implements GuiExtension {
         {
             int middle = this.screenWidth / 2;
             RenderSystem.setShaderColor(0.0F, 1.0F, 0.0F, 1.0F);
-            guiGraphics.blitSprite(HOTBAR_SELECTION_SPRITE,
+            guiGraphics.blit(WIDGETS_LOCATION,
                 middle - 91 - 1 + ClientDataHolderVR.getInstance().interactTracker.hotbar * 20,
-                this.screenHeight - 22 - 1, 24, 23);
+                this.screenHeight - 22 - 1, 0, 22, 24, 22);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
@@ -139,23 +139,26 @@ public abstract class GuiVRMixin implements GuiExtension {
         );
     }
 
-    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 2))
+    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V", ordinal = 2))
     private void vivecraft$renderVRHotbarLeftIndicator(
-        GuiGraphics instance, ResourceLocation sprite, int x, int y, int width, int height, Operation<Void> original)
+        GuiGraphics instance, ResourceLocation atlasLocation, int x, int y, int uOffset, int vOffset, int uWidth,
+        int vHeight, Operation<Void> original)
     {
-        vivecraft$renderColoredIcon(instance, sprite, x, y, width, height, original);
+        vivecraft$renderColoredIcon(instance, atlasLocation, x, y, uOffset, vOffset, uWidth, vHeight, original);
     }
 
-    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 3))
+    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V", ordinal = 3))
     private void vivecraft$renderVRHotbarRightIndicator(
-        GuiGraphics instance, ResourceLocation sprite, int x, int y, int width, int height, Operation<Void> original)
+        GuiGraphics instance, ResourceLocation atlasLocation, int x, int y, int uOffset, int vOffset, int uWidth,
+        int vHeight, Operation<Void> original)
     {
-        vivecraft$renderColoredIcon(instance, sprite, x, y, width, height, original);
+        vivecraft$renderColoredIcon(instance, atlasLocation, x, y, uOffset, vOffset, uWidth, vHeight, original);
     }
 
     @Unique
     private void vivecraft$renderColoredIcon(
-        GuiGraphics instance, ResourceLocation sprite, int x, int y, int width, int height, Operation<Void> original)
+        GuiGraphics instance, ResourceLocation atlasLocation, int x, int y, int uOffset, int vOffset, int uWidth,
+        int vHeight, Operation<Void> original)
     {
         boolean changeColor = VRState.VR_RUNNING && ClientDataHolderVR.getInstance().interactTracker.hotbar == 9 &&
             ClientDataHolderVR.getInstance().interactTracker.isActive(this.minecraft.player);
@@ -164,7 +167,7 @@ public abstract class GuiVRMixin implements GuiExtension {
             RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
         }
 
-        original.call(instance, sprite, x, y, width, height);
+        original.call(instance, atlasLocation, x, y, uOffset, vOffset, uWidth, vHeight);
 
         if (changeColor) {
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
