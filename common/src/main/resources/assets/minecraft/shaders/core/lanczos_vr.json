@@ -1,6 +1,12 @@
 {
-  "vertex": "vivecraft:core/lanczos_vr",
-  "fragment": "vivecraft:core/lanczos_vr",
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1-srcalpha"
+  },
+  "vertex": "lanczos_vr",
+  "fragment": "lanczos_vr",
+  "attributes": ["Position", "UV0"],
   "samplers": [
     {
       "name": "Sampler0"

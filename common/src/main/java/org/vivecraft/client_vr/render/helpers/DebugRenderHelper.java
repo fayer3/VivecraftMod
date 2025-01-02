@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
@@ -78,7 +78,7 @@ public class DebugRenderHelper {
                     ClientVRPlayers.RotInfo info = ClientVRPlayers.getInstance().getRotationsForPlayer(p.getUUID());
 
                     if (bufferbuilder == null) {
-                        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+                        RenderSystem.setShader(GameRenderer::getPositionColorShader);
                         bufferbuilder = Tesselator.getInstance()
                             .begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
                     }
@@ -123,7 +123,7 @@ public class DebugRenderHelper {
      * @param data VRData to get the devices from
      */
     public static void renderDeviceAxes(VRData data) {
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
         BufferBuilder bufferbuilder = Tesselator.getInstance()
             .begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
 
@@ -227,8 +227,9 @@ public class DebugRenderHelper {
      */
     public static void renderLocalAxes(Matrix4f matrix) {
         RenderSystem.getModelViewStack().pushMatrix().mul(matrix);
+        RenderSystem.applyModelViewMatrix();
 
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
         BufferBuilder bufferbuilder = Tesselator.getInstance()
             .begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
 
@@ -240,6 +241,7 @@ public class DebugRenderHelper {
 
         BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
         RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.applyModelViewMatrix();
     }
 
     /**
@@ -419,7 +421,7 @@ public class DebugRenderHelper {
      * @param color    cube color
      */
     private static void addCube(Vector3fc position, float size, Vector3fc color) {
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.setShaderTexture(0, RenderHelper.WHITE_TEXTURE);
 
         BufferBuilder bufferbuilder = Tesselator.getInstance()

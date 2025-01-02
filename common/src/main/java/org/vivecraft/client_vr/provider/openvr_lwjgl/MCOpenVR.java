@@ -13,7 +13,6 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.util.profiling.Profiler;
 import org.apache.commons.lang3.tuple.Triple;
 import org.joml.*;
 import org.lwjgl.Version;
@@ -426,27 +425,27 @@ public class MCOpenVR extends MCVR {
         if (!this.initialized) return;
 
         this.paused = VRSystem_ShouldApplicationPause();
-        Profiler.get().push("pollEvents");
+        this.mc.getProfiler().push("pollEvents");
         this.pollVREvents();
-        Profiler.get().popPush("processEvents");
+        this.mc.getProfiler().popPush("processEvents");
         this.processVREvents();
-        Profiler.get().popPush("updatePose/Vsync");
+        this.mc.getProfiler().popPush("updatePose/Vsync");
         this.updatePose();
 
         if (!this.dh.vrSettings.seated) {
             if (this.mc.screen == null && this.dh.vrSettings.vrTouchHotbar) {
-                Profiler.get().popPush("touchHotbar");
+                this.mc.getProfiler().popPush("touchHotbar");
                 if (this.dh.vrSettings.vrHudLockMode != VRSettings.HUDLock.HEAD && this.hudPopup) {
                     this.processHotbar();
                 }
             }
         }
 
-        Profiler.get().popPush("processInputs");
+        this.mc.getProfiler().popPush("processInputs");
         this.processInputs();
-        Profiler.get().popPush("hmdSampling");
+        this.mc.getProfiler().popPush("hmdSampling");
         this.hmdSampling();
-        Profiler.get().pop();
+        this.mc.getProfiler().pop();
     }
 
     @Override
@@ -1519,7 +1518,7 @@ public class MCOpenVR extends MCVR {
 
         // Gotta do this here so we can get the poses
         if (this.inputInitialized) {
-            Profiler.get().push("updateActionState");
+            this.mc.getProfiler().push("updateActionState");
 
             // update ActionSets if changed
             if (this.updateActiveActionSets()) {
@@ -1533,7 +1532,7 @@ public class MCOpenVR extends MCVR {
             // read data for all inputActions
             this.inputActions.values().forEach(this::readNewData);
 
-            Profiler.get().pop();
+            this.mc.getProfiler().pop();
 
             // controller poses
             if (this.dh.vrSettings.reverseHands) {

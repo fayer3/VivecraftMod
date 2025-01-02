@@ -1,16 +1,16 @@
 package org.vivecraft.client_vr.provider;
 
-import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlUtil;
+import com.mojang.blaze3d.shaders.ProgramManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.CompiledShaderProgram;
-import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -19,6 +19,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL43;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.client.extensions.RenderTargetExtension;
 import org.vivecraft.client.utils.StencilHelper;
@@ -65,7 +66,6 @@ public abstract class VRRenderer {
     public RenderTarget cameraRenderFramebuffer;
     public RenderTarget telescopeFramebufferL;
     public RenderTarget telescopeFramebufferR;
-    public RenderTarget mirrorFramebuffer;
 
     // Stencil mesh buffer for each eye
     protected float[][] hiddenMeshVertices = new float[2][];
@@ -191,9 +191,9 @@ public abstract class VRRenderer {
         }
 
         if (StencilHelper.stencilBufferSupported()) {
-            RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
+            RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT, false);
         } else {
-            RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT);
+            RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, false);
         }
 
         RenderSystem.clearStencil(0);
@@ -209,15 +209,15 @@ public abstract class VRRenderer {
         RenderTarget fb = minecraft.getMainRenderTarget();
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, fb.viewWidth, 0.0F, fb.viewHeight, 0.0F, 20.0F),
-            ProjectionType.ORTHOGRAPHIC);
+            VertexSorting.ORTHOGRAPHIC_Z);
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
         if (inverse) {
             // draw on far clip
             RenderSystem.getModelViewStack().translate(0, 0, -20);
         }
-
-        CompiledShaderProgram lastShader = RenderSystem.getShader();
+        RenderSystem.applyModelViewMatrix();
+        int program = GlStateManager._getInteger(GL43.GL_CURRENT_PROGRAM);
 
         if (dataholder.currentPass == RenderPass.SCOPEL || dataholder.currentPass == RenderPass.SCOPER) {
             drawCircle(fb.viewWidth, fb.viewHeight);
@@ -236,7 +236,7 @@ public abstract class VRRenderer {
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableCull();
-        RenderSystem.setShader(lastShader);
+        ProgramManager.glUseProgram(program);
         if (StencilHelper.stencilBufferSupported()) {
             RenderSystem.stencilFunc(GL11.GL_NOTEQUAL, 255, 1);
             RenderSystem.stencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
@@ -285,8 +285,7 @@ public abstract class VRRenderer {
         BufferBuilder builder = Tesselator.getInstance()
             .begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION);
 
-        RenderSystem.setShaderTexture(0, RenderHelper.BLACK_TEXTURE);
-        RenderSystem.bindTexture(RenderSystem.getShaderTexture(0));
+        mc.getTextureManager().bindForSetup(RenderHelper.BLACK_TEXTURE);
         RenderSystem.setShaderTexture(0, RenderHelper.BLACK_TEXTURE);
 
         for (int i = 0; i < verts.length; i += 2) {
@@ -296,7 +295,7 @@ public abstract class VRRenderer {
                 0.0F);
         }
 
-        RenderSystem.setShader(CoreShaders.POSITION);
+        RenderSystem.setShader(GameRenderer::getPositionShader);
         BufferUploader.drawWithShader(builder.buildOrThrow());
     }
 
@@ -545,7 +544,7 @@ public abstract class VRRenderer {
             }
             WorldRenderPass.STEREO_XR.resize(eyeFBWidth, eyeFBHeight);
             if (dataholder.vrSettings.useFsaa) {
-                this.fsaaFirstPassResultFBO.resize(eyew, eyeFBHeight);
+                this.fsaaFirstPassResultFBO.resize(eyew, eyeFBHeight, Minecraft.ON_OSX);
             }
 
             // mirror
@@ -556,9 +555,6 @@ public abstract class VRRenderer {
                 if (WorldRenderPass.MIXED_REALITY != null) {
                     WorldRenderPass.MIXED_REALITY.resize(mirrorSize.getA(), mirrorSize.getB());
                 }
-                this.mirrorFramebuffer.resize(
-                    ((WindowExtension) (Object) Minecraft.getInstance().getWindow()).vivecraft$getActualScreenWidth(),
-                    ((WindowExtension) (Object) Minecraft.getInstance().getWindow()).vivecraft$getActualScreenHeight());
             }
 
             // telescopes
@@ -566,7 +562,7 @@ public abstract class VRRenderer {
             WorldRenderPass.RIGHT_TELESCOPE.resize(telescopeSize.getA(), telescopeSize.getB());
 
             // camera
-            this.cameraFramebuffer.resize(cameraSize.getA(), cameraSize.getB());
+            this.cameraFramebuffer.resize(cameraSize.getA(), cameraSize.getB(), Minecraft.ON_OSX);
             if (ShadersHelper.needsSameSizeBuffers()) {
                 WorldRenderPass.CAMERA.resize(eyeFBWidth, eyeFBHeight);
             } else {
@@ -579,13 +575,13 @@ public abstract class VRRenderer {
             if (GuiHandler.updateResolution() || mipmapChanged) {
                 boolean mipmaps = dataholder.vrSettings.guiMipmaps;
                 ((RenderTargetExtension) GuiHandler.GUI_FRAMEBUFFER).vivecraft$setMipmaps(mipmaps);
-                GuiHandler.GUI_FRAMEBUFFER.resize(GuiHandler.GUI_WIDTH, GuiHandler.GUI_HEIGHT);
+                GuiHandler.GUI_FRAMEBUFFER.resize(GuiHandler.GUI_WIDTH, GuiHandler.GUI_HEIGHT, Minecraft.ON_OSX);
 
                 ((RenderTargetExtension) RadialHandler.FRAMEBUFFER).vivecraft$setMipmaps(mipmaps);
-                RadialHandler.FRAMEBUFFER.resize(GuiHandler.GUI_WIDTH, GuiHandler.GUI_HEIGHT);
+                RadialHandler.FRAMEBUFFER.resize(GuiHandler.GUI_WIDTH, GuiHandler.GUI_HEIGHT, Minecraft.ON_OSX);
 
                 ((RenderTargetExtension) KeyboardHandler.FRAMEBUFFER).vivecraft$setMipmaps(mipmaps);
-                KeyboardHandler.FRAMEBUFFER.resize(GuiHandler.GUI_WIDTH, GuiHandler.GUI_HEIGHT);
+                KeyboardHandler.FRAMEBUFFER.resize(GuiHandler.GUI_WIDTH, GuiHandler.GUI_HEIGHT, Minecraft.ON_OSX);
                 if (minecraft.screen != null) {
                     int guiWidth = minecraft.getWindow().getGuiScaledWidth();
                     int guiHeight = minecraft.getWindow().getGuiScaledHeight();
@@ -712,11 +708,6 @@ public abstract class VRRenderer {
                     RenderHelper.checkGLError("Undistorted view framebuffer setup");
                 }
             }
-            this.mirrorFramebuffer = new VRTextureTarget("Mirror", Math.max(1,
-                ((WindowExtension) (Object) Minecraft.getInstance().getWindow()).vivecraft$getActualScreenWidth()),
-                Math.max(1,
-                    ((WindowExtension) (Object) Minecraft.getInstance().getWindow()).vivecraft$getActualScreenHeight()),
-                false, -1, false, false, false);
 
             GuiHandler.updateResolution();
             GuiHandler.GUI_FRAMEBUFFER = new VRTextureTarget("GUI", GuiHandler.GUI_WIDTH, GuiHandler.GUI_HEIGHT, true,
@@ -742,7 +733,7 @@ public abstract class VRRenderer {
             WorldRenderPass.RIGHT_TELESCOPE = new WorldRenderPass(this.telescopeFramebufferR);
             VRSettings.LOGGER.info("Vivecraft: {}", this.telescopeFramebufferR);
             this.telescopeFramebufferR.setClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            this.telescopeFramebufferR.clear();
+            this.telescopeFramebufferR.clear(Minecraft.ON_OSX);
             RenderHelper.checkGLError("TelescopeR framebuffer setup");
 
             this.telescopeFramebufferL = new VRTextureTarget("TelescopeL", telescopeSize.getA(), telescopeSize.getB(),
@@ -750,7 +741,7 @@ public abstract class VRRenderer {
             WorldRenderPass.LEFT_TELESCOPE = new WorldRenderPass(this.telescopeFramebufferL);
             VRSettings.LOGGER.info("Vivecraft: {}", this.telescopeFramebufferL);
             this.telescopeFramebufferL.setClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            this.telescopeFramebufferL.clear();
+            this.telescopeFramebufferL.clear(Minecraft.ON_OSX);
             RenderHelper.checkGLError("TelescopeL framebuffer setup");
 
 
@@ -800,10 +791,14 @@ public abstract class VRRenderer {
 
             try {
                 minecraft.mainRenderTarget = this.framebufferVrRender;
+                VRShaders.setupBlitAspect();
+                RenderHelper.checkGLError("init blit aspect shader");
                 VRShaders.setupDepthMask();
                 RenderHelper.checkGLError("init depth shader");
                 VRShaders.setupFOVReduction();
                 RenderHelper.checkGLError("init FOV shader");
+                VRShaders.setupPortalShaders();
+                RenderHelper.checkGLError("init portal shader");
                 minecraft.gameRenderer.checkEntityPostEffect(minecraft.getCameraEntity());
             } catch (Exception exception) {
                 VRSettings.LOGGER.error("Vivecraft: Shader creation failed:", exception);
@@ -849,7 +844,7 @@ public abstract class VRRenderer {
                 String.format("%.1f", windowPixels / 1000000.0F),
                 String.format("%.1f", pixelsPerFrame / 1000000.0F));
 
-            // regenerates the outline target to have every pass in it
+            // this reloads any PostChain, at least in vanilla
             minecraft.levelRenderer.onResourceManagerReload(minecraft.getResourceManager());
 
             ShadersHelper.maybeReloadShaders();

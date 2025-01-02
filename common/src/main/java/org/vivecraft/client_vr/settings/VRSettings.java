@@ -1382,9 +1382,8 @@ public class VRSettings {
             @Override
             String getDisplayString(String prefix, Object value) {
                 try {
-                    SoundEvent se = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse((String) value)).get()
-                        .value();
-                    return I18n.get(se.location().getPath());
+                    SoundEvent se = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse((String) value));
+                    return I18n.get(se.getLocation().getPath());
                 } catch (Exception e) {
                     return "error";
                 }
@@ -1392,12 +1391,12 @@ public class VRSettings {
 
             @Override
             Object setOptionValue(Object value) {
-                SoundEvent se = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse((String) value)).get().value();
+                SoundEvent se = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse((String) value));
                 int i = BuiltInRegistries.SOUND_EVENT.getId(se);
                 if (++i >= BuiltInRegistries.SOUND_EVENT.keySet().size()) {
                     i = 0;
                 }
-                return BuiltInRegistries.SOUND_EVENT.byId(i).location().getPath();
+                return BuiltInRegistries.SOUND_EVENT.byId(i).getLocation().getPath();
             }
         },
         CROSSHAIR_SCALES_WITH_DISTANCE(false, true), // Crosshair Scaling

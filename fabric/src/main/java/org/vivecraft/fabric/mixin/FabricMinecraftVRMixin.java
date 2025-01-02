@@ -16,12 +16,12 @@ public class FabricMinecraftVRMixin {
 
     @Shadow
     @Final
-    private DeltaTracker.Timer deltaTracker;
+    private DeltaTracker.Timer timer;
 
-    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;pop()V", ordinal = 3, shift = At.Shift.AFTER))
+    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;pop()V", ordinal = 4, shift = At.Shift.AFTER))
     private void vivecraft$renderVRPassesFabric(boolean renderLevel, CallbackInfo ci) {
         if (VRState.VR_RUNNING) {
-            VRPassHelper.renderAndSubmit(renderLevel, this.deltaTracker);
+            VRPassHelper.renderAndSubmit(renderLevel, this.timer);
         }
     }
 }

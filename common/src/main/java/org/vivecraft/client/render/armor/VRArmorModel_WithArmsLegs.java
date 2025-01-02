@@ -1,18 +1,20 @@
 package org.vivecraft.client.render.armor;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.world.entity.LivingEntity;
 import org.vivecraft.client.render.VRPlayerModel_WithArmsLegs;
 import org.vivecraft.client.render.models.FeetModel;
 import org.vivecraft.client.utils.ModelUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
-public class VRArmorModel_WithArmsLegs<S extends HumanoidRenderState> extends VRArmorModel_WithArms<S> implements FeetModel {
+public class VRArmorModel_WithArmsLegs<T extends LivingEntity> extends VRArmorModel_WithArms<T> implements FeetModel {
     public final ModelPart leftFoot;
     public final ModelPart rightFoot;
 
@@ -53,6 +55,11 @@ public class VRArmorModel_WithArmsLegs<S extends HumanoidRenderState> extends VR
                 .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 5.0F + upperExtension, 4.0F, cubeDeformation.extend(-0.1F)),
             PartPose.offset(-1.9F, 12.0F, 0.0F));
         return meshDefinition;
+    }
+
+    @Override
+    protected Iterable<ModelPart> bodyParts() {
+        return Iterables.concat(super.bodyParts(), ImmutableList.of(this.leftFoot, this.rightFoot));
     }
 
     @Override

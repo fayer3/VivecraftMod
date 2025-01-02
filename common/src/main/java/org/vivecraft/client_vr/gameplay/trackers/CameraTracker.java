@@ -15,10 +15,10 @@ import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.common.utils.MathUtils;
 
 public class CameraTracker extends Tracker {
-    public static final ModelResourceLocation CAMERA_MODEL = ModelResourceLocation.inventory(
-        ResourceLocation.fromNamespaceAndPath("vivecraft", "camera"));
-    public static final ModelResourceLocation CAMERA_DISPLAY_MODEL = ModelResourceLocation.inventory(
-        ResourceLocation.fromNamespaceAndPath("vivecraft", "camera_display"));
+    public static final ModelResourceLocation CAMERA_MODEL = new ModelResourceLocation(
+        ResourceLocation.fromNamespaceAndPath("vivecraft", "camera"), "standalone");
+    public static final ModelResourceLocation CAMERA_DISPLAY_MODEL = new ModelResourceLocation(
+        ResourceLocation.fromNamespaceAndPath("vivecraft", "camera_display"), "standalone");
 
     private boolean visible = false;
     private Vec3 position = Vec3.ZERO;

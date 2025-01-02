@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import org.vivecraft.client.ClientVRPlayers;
@@ -219,8 +220,7 @@ public class ClientNetworking {
         CAPTURED_YAW = player.getYRot();
         float pitch = (float) Math.toDegrees(Math.asin(-view.y / view.length()));
         float yaw = (float) Math.toDegrees(Math.atan2(-view.x, view.z));
-        ((LocalPlayer) player).connection.send(
-            new ServerboundMovePlayerPacket.Rot(yaw, pitch, player.onGround(), player.horizontalCollision));
+        ((LocalPlayer) player).connection.send(new ServerboundMovePlayerPacket.Rot(yaw, pitch, player.onGround()));
         OVERRIDE_ACTIVE = true;
     }
 
@@ -228,8 +228,7 @@ public class ClientNetworking {
         if (!SERVER_WANTS_DATA) {
             if (OVERRIDE_ACTIVE) {
                 ((LocalPlayer) player).connection.send(
-                    new ServerboundMovePlayerPacket.Rot(CAPTURED_YAW, CAPTURED_PITCH, player.onGround(),
-                        player.horizontalCollision));
+                    new ServerboundMovePlayerPacket.Rot(CAPTURED_YAW, CAPTURED_PITCH, player.onGround()));
                 OVERRIDE_ACTIVE = false;
             }
         }
@@ -279,11 +278,12 @@ public class ClientNetworking {
 
                 if (packet.blocks() != null) {
                     for (String blockId : packet.blocks()) {
-                        BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockId)).ifPresent(block -> {
-                            if (block.value() != Blocks.AIR) {
-                                dataholder.climbTracker.blocklist.add(block.value());
-                            }
-                        });
+                        Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockId));
+
+                        // if the block is not there AIR is returned
+                        if (block != Blocks.AIR) {
+                            dataholder.climbTracker.blocklist.add(block);
+                        }
                     }
                 }
             }

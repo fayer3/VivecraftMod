@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "standalone": {
+      "model": "vivecraft:camera_display"
+    }
+  }
+}

@@ -125,10 +125,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
         }
     }
 
-    @Inject(method = "hurtServer", at = @At("HEAD"), cancellable = true)
-    private void vivecraft$checkCanGetHurt(
-        ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir)
-    {
+    @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
+    private void vivecraft$checkCanGetHurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         Entity entity = source.getEntity();
         ServerPlayer other = null;
 

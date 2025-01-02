@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.UseAnim;
 import org.joml.Vector3f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRData;
@@ -37,17 +37,14 @@ public class EatingTracker extends Tracker {
             return false;
         } else {
             if (player.getMainHandItem() != null) {
-                ItemUseAnimation anim = player.getMainHandItem().getUseAnimation();
-                if (anim == ItemUseAnimation.EAT || anim == ItemUseAnimation.DRINK ||
-                    anim == ItemUseAnimation.TOOT_HORN)
-                {
+                UseAnim anim = player.getMainHandItem().getUseAnimation();
+                if (anim == UseAnim.EAT || anim == UseAnim.DRINK || anim == UseAnim.TOOT_HORN) {
                     return true;
                 }
             }
             if (player.getOffhandItem() != null) {
-                ItemUseAnimation anim = player.getOffhandItem().getUseAnimation();
-                return anim == ItemUseAnimation.EAT || anim == ItemUseAnimation.DRINK ||
-                    anim == ItemUseAnimation.TOOT_HORN;
+                UseAnim anim = player.getOffhandItem().getUseAnimation();
+                return anim == UseAnim.EAT || anim == UseAnim.DRINK || anim == UseAnim.TOOT_HORN;
             }
             return false;
         }
@@ -83,13 +80,13 @@ public class EatingTracker extends Tracker {
 
                 int crunchiness = 0;
 
-                if (itemstack.getUseAnimation() == ItemUseAnimation.DRINK) { // that's how liquid works.
+                if (itemstack.getUseAnimation() == UseAnim.DRINK) { // that's how liquid works.
                     if (room_pre.getController(c).getCustomVector(MathUtils.UP).y > 0) {
                         continue;
                     }
-                } else if (itemstack.getUseAnimation() == ItemUseAnimation.EAT) {
+                } else if (itemstack.getUseAnimation() == UseAnim.EAT) {
                     crunchiness = 2;
-                } else if (itemstack.getUseAnimation() == ItemUseAnimation.TOOT_HORN) {
+                } else if (itemstack.getUseAnimation() == UseAnim.TOOT_HORN) {
                     crunchiness = 1;
                 } else {
                     continue;

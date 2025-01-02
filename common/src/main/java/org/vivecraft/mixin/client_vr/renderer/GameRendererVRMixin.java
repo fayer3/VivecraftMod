@@ -6,7 +6,6 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
@@ -19,7 +18,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
-import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -53,6 +51,7 @@ import org.vivecraft.client_vr.render.helpers.RenderHelper;
 import org.vivecraft.client_vr.render.helpers.VRArmHelper;
 import org.vivecraft.client_vr.render.helpers.VREffectsHelper;
 import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.client_xr.render_pass.RenderPassManager;
 import org.vivecraft.client_xr.render_pass.RenderPassType;
 import org.vivecraft.common.utils.MathUtils;
 import org.vivecraft.mod_compat_vr.immersiveportals.ImmersivePortalsHelper;
@@ -113,16 +112,19 @@ public abstract class GameRendererVRMixin
     private Minecraft minecraft;
 
     @Shadow
-    private float fovModifier;
+    private float fov;
 
     @Shadow
-    private float oldFovModifier;
+    private float oldFov;
 
     @Shadow
-    public abstract Matrix4f getProjectionMatrix(float fov);
+    public abstract Matrix4f getProjectionMatrix(double fov);
 
     @Shadow
-    protected abstract float getFov(Camera camera, float partialTick, boolean useFOVSetting);
+    protected abstract double getFov(Camera camera, float partialTick, boolean useFOVSetting);
+
+    @Shadow
+    public abstract void resetProjectionMatrix(Matrix4f projectionMatrix);
 
     @Shadow
     @Final
@@ -131,6 +133,13 @@ public abstract class GameRendererVRMixin
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/Camera"))
     private Camera vivecraft$replaceCamera() {
         return new XRCamera();
+    }
+
+    @Inject(method = {"shutdownEffect", "checkEntityPostEffect", "loadEffect"}, at = @At("HEAD"))
+    private void vivecraft$shutdownVREffects(CallbackInfo ci) {
+        if (VRState.VR_INITIALIZED) {
+            RenderPassManager.setVanillaRenderPass();
+        }
     }
 
     @Inject(method = "pick(F)V", at = @At("HEAD"), cancellable = true)
@@ -185,16 +194,16 @@ public abstract class GameRendererVRMixin
     @Inject(method = "tickFov", at = @At("HEAD"), cancellable = true)
     private void vivecraft$noFOVChangeInVR(CallbackInfo ci) {
         if (!RenderPassType.isVanilla()) {
-            this.oldFovModifier = this.fovModifier = 1.0f;
+            this.oldFov = this.fov = 1.0f;
             ci.cancel();
         }
     }
 
     @Inject(method = "getFov", at = @At("HEAD"), cancellable = true)
-    private void vivecraft$fixedFOV(CallbackInfoReturnable<Float> cir) {
+    private void vivecraft$fixedFOV(CallbackInfoReturnable<Double> cir) {
         // some mods don't expect this to be called outside levels
         if (this.minecraft.level == null || MethodHolder.isInMenuRoom()) {
-            cir.setReturnValue(Float.valueOf(this.minecraft.options.fov().get()));
+            cir.setReturnValue(Double.valueOf(this.minecraft.options.fov().get()));
         }
     }
 
@@ -317,7 +326,7 @@ public abstract class GameRendererVRMixin
             if (this.vivecraft$shouldDrawGui) {
                 // when the gui is rendered it is expected that something got pushed to the profiler before
                 // so do that now
-                Profiler.get().push("vanillaGuiSetup");
+                this.minecraft.getProfiler().push("vanillaGuiSetup");
             }
             return;
         }
@@ -325,15 +334,16 @@ public abstract class GameRendererVRMixin
             float partialTick = deltaTracker.getGameTimeDeltaPartialTick(false);
             if (!renderLevel || this.minecraft.level == null) {
                 // no "level" got pushed so do a manual push
-                Profiler.get().push("MainMenu");
+                this.minecraft.getProfiler().push("MainMenu");
             } else {
                 // do a popPush
-                Profiler.get().popPush("MainMenu");
+                this.minecraft.getProfiler().popPush("MainMenu");
             }
             GL11.glDisable(GL11.GL_STENCIL_TEST);
 
             RenderSystem.getModelViewStack().pushMatrix().identity();
             RenderHelper.applyVRModelView(vivecraft$DATA_HOLDER.currentPass, RenderSystem.getModelViewStack());
+            RenderSystem.applyModelViewMatrix();
 
             VREffectsHelper.renderGuiLayer(partialTick, true);
 
@@ -357,9 +367,10 @@ public abstract class GameRendererVRMixin
                 VRArmHelper.renderVRHands(partialTick, true, true, true, true);
             }
             RenderSystem.getModelViewStack().popMatrix();
+            RenderSystem.applyModelViewMatrix();
         }
         // pop the "level" push, since that would happen after this
-        Profiler.get().pop();
+        this.minecraft.getProfiler().pop();
         ci.cancel();
     }
 
@@ -383,6 +394,13 @@ public abstract class GameRendererVRMixin
     @Inject(method = "takeAutoScreenshot", at = @At("HEAD"), cancellable = true)
     private void vivecraft$noScreenshotInMenu(CallbackInfo ci) {
         if (VRState.VR_RUNNING && MethodHolder.isInMenuRoom()) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "renderConfusionOverlay", at = @At("HEAD"), cancellable = true)
+    private void vivecraft$cancelConfusionOverlayOnGUI(CallbackInfo ci) {
+        if (vivecraft$DATA_HOLDER.currentPass == RenderPass.GUI) {
             ci.cancel();
         }
     }
@@ -667,7 +685,6 @@ public abstract class GameRendererVRMixin
     @Override
     @Unique
     public void vivecraft$resetProjectionMatrix(float partialTick) {
-        RenderSystem.setProjectionMatrix(this.getProjectionMatrix(this.getFov(this.mainCamera, partialTick, true)),
-            ProjectionType.PERSPECTIVE);
+        this.resetProjectionMatrix(this.getProjectionMatrix(this.getFov(this.mainCamera, partialTick, true)));
     }
 }

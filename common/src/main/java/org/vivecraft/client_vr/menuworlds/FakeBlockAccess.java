@@ -159,7 +159,7 @@ public class FakeBlockAccess implements LevelReader {
     }
 
     public double getHorizon() {
-        return this.isFlat ? -this.effectiveGround : 63.0D - this.effectiveGround + getMinY();
+        return this.isFlat ? -this.effectiveGround : 63.0D - this.effectiveGround + getMinBuildHeight();
     }
 
     @Override
@@ -340,7 +340,7 @@ public class FakeBlockAccess implements LevelReader {
 
     @Override
     public int getSeaLevel() {
-        return (int) (63 - this.effectiveGround + getMinY()); // magic number
+        return (int) (63 - this.effectiveGround + getMinBuildHeight()); // magic number
     }
 
     @Override

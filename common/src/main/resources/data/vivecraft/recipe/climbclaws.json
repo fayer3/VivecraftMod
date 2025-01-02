@@ -5,8 +5,12 @@
     "S S"
   ],
   "key": {
-    "E": "minecraft:spider_eye",
-    "S": "minecraft:shears"
+    "E": {
+      "item": "minecraft:spider_eye"
+    },
+    "S": {
+      "item": "minecraft:shears"
+    }
   },
   "result": {
     "id": "minecraft:shears",

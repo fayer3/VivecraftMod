@@ -11,7 +11,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractSignEditScreen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -504,7 +503,7 @@ public class GuiHandler {
      * @return gui position in world space
      */
     public static Vec3 applyGUIModelView(RenderPass currentPass, Matrix4f poseMatrix) {
-        Profiler.get().push("applyGUIModelView");
+        MC.getProfiler().push("applyGUIModelView");
 
         if (MC.screen != null && GUI_POS_ROOM == null) {
             // naughty mods!
@@ -690,7 +689,7 @@ public class GuiHandler {
         GUI_ROTATION_WORLD.set(guirot);
         GUI_OFFSET_WORLD.set(guilocal);
 
-        Profiler.get().pop();
+        MC.getProfiler().pop();
 
         return guipos;
     }

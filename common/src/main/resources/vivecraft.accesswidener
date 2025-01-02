@@ -8,6 +8,7 @@ accessible field net/minecraft/client/model/geom/ModelPart$Cube polygons [Lnet/m
 
 # custom player modle rendering
 accessible field net/minecraft/client/model/PlayerModel slim Z
+extendable method net/minecraft/client/renderer/entity/player/PlayerRenderer setModelProperties (Lnet/minecraft/client/player/AbstractClientPlayer;)V
 
 # modded layer supports
 accessible method net/minecraft/client/renderer/entity/LivingEntityRenderer addLayer (Lnet/minecraft/client/renderer/entity/layers/RenderLayer;)Z

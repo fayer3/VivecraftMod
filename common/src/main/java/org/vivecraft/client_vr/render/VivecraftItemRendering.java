@@ -41,9 +41,7 @@ public class VivecraftItemRendering {
         VivecraftItemTransformType itemTransformType = VivecraftItemTransformType.Item;
         Item item = itemStack.getItem();
 
-        if (itemStack.getUseAnimation() == ItemUseAnimation.EAT ||
-            itemStack.getUseAnimation() == ItemUseAnimation.DRINK)
-        {
+        if (itemStack.getUseAnimation() == UseAnim.EAT || itemStack.getUseAnimation() == UseAnim.DRINK) {
             itemTransformType = VivecraftItemTransformType.Noms;
         } else if (item instanceof BlockItem) {
             Block block = ((BlockItem) item).getBlock();
@@ -61,9 +59,7 @@ public class VivecraftItemRendering {
             }
         } else if (item instanceof MapItem || itemStack.is(ItemTags.VIVECRAFT_MAPS)) {
             itemTransformType = VivecraftItemTransformType.Map;
-        } else if (itemStack.getUseAnimation() == ItemUseAnimation.BOW &&
-            !itemStack.is(ItemTags.VIVECRAFT_BOW_EXCLUSION))
-        {
+        } else if (itemStack.getUseAnimation() == UseAnim.BOW && !itemStack.is(ItemTags.VIVECRAFT_BOW_EXCLUSION)) {
             itemTransformType = VivecraftItemTransformType.Bow_Seated;
 
             if (DH.bowTracker.isActive((LocalPlayer) player)) {
@@ -73,7 +69,7 @@ public class VivecraftItemRendering {
                     itemTransformType = VivecraftItemTransformType.Bow_Roomscale;
                 }
             }
-        } else if (itemStack.getUseAnimation() == ItemUseAnimation.TOOT_HORN) {
+        } else if (itemStack.getUseAnimation() == UseAnim.TOOT_HORN) {
             itemTransformType = VivecraftItemTransformType.Horn;
         } else if (item instanceof MaceItem || itemStack.is(ItemTags.VIVECRAFT_MACES)) {
             itemTransformType = VivecraftItemTransformType.Mace;

@@ -133,10 +133,11 @@ public abstract class ClientPacketListenerVRMixin extends ClientCommonPacketList
                 dataHolder.vrSettings.chatNotifications == VRSettings.ChatNotifications.BOTH)
             {
                 Vec3 controllerPos = dataHolder.vrPlayer.vrdata_world_pre.getController(1).getPosition();
-                BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(dataHolder.vrSettings.chatNotificationSound))
-                    .ifPresent(soundEvent -> this.minecraft.level.playLocalSound(
-                        controllerPos.x(), controllerPos.y(), controllerPos.z(),
-                        soundEvent.value(), SoundSource.NEUTRAL, 0.3F, 0.1F, false));
+                this.minecraft.level.playLocalSound(
+                    controllerPos.x(), controllerPos.y(), controllerPos.z(),
+                    BuiltInRegistries.SOUND_EVENT.get(
+                        ResourceLocation.parse(dataHolder.vrSettings.chatNotificationSound)),
+                    SoundSource.NEUTRAL, 0.3F, 0.1F, false);
             }
         }
     }

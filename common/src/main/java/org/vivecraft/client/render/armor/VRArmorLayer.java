@@ -4,12 +4,12 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 
-public class VRArmorLayer<S extends HumanoidRenderState, M extends HumanoidModel<S>, A extends HumanoidModel<S>> extends HumanoidArmorLayer<S, M, A> {
+public class VRArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>, A extends HumanoidModel<T>> extends HumanoidArmorLayer<T, M, A> {
 
     // split arms model
     public static LayerDefinition VR_ARMOR_DEF_ARMS_INNER;
@@ -38,10 +38,8 @@ public class VRArmorLayer<S extends HumanoidRenderState, M extends HumanoidModel
             VRArmorModel_WithArmsLegs.createBodyLayer(new CubeDeformation(1.0F)), 64, 32);
     }
 
-    public VRArmorLayer(
-        RenderLayerParent<S, M> renderer, A innerModel, A outerModel, EquipmentLayerRenderer equipmentRenderer)
-    {
-        super(renderer, innerModel, outerModel, equipmentRenderer);
+    public VRArmorLayer(RenderLayerParent<T, M> renderer, A innerModel, A outerModel, ModelManager modelManager) {
+        super(renderer, innerModel, outerModel, modelManager);
     }
 
     @Override

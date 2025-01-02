@@ -5,7 +5,6 @@ import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigSpec;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import net.minecraft.ResourceLocationException;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -322,9 +321,8 @@ public class ServerConfig {
                 boolean valid = true;
                 try {
                     // check if valid block
-                    Holder.Reference<Block> b = BuiltInRegistries.BLOCK.get(ResourceLocation.parse((String) s))
-                        .orElseGet(() -> null);
-                    if (b == null || b.value() == Blocks.AIR) {
+                    Block b = BuiltInRegistries.BLOCK.get(ResourceLocation.parse((String) s));
+                    if (b == Blocks.AIR) {
                         valid = false;
                     }
                 } catch (ResourceLocationException e) {

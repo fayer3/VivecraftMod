@@ -1,8 +1,8 @@
 package org.vivecraft.mixin.client.renderer.entity;
 
+import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Final;
@@ -19,15 +19,15 @@ public class ItemRendererVRMixin {
 
     @Shadow
     @Final
-    private ModelManager modelManager;
+    private ItemModelShaper itemModelShaper;
 
     @ModifyVariable(method = "getModel", at = @At(value = "STORE"))
     private BakedModel vivecraft$modelOverride(BakedModel bakedModel, ItemStack itemStack) {
         if (VRState.VR_RUNNING && itemStack.is(Items.SPYGLASS)) {
-            return this.modelManager.getModel(TelescopeTracker.SCOPE_MODEL);
+            return this.itemModelShaper.getModelManager().getModel(TelescopeTracker.SCOPE_MODEL);
         }
         if (ClimbTracker.isClaws(itemStack)) {
-            return this.modelManager.getModel(ClimbTracker.CLAWS_MODEL);
+            return this.itemModelShaper.getModelManager().getModel(ClimbTracker.CLAWS_MODEL);
         }
         return bakedModel;
     }

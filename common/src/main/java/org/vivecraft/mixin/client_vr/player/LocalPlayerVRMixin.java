@@ -2,10 +2,12 @@ package org.vivecraft.mixin.client_vr.player;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
@@ -14,7 +16,9 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,10 +27,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.vivecraft.client.network.ClientNetworking;
@@ -112,7 +113,7 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
         }
     }
 
-    @ModifyVariable(method = "sendPosition", at = @At("STORE"), ordinal = 1)
+    @ModifyVariable(method = "sendPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isPassenger()Z"), ordinal = 2)
     private boolean vivecraft$directTeleport(boolean updateRotation) {
         if (this.vivecraft$teleported) {
             updateRotation = true;
@@ -123,7 +124,7 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
     }
 
     // needed, or the server will spam 'moved too quickly'/'moved wrongly'
-    @WrapWithCondition(method = "sendPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientPacketListener;send(Lnet/minecraft/network/protocol/Packet;)V"))
+    @WrapWithCondition(method = "sendPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientPacketListener;send(Lnet/minecraft/network/protocol/Packet;)V"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isPassenger()Z")))
     private boolean vivecraft$noMovePacketsOnTeleport(ClientPacketListener instance, Packet packet) {
         return !this.vivecraft$teleported;
     }
@@ -251,6 +252,19 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
         if (VRState.VR_RUNNING && vivecraft$isLocalPlayer(this)) {
             // vanilla rop position is fixed to the view in first person, so attached it to the hand instead
             cir.setReturnValue(RenderHelper.getControllerRenderPos(0));
+        }
+    }
+
+    /**
+     * inject into {@link Player#eat(Level, ItemStack)}
+     */
+    @Override
+    protected void vivecraft$beforeEat(CallbackInfoReturnable<ItemStack> cir, @Local(argsOnly = true) ItemStack food) {
+        if (VRState.VR_RUNNING && food.get(DataComponents.FOOD) != null && vivecraft$isLocalPlayer(this) &&
+            food.getHoverName().getString().equals("EAT ME"))
+        {
+            ClientDataHolderVR.getInstance().vrPlayer.wfMode = 0.5D;
+            ClientDataHolderVR.getInstance().vrPlayer.wfCount = 400;
         }
     }
 

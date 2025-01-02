@@ -7,8 +7,8 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -71,7 +71,7 @@ public class BowTracker extends Tracker {
         } else if (ClientDataHolderVR.getInstance().vrSettings.bowMode == VRSettings.BowMode.VANILLA) {
             return itemStack.getItem() == Items.BOW;
         } else {
-            return itemStack.getItem().getUseAnimation(itemStack) == ItemUseAnimation.BOW && !itemStack.is(
+            return itemStack.getItem().getUseAnimation(itemStack) == UseAnim.BOW && !itemStack.is(
                 org.vivecraft.data.ItemTags.VIVECRAFT_BOW_EXCLUSION);
         }
     }

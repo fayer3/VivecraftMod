@@ -31,8 +31,8 @@ public class MultiPassRenderTarget extends RenderTarget {
     }
 
     @Override
-    public void resize(int width, int height) {
-        callOnTarget(r -> r.resize(width, height));
+    public void resize(int width, int height, boolean clearError) {
+        callOnTarget(r -> r.resize(width, height, clearError));
     }
 
     @Override
@@ -50,8 +50,8 @@ public class MultiPassRenderTarget extends RenderTarget {
     }
 
     @Override
-    public void createBuffers(int width, int height) {
-        callOnTarget(r -> r.createBuffers(width, height));
+    public void createBuffers(int width, int height, boolean clearError) {
+        callOnTarget(r -> r.createBuffers(width, height, clearError));
     }
 
     @Override
@@ -95,13 +95,13 @@ public class MultiPassRenderTarget extends RenderTarget {
     }
 
     @Override
-    public void blitAndBlendToScreen(int width, int height) {
-        callOnTarget(r -> r.blitAndBlendToScreen(width, height));
+    public void blitToScreen(int width, int height, boolean disableBlend) {
+        callOnTarget(r -> r.blitToScreen(width, height, disableBlend));
     }
 
     @Override
-    public void clear() {
-        callOnTarget(RenderTarget::clear);
+    public void clear(boolean clearError) {
+        callOnTarget(r -> r.clear(clearError));
     }
 
     @Override

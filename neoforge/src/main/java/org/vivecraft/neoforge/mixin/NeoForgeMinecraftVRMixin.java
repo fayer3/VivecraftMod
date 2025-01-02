@@ -16,12 +16,12 @@ public class NeoForgeMinecraftVRMixin {
 
     @Shadow
     @Final
-    private DeltaTracker.Timer deltaTracker;
+    private DeltaTracker.Timer timer;
 
     @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;fireRenderFramePost(Lnet/minecraft/client/DeltaTracker;)V", shift = At.Shift.AFTER, remap = false), remap = true)
     private void vivecraft$renderVRPassesNeoForge(boolean renderLevel, CallbackInfo ci) {
         if (VRState.VR_RUNNING) {
-            VRPassHelper.renderAndSubmit(renderLevel, this.deltaTracker);
+            VRPassHelper.renderAndSubmit(renderLevel, this.timer);
         }
     }
 }

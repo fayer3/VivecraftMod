@@ -17,8 +17,8 @@ import org.vivecraft.common.utils.MathUtils;
 import org.vivecraft.data.ItemTags;
 
 public class TelescopeTracker extends Tracker {
-    public static final ModelResourceLocation SCOPE_MODEL = ModelResourceLocation.inventory(
-        ResourceLocation.fromNamespaceAndPath("vivecraft", "spyglass_in_hand"));
+    public static final ModelResourceLocation SCOPE_MODEL = new ModelResourceLocation(
+        ResourceLocation.fromNamespaceAndPath("vivecraft", "item/spyglass_in_hand"), "standalone");
     private static final float LENS_DIST_MAX = 0.05F;
     private static final float LENS_DIST_MIN = 0.185F;
     private static final float LENS_DOT_MAX = 0.9F;

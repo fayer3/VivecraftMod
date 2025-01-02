@@ -1,7 +1,6 @@
 package org.vivecraft.server;
 
 import net.minecraft.ResourceLocationException;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -282,10 +281,9 @@ public class ServerNetworking {
             blocks = new ArrayList<>();
             for (String block : ServerConfig.CLIMBEY_BLOCKLIST.get()) {
                 try {
-                    Holder.Reference<Block> b = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(block))
-                        .orElseGet(() -> null);
+                    Block b = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(block));
                     // only send valid blocks
-                    if (b != null && b.value() != Blocks.AIR) {
+                    if (b != Blocks.AIR) {
                         blocks.add(block);
                     }
                 } catch (ResourceLocationException ignore) {}

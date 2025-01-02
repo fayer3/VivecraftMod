@@ -11,8 +11,7 @@ public enum RenderPass {
     GUI,
     SCOPER,
     SCOPEL,
-    CAMERA,
-    MIRROR;
+    CAMERA;
 
     public static boolean isFirstPerson(RenderPass pass) {
         return pass == LEFT || pass == RIGHT || pass == CENTER;

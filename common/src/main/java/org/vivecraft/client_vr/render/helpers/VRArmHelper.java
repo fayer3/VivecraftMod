@@ -5,12 +5,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
-import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -60,7 +59,7 @@ public class VRArmHelper {
         float partialTick, boolean renderMain, boolean renderOff, boolean menuHandMain, boolean menuHandOff)
     {
         if (!renderMain && !renderOff) return;
-        Profiler.get().push("hands");
+        MC.getProfiler().push("hands");
         ClientDataHolderVR.IS_FP_HAND = true;
 
         VREffectsHelper.removeNausea(partialTick);
@@ -89,7 +88,7 @@ public class VRArmHelper {
         VREffectsHelper.reAddNausea();
 
         ClientDataHolderVR.IS_FP_HAND = false;
-        Profiler.get().pop();
+        MC.getProfiler().pop();
     }
 
     /**
@@ -106,8 +105,8 @@ public class VRArmHelper {
         RenderHelper.setupRenderingAtController(c, modelView);
 
         if (MC.getOverlay() == null) {
+            MC.getTextureManager().bindForSetup(RenderHelper.WHITE_TEXTURE);
             RenderSystem.setShaderTexture(0, RenderHelper.WHITE_TEXTURE);
-            RenderSystem.bindTexture(RenderSystem.getShaderTexture(0));
         }
 
         if (depthAlways && c == 0) {
@@ -133,12 +132,12 @@ public class VRArmHelper {
                 light = (float) minLight;
             }
 
-            float lightPercent = light / 15F;
+            float lightPercent = light / (float) MC.level.getMaxLightLevel();
             color = new Vec3i(Mth.floor(color.getX() * lightPercent),
                 Mth.floor(color.getY() * lightPercent),
                 Mth.floor(color.getZ() * lightPercent));
         }
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         BufferBuilder bufferBuilder = Tesselator.getInstance()
             .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
@@ -290,9 +289,9 @@ public class VRArmHelper {
                 }
 
                 // TODO SHADERS use a shader with lightmaps
-                RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+                RenderSystem.setShader(GameRenderer::getPositionColorShader);
+                MC.getTextureManager().bindForSetup(RenderHelper.WHITE_TEXTURE);
                 RenderSystem.setShaderTexture(0, RenderHelper.WHITE_TEXTURE);
-                RenderSystem.bindTexture(RenderSystem.getShaderTexture(0));
 
                 if (size > 0.0F) {
                     // tp energy quad, slightly above the max energy quad
@@ -374,15 +373,15 @@ public class VRArmHelper {
             DATA_HOLDER.teleportTracker.isAiming() &&
             DATA_HOLDER.teleportTracker.movementTeleportArcSteps > 1)
         {
-            Profiler.get().push("teleportArc");
+            MC.getProfiler().push("teleportArc");
 
             RenderSystem.enableCull();
             // TODO SHADERS use a shader with lightmaps
-            RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
             // to make shaders work
+            MC.getTextureManager().bindForSetup(RenderHelper.WHITE_TEXTURE);
             RenderSystem.setShaderTexture(0, RenderHelper.WHITE_TEXTURE);
-            RenderSystem.bindTexture(RenderSystem.getShaderTexture(0));
 
             BufferBuilder bufferBuilder = Tesselator.getInstance()
                 .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
@@ -469,7 +468,7 @@ public class VRArmHelper {
                 RenderSystem.enableCull();
             }
 
-            Profiler.get().pop();
+            MC.getProfiler().pop();
         }
     }
 }
