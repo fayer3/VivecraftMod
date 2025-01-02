@@ -1,6 +1,6 @@
 package org.vivecraft.mixin.client.gui.screens;
 
-import net.minecraft.client.gui.GuiGraphics;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -73,18 +73,18 @@ public abstract class TitleScreenMixin extends Screen {
 
     @Inject(method = "render", at = @At("TAIL"))
     private void vivecraft$renderToolTip(
-        GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci)
+        PoseStack poseStack, int mouseX, int mouseY, float partialTick, CallbackInfo ci)
     {
         this.vivecraft$updateButton.visible = UpdateChecker.HAS_UPDATE;
 
         if (this.vivecraft$vrModeButton.visible && this.vivecraft$vrModeButton.isMouseOver(mouseX, mouseY)) {
-            guiGraphics.renderTooltip(this.font,
+            renderTooltip(poseStack,
                 this.font.split(Component.translatable("vivecraft.options.VR_ENABLED.tooltip"),
                     Math.max(this.width / 2 - 43, 170)), mouseX, mouseY);
         }
         if (VRState.VR_INITIALIZED && !VRState.VR_RUNNING) {
             Component hotswitchMessage = Component.translatable("vivecraft.messages.vrhotswitchinginfo");
-            guiGraphics.renderTooltip(this.font, this.font.split(hotswitchMessage, 280), this.width / 2 - 140 - 12, 17);
+            renderTooltip(poseStack, this.font.split(hotswitchMessage, 280), this.width / 2 - 140 - 12, 17);
         }
     }
 

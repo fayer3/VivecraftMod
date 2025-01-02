@@ -1,7 +1,7 @@
 package org.vivecraft.client.gui.settings;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -47,9 +47,9 @@ public class GuiQuickCommandsInGame extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
-        guiGraphics.drawCenteredString(this.font, this.getTitle(), this.width / 2, 16, 0xFFFFFF);
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(poseStack);
+        drawCenteredString(poseStack, this.font, this.getTitle(), this.width / 2, 16, 0xFFFFFF);
+        super.render(poseStack, mouseX, mouseY, partialTick);
     }
 }

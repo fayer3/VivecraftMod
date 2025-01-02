@@ -119,16 +119,16 @@ public class ClimbTracker extends Tracker {
     }
 
     private static boolean canStand(BlockPos blockPos, LocalPlayer player) {
-        VoxelShape blockShape = player.level().getBlockState(blockPos).getCollisionShape(player.level(), blockPos);
+        VoxelShape blockShape = player.level.getBlockState(blockPos).getCollisionShape(player.level, blockPos);
         if (blockShape.isEmpty() || blockShape.bounds().maxY != 0.0D) {
             BlockPos above = blockPos.above();
-            VoxelShape aboveBlockShape = player.level().getBlockState(above).getCollisionShape(player.level(), above);
+            VoxelShape aboveBlockShape = player.level.getBlockState(above).getCollisionShape(player.level, above);
             if (aboveBlockShape.isEmpty() || aboveBlockShape.bounds().maxY > 0.0D) {
                 return false;
             } else {
                 BlockPos above2 = above.above();
-                VoxelShape above2BlockShape = player.level().getBlockState(above2)
-                    .getCollisionShape(player.level(), above2);
+                VoxelShape above2BlockShape = player.level.getBlockState(above2)
+                    .getCollisionShape(player.level, above2);
                 return above2BlockShape.isEmpty() || above2BlockShape.bounds().maxY <= 0.0D;
             }
         } else {
@@ -166,7 +166,7 @@ public class ClimbTracker extends Tracker {
 
         if (this.wasGrabbingLadder() && !this.isGrabbingLadder()) {
             this.forceActivate = true;
-        } else if (player.onGround() || player.getAbilities().flying) {
+        } else if (player.isOnGround() || player.getAbilities().flying) {
             this.forceActivate = false;
         }
 
@@ -334,7 +334,7 @@ public class ClimbTracker extends Tracker {
                 allowed[c] = this.inBlock[c];
             } else {
                 // Climbey
-                if (this.mc.player.onGround()) {
+                if (this.mc.player.isOnGround()) {
                     this.mc.player.setOnGround(!this.latched[0] && !this.latched[1]);
                 }
 
@@ -455,7 +455,7 @@ public class ClimbTracker extends Tracker {
         }
 
         if (!this.latched[0] && !this.latched[1] && !jump) {
-            if (player.onGround() && this.unsetFlag) {
+            if (player.isOnGround() && this.unsetFlag) {
                 this.unsetFlag = false;
                 VivecraftVRMod.INSTANCE.keyClimbeyGrab.unpressKey(ControllerType.RIGHT);
                 VivecraftVRMod.INSTANCE.keyClimbeyGrab.unpressKey(ControllerType.LEFT);

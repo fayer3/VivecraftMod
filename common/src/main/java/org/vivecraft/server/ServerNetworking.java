@@ -303,7 +303,7 @@ public class ServerNetworking {
      * @return unmodifiableSet set of all other players that can see {@code player}
      */
     public static Set<ServerPlayerConnection> getTrackingPlayers(ServerPlayer player) {
-        ChunkMap chunkMap = player.serverLevel().getChunkSource().chunkMap;
+        ChunkMap chunkMap = player.getLevel().getChunkSource().chunkMap;
         TrackedEntityAccessor playerTracker = ((ChunkMapAccessor) chunkMap).getTrackedEntities().get(player.getId());
         return playerTracker != null ? Collections.unmodifiableSet(playerTracker.getPlayersTracking()) :
             Collections.emptySet();

@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -254,17 +253,16 @@ public class RenderHelper {
     /**
      * renders the given screen to the current main target and generates mipmaps for it
      *
-     * @param guiGraphics GuiGraphics to render with
+     * @param poseStack   PoseStack to render with
      * @param partialTick partial tick for the screen rendering
      * @param screen      the Screen to render
      * @param maxGuiScale if set, renders the screen at max gui scale
      */
-    public static void drawScreen(GuiGraphics guiGraphics, float partialTick, Screen screen, boolean maxGuiScale) {
+    public static void drawScreen(PoseStack poseStack, float partialTick, Screen screen, boolean maxGuiScale) {
         // setup modelview for screen rendering
-        PoseStack poseStack = RenderSystem.getModelViewStack();
         poseStack.pushPose();
         poseStack.setIdentity();
-        poseStack.translate(0.0F, 0.0F, -11000.0F);
+        poseStack.translate(0.0F, 0.0F, -2000.0F);
         RenderSystem.applyModelViewMatrix();
 
         double guiScale = maxGuiScale ? GuiHandler.GUI_SCALE_FACTOR_MAX : MC.getWindow().getGuiScale();
@@ -272,8 +270,8 @@ public class RenderHelper {
         Matrix4f guiProjection = (new Matrix4f()).setOrtho(
             0.0F, (float) (MC.getMainRenderTarget().width / guiScale),
             (float) (MC.getMainRenderTarget().height / guiScale), 0.0F,
-            1000.0F, 21000.0F);
-        RenderSystem.setProjectionMatrix(guiProjection, VertexSorting.ORTHOGRAPHIC_Z);
+            1000.0F, 3000.0F);
+        RenderSystem.setProjectionMatrix(guiProjection);
 
         RenderSystem.blendFuncSeparate(
             GlStateManager.SourceFactor.SRC_ALPHA,
@@ -281,8 +279,7 @@ public class RenderHelper {
             GlStateManager.SourceFactor.ONE,
             GlStateManager.DestFactor.ONE);
 
-        screen.render(guiGraphics, 0, 0, partialTick);
-        guiGraphics.flush();
+        screen.render(poseStack, 0, 0, partialTick);
 
         RenderSystem.blendFuncSeparate(
             GlStateManager.SourceFactor.SRC_ALPHA,
@@ -305,11 +302,11 @@ public class RenderHelper {
     /**
      * draws the crosshair at the specified location on the screen
      *
-     * @param guiGraphics GuiGraphics to render with, is not flushed after rendering
-     * @param mouseX      x coordinate in screen pixel coordinates
-     * @param mouseY      y coordinate in screen pixel coordinates
+     * @param poseStack GuiGraphics to render with
+     * @param mouseX    x coordinate in screen pixel coordinates
+     * @param mouseY    y coordinate in screen pixel coordinates
      */
-    public static void drawMouseMenuQuad(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    public static void drawMouseMenuQuad(PoseStack poseStack, int mouseX, int mouseY) {
         RenderSystem.enableBlend();
         RenderSystem.disableDepthTest();
         // Turns out all we needed was some blendFuncSeparate magic :)
@@ -319,11 +316,22 @@ public class RenderHelper {
 
         float size = 15.0F * Math.max(ClientDataHolderVR.getInstance().vrSettings.menuCrosshairScale,
             1.0F / (float) MC.getWindow().getGuiScale());
+        float halfSize = size * 0.5F;
 
         int x = (int) (mouseX - size * 0.5F + 1);
         int y = (int) (mouseY - size * 0.5F + 1);
 
-        guiGraphics.blit(Gui.GUI_ICONS_LOCATION, x, y, (int) size, (int) size, 0, 0, 15, 15, 256, 256);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderTexture(0, Gui.GUI_ICONS_LOCATION);
+
+        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferBuilder.vertex(x - halfSize, y - halfSize, 0).uv(0, 0).endVertex();
+        bufferBuilder.vertex(x - halfSize, y + halfSize, 0).uv(0, 15F / 265F).endVertex();
+        bufferBuilder.vertex(x + halfSize, y + halfSize, 0).uv(15F / 265F, 15F / 265F).endVertex();
+        bufferBuilder.vertex(x + halfSize, y - halfSize, 0).uv(15F / 265F, 0).endVertex();
+        BufferUploader.drawWithShader(bufferBuilder.end());
 
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();

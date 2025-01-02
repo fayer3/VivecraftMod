@@ -123,10 +123,12 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
         }
     }
 
-    @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/lighting/LevelLightEngine;runLightUpdates()I"))
-    private int vivecraft$oneLightingUpdates(LevelLightEngine instance, Operation<Integer> original) {
+    @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/lighting/LevelLightEngine;runUpdates(IZZ)I"))
+    private int vivecraft$oneLightingUpdates(
+        LevelLightEngine instance, int pos, boolean isQueueEmpty, boolean updateBlockLight, Operation<Integer> original)
+    {
         if (RenderPassType.isVanilla() || ClientDataHolderVR.getInstance().isFirstPass) {
-            return original.call(instance);
+            return original.call(instance, pos, isQueueEmpty, updateBlockLight);
         } else {
             return 0;
         }

@@ -433,8 +433,8 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
     private void vivecraft$doDrag() {
         float friction = 0.91F;
 
-        if (this.onGround()) {
-            friction = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement())
+        if (this.isOnGround()) {
+            friction = this.level.getBlockState(this.getBlockPosBelowThatAffectsMyMovement())
                 .getBlock().getFriction() * 0.91F;
         }
         double xFactor = friction;
@@ -497,21 +497,21 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
     @Override
     @Unique
     public void vivecraft$stepSound(BlockPos blockPos, Vec3 soundPos) {
-        BlockState blockState = this.level().getBlockState(blockPos);
+        BlockState blockState = this.level.getBlockState(blockPos);
         SoundType soundType = blockState.getSoundType();
-        BlockState aboveBlockState = this.level().getBlockState(blockPos.above());
+        BlockState aboveBlockState = this.level.getBlockState(blockPos.above());
 
         if (aboveBlockState.is(Blocks.SNOW)) {
             soundType = aboveBlockState.getSoundType();
         }
 
         // TODO: liquid is deprecated
-        if (!this.isSilent() && !blockState.liquid()) {
+        if (!this.isSilent() && !blockState.getMaterial().isLiquid()) {
             float volume = soundType.getVolume();
             float pitch = soundType.getPitch();
             SoundEvent soundevent = soundType.getStepSound();
 
-            this.level()
+            this.level
                 .playSound(null, soundPos.x, soundPos.y, soundPos.z, soundevent, this.getSoundSource(), volume, pitch);
         }
     }

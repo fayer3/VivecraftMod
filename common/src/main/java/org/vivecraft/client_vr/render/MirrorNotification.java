@@ -1,9 +1,8 @@
 package org.vivecraft.client_vr.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11C;
 import org.vivecraft.client.utils.TextUtils;
@@ -47,18 +46,18 @@ public class MirrorNotification {
 
             RenderSystem.viewport(0, 0, screenX, screenY);
             Matrix4f projection = new Matrix4f().setOrtho(0.0F, screenX,
-                screenY, 0.0F, 1000.0F, 21000.0F);
-            RenderSystem.setProjectionMatrix(projection, VertexSorting.ORTHOGRAPHIC_Z);
+                screenY, 0.0F, 1000.0F, 3000.0F);
+            RenderSystem.setProjectionMatrix(projection);
 
             RenderSystem.getModelViewStack().pushPose();
             RenderSystem.getModelViewStack().setIdentity();
-            RenderSystem.getModelViewStack().translate(0, 0, -11000);
+            RenderSystem.getModelViewStack().translate(0, 0, -2000);
             RenderSystem.applyModelViewMatrix();
 
             RenderSystem.setShaderFogStart(Float.MAX_VALUE);
 
-            GuiGraphics guiGraphics = new GuiGraphics(MC, MC.renderBuffers().bufferSource());
-            guiGraphics.pose().scale(3, 3, 3);
+            PoseStack poseStack = new PoseStack();
+            poseStack.scale(3, 3, 3);
 
             if (MIRROR_NOTIFY_CLEAR) {
                 RenderSystem.clearColor(0, 0, 0, 0);
@@ -78,10 +77,9 @@ public class MirrorNotification {
             final int COLUMN_GAP = 12;
 
             for (String line : wrapped) {
-                guiGraphics.drawString(MC.font, line, 1, column, 0xFFFFFF);
+                MC.font.draw(poseStack, line, 1, column, 0xFFFFFF);
                 column += COLUMN_GAP;
             }
-            guiGraphics.flush();
 
             RenderSystem.getModelViewStack().popPose();
             RenderSystem.applyModelViewMatrix();

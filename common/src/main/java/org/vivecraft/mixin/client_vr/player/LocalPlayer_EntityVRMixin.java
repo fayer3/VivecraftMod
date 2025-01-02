@@ -24,6 +24,8 @@ public abstract class LocalPlayer_EntityVRMixin {
     protected boolean wasTouchingWater;
     @Shadow
     protected Vec3 stuckSpeedMultiplier;
+    @Shadow
+    public Level level;
 
     @Shadow
     public abstract Pose getPose();
@@ -35,10 +37,7 @@ public abstract class LocalPlayer_EntityVRMixin {
     protected abstract BlockPos getBlockPosBelowThatAffectsMyMovement();
 
     @Shadow
-    public abstract Level level();
-
-    @Shadow
-    public abstract boolean onGround();
+    public abstract boolean isOnGround();
 
     @Shadow
     public abstract void setDeltaMovement(double x, double y, double z);

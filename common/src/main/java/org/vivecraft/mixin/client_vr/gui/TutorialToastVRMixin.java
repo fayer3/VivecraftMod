@@ -2,7 +2,8 @@ package org.vivecraft.mixin.client_vr.gui;
 
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import net.minecraft.client.gui.GuiGraphics;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
@@ -26,9 +27,9 @@ public abstract class TutorialToastVRMixin implements Toast {
     @Final
     private Component message;
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V", shift = At.Shift.AFTER))
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiComponent;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V", shift = At.Shift.AFTER))
     private void vivecraft$extendToast(
-        GuiGraphics guiGraphics, ToastComponent toastComponent, long timeSinceLastVisible,
+        PoseStack poseStack, ToastComponent toastComponent, long timeSinceLastVisible,
         CallbackInfoReturnable<Visibility> cir, @Share("offset") LocalRef<Integer> offset)
     {
         int width = Math.max(toastComponent.getMinecraft().font.width(this.title),
@@ -39,27 +40,27 @@ public abstract class TutorialToastVRMixin implements Toast {
             // draw a bigger toast from right to left, to override the left border
             for (int i = offset.get() - (this.width() - 8) * (offset.get() / (this.width() - 8));
                  i >= offset.get(); i -= this.width() - 8) {
-                guiGraphics.blit(TEXTURE, i, 0, 0, 96, this.width() - 4, this.height());
+                GuiComponent.blit(poseStack, i, 0, 0, 96, this.width() - 4, this.height());
             }
         }
     }
 
-    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/toasts/TutorialToast$Icons;render(Lnet/minecraft/client/gui/GuiGraphics;II)V"), index = 1)
+    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/toasts/TutorialToast$Icons;render(Lcom/mojang/blaze3d/vertex/PoseStack;II)V"), index = 1)
     private int vivecraft$offsetIcon(int x, @Share("offset") LocalRef<Integer> offset) {
         return x + offset.get();
     }
 
-    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I"), index = 2)
-    private int vivecraft$offsetText(int x, @Share("offset") LocalRef<Integer> offset) {
+    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;draw(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/network/chat/Component;FFI)I"), index = 2)
+    private float vivecraft$offsetText(float x, @Share("offset") LocalRef<Integer> offset) {
         return x + offset.get();
     }
 
-    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"), index = 0)
+    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiComponent;fill(Lcom/mojang/blaze3d/vertex/PoseStack;IIIII)V"), index = 1)
     private int vivecraft$offsetProgressStart(int x, @Share("offset") LocalRef<Integer> offset) {
         return x + offset.get();
     }
 
-    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 1), index = 2)
+    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiComponent;fill(Lcom/mojang/blaze3d/vertex/PoseStack;IIIII)V", ordinal = 1), index = 3)
     private int vivecraft$offsetProgressEnd(int x, @Share("offset") LocalRef<Integer> offset) {
         return x + offset.get() - (int) ((float) x / TutorialToast.PROGRESS_BAR_WIDTH * offset.get());
     }

@@ -256,7 +256,7 @@ public class SwingTracker extends Tracker {
 
                 boolean mineableByItem = this.dh.vrSettings.swordBlockCollision &&
                     (itemstack.isCorrectToolForDrops(blockstate) ||
-                        blockstate.getDestroyProgress(player, player.level(), blockpos) == 1F
+                        blockstate.getDestroyProgress(player, player.level, blockpos) == 1F
                     );
 
                 // block check
@@ -320,13 +320,10 @@ public class SwingTracker extends Tracker {
                         }
                         // roomscale brushes
                         else if (isHand && (item instanceof BrushItem /*|| itemstack.is(ItemTags.VIVECRAFT_BRUSHES*/)) {
-                            ((BrushItem) item).spawnDustParticles(player.level(), blockHit, blockstate,
-                                player.getViewVector(0.0F),
-                                c == 0 ? player.getMainArm() : player.getMainArm().getOpposite());
-                            player.level().playSound(player, blockHit.getBlockPos(),
-                                blockstate.getBlock() instanceof BrushableBlock ?
-                                    ((BrushableBlock) blockstate.getBlock()).getBrushSound() :
-                                    SoundEvents.BRUSH_GENERIC, SoundSource.BLOCKS);
+                            ((BrushItem) item).spawnDustParticles(player.level, blockHit, blockstate,
+                                player.getViewVector(0.0F));
+                            player.level.playSound(player, blockHit.getBlockPos(),
+                                SoundEvents.BRUSH_BRUSHING, SoundSource.PLAYERS);
                             this.mc.gameMode.useItemOn(player,
                                 c == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND, blockHit);
                         }

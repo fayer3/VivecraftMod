@@ -16,7 +16,7 @@ public class GlStateManagerVRMixin {
     }
 
     // dstAlpha first, because that is the variable we are changing
-    @ModifyVariable(method = "_blendFuncSeparate", at = @At("HEAD"), remap = false, index = 3, argsOnly = true)
+    @ModifyVariable(method = "_blendFuncSeparate", at = @At("HEAD"), index = 3, argsOnly = true)
     private static int vivecraft$guiAlphaBlending(int dstAlpha, int srcRgb, int dstRgb, int srcAlpha) {
         if (srcRgb == GlStateManager.SourceFactor.SRC_ALPHA.value &&
             dstRgb == GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA.value &&

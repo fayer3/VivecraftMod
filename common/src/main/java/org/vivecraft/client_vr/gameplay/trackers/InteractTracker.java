@@ -240,8 +240,7 @@ public class InteractTracker extends Tracker {
                 this.bukkit[c] = false;
 
                 // bucket liquid pickup
-                // TODO: liquid is deprecated
-                if (!this.active[c] && handItem.getItem() == Items.BUCKET && blockstate.liquid()) {
+                if (!this.active[c] && handItem.getItem() == Items.BUCKET && blockstate.getMaterial().isLiquid()) {
                     this.active[c] = true;
                     this.bukkit[c] = true;
                 }

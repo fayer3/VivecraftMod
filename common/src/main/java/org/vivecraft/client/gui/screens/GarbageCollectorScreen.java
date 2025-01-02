@@ -1,15 +1,15 @@
 package org.vivecraft.client.gui.screens;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.Style;
 import org.jetbrains.annotations.NotNull;
 import org.vivecraft.client.gui.widgets.TextScrollWidget;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -21,6 +21,7 @@ public class GarbageCollectorScreen extends Screen {
 
     private final Screen lastScreen;
     private final String currentGarbageCollector;
+    private TextScrollWidget text;
 
     public GarbageCollectorScreen(String currentGarbageCollector) {
         super(Component.translatable("vivecraft.messages.gctitle"));
@@ -42,9 +43,10 @@ public class GarbageCollectorScreen extends Screen {
             Component.translatable("vivecraft.gui.openguide").withStyle(style -> style
                 .withUnderlined(true)
                 .withColor(ChatFormatting.GREEN)
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, CommonComponents.GUI_OPEN_IN_BROWSER))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable(("chat.link.open"))))
                 .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, GUIDE_URL))));
-        this.addRenderableWidget(new TextScrollWidget(this.width / 2 - 155, 30, 310, this.height - 30 - 60, message));
+        this.text = this.addRenderableWidget(
+            new TextScrollWidget(this.width / 2 - 155, 30, 310, this.height - 30 - 60, message));
 
         this.addRenderableWidget(new Button.Builder(Component.translatable("vivecraft.gui.dontshowagain"), (p) -> {
             ClientDataHolderVR.getInstance().vrSettings.disableGarbageCollectorMessage = true;
@@ -69,10 +71,15 @@ public class GarbageCollectorScreen extends Screen {
     }
 
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
+    public void render(@NotNull PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(poseStack);
+        super.render(poseStack, mouseX, mouseY, partialTick);
+        drawCenteredString(poseStack, this.font, this.title, this.width / 2, 15, 0xFFFFFF);
+
+        Style style = this.text.getMouseoverStyle(mouseX, mouseY);
+        if (style != null) {
+            renderComponentHoverEffect(poseStack, style, mouseX, mouseY);
+        }
     }
 
     @Override

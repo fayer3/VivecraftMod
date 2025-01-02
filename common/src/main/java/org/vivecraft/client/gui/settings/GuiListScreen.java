@@ -1,6 +1,6 @@
 package org.vivecraft.client.gui.settings;
 
-import net.minecraft.client.gui.GuiGraphics;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -43,19 +43,19 @@ public abstract class GuiListScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics) {
-        this.renderDirtBackground(guiGraphics);
+    public void renderBackground(PoseStack poseStack) {
+        this.renderDirtBackground(poseStack);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         if (this.reinit) {
             init();
             this.reinit = false;
         }
-        this.renderBackground(guiGraphics);
-        this.list.render(guiGraphics, mouseX, mouseY, partialTick);
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 8, 0xFFFFFF);
+        this.renderBackground(poseStack);
+        this.list.render(poseStack, mouseX, mouseY, partialTick);
+        super.render(poseStack, mouseX, mouseY, partialTick);
+        drawCenteredString(poseStack, this.font, this.title, this.width / 2, 8, 0xFFFFFF);
     }
 }

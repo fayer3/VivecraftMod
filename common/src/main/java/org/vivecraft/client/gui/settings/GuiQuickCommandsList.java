@@ -1,7 +1,7 @@
 package org.vivecraft.client.gui.settings;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -22,7 +22,7 @@ public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsLi
 
     @Override
     protected void renderSelection(
-        GuiGraphics guiGraphics, int top, int width, int height, int outerColor, int innerColor)
+        PoseStack poseStack, int top, int width, int height, int outerColor, int innerColor)
     {}
 
     public class CommandEntry extends Entry<CommandEntry> {
@@ -104,16 +104,16 @@ public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsLi
 
         @Override
         public void render(
-            GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY,
+            PoseStack poseStack, int index, int top, int left, int width, int height, int mouseX, int mouseY,
             boolean hovering, float partialTick)
         {
             this.txt.setX(left);
             this.txt.setY(top);
-            this.txt.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.txt.render(poseStack, mouseX, mouseY, partialTick);
             this.btnDelete.setX(this.txt.getX() + this.txt.getWidth() + 2);
             this.btnDelete.setY(this.txt.getY());
             this.btnDelete.visible = true;
-            this.btnDelete.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.btnDelete.render(poseStack, mouseX, mouseY, partialTick);
         }
 
         @Override

@@ -488,7 +488,7 @@ public class MenuWorldRenderer {
             RenderType layer = entry.getKey().getLeft();
             BufferBuilder vertBuffer = entry.getValue();
             if (layer == RenderType.translucent()) {
-                vertBuffer.setQuadSorting(VertexSorting.byDistance(0, Mth.frac(this.blockAccess.getGround()), 0));
+                vertBuffer.setQuadSortOrigin(0, Mth.frac(this.blockAccess.getGround()), 0);
             }
             BufferBuilder.RenderedBuffer renderedBuffer = vertBuffer.end();
             if (!renderedBuffer.isEmpty()) {
@@ -540,7 +540,7 @@ public class MenuWorldRenderer {
     }
 
     private void uploadGeometry(RenderType layer, BufferBuilder.RenderedBuffer renderedBuffer) {
-        VertexBuffer buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        VertexBuffer buffer = new VertexBuffer();
         buffer.bind();
         buffer.upload(renderedBuffer);
         VertexBuffer.unbind();
@@ -948,7 +948,7 @@ public class MenuWorldRenderer {
                 if (this.cloudVBO != null) {
                     this.cloudVBO.close();
                 }
-                this.cloudVBO = new VertexBuffer(VertexBuffer.Usage.STATIC);
+                this.cloudVBO = new VertexBuffer();
                 BufferBuilder.RenderedBuffer renderedBuffer = this.buildClouds(bufferBuilder, cloudX, cloudY, cloudZ,
                     cloudColor);
                 this.cloudVBO.bind();
@@ -1430,7 +1430,7 @@ public class MenuWorldRenderer {
         if (this.skyVBO != null) {
             this.skyVBO.close();
         }
-        this.skyVBO = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.skyVBO = new VertexBuffer();
         BufferBuilder.RenderedBuffer renderedBuffer = buildSkyDisc(bufferBuilder, 16.0f);
         this.skyVBO.bind();
         this.skyVBO.upload(renderedBuffer);
@@ -1443,7 +1443,7 @@ public class MenuWorldRenderer {
         if (this.sky2VBO != null) {
             this.sky2VBO.close();
         }
-        this.sky2VBO = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.sky2VBO = new VertexBuffer();
         BufferBuilder.RenderedBuffer renderedBuffer = buildSkyDisc(bufferBuilder, -16.0f);
         this.sky2VBO.bind();
         this.sky2VBO.upload(renderedBuffer);
@@ -1470,7 +1470,7 @@ public class MenuWorldRenderer {
         if (this.starVBO != null) {
             this.starVBO.close();
         }
-        this.starVBO = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.starVBO = new VertexBuffer();
         BufferBuilder.RenderedBuffer renderedBuffer = this.buildStars(bufferBuilder);
         this.starVBO.bind();
         this.starVBO.upload(renderedBuffer);

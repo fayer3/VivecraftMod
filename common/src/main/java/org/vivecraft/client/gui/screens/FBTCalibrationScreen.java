@@ -3,7 +3,6 @@ package org.vivecraft.client.gui.screens;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -154,13 +153,13 @@ public class FBTCalibrationScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         this.calibrationText.visible = !this.calibrated;
         this.unlabeledTrackersWarningText.visible = !this.calibrated && this.usingUnlabeledTrackers;
         this.unlabeledTrackersConfirmationText.visible = this.calibrated && this.usingUnlabeledTrackers;
 
-        this.renderBackground(guiGraphics);
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        this.renderBackground(poseStack);
+        super.render(poseStack, mouseX, mouseY, partialTick);
 
         if (this.calibrated && this.usingUnlabeledTrackers) {
             if (VRState.VR_RUNNING) {
@@ -172,7 +171,6 @@ public class FBTCalibrationScreen extends Screen {
         } else {
             checkPosition();
 
-            PoseStack poseStack = guiGraphics.pose();
             poseStack.pushPose();
 
             Vec3i color = new Vec3i(128, 64, 64);
@@ -184,8 +182,8 @@ public class FBTCalibrationScreen extends Screen {
             }
 
             // move to screen center
-            float min = Math.min(guiGraphics.guiWidth(), guiGraphics.guiHeight()) / (4F * 16F);
-            poseStack.translate(guiGraphics.guiWidth() / 2F, guiGraphics.guiHeight() - 32F, 0);
+            float min = Math.min(this.width, this.height) / (4F * 16F);
+            poseStack.translate(this.width / 2F, this.height - 32F, 0);
             poseStack.scale(min, -min, min);
             poseStack.mulPose(Axis.YP.rotation(Mth.PI));
 

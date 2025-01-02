@@ -23,7 +23,7 @@ public class SneakTracker extends Tracker {
             return false;
         } else if (this.mc.gameMode == null) {
             return false;
-        } else if (player == null || !player.isAlive() || !player.onGround()) {
+        } else if (player == null || !player.isAlive() || !player.isOnGround()) {
             return false;
         } else {
             return !player.isPassenger();

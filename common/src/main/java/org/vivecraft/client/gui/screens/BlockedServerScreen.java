@@ -1,7 +1,7 @@
 package org.vivecraft.client.gui.screens;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.Screen;
@@ -38,11 +38,11 @@ public class BlockedServerScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(poseStack);
+        super.render(poseStack, mouseX, mouseY, partialTick);
 
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
-        this.message.renderCentered(guiGraphics, this.width / 2, 120);
+        drawCenteredString(poseStack, this.font, this.title, this.width / 2, 15, 0xFFFFFF);
+        this.message.renderCentered(poseStack, this.width / 2, 120);
     }
 }

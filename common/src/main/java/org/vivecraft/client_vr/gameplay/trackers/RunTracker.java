@@ -24,7 +24,7 @@ public class RunTracker extends Tracker {
             return false;
         } else if (this.mc.gameMode == null) {
             return false;
-        } else if (!player.onGround() && (player.isInWater() || player.isInLava())) {
+        } else if (!player.isOnGround() && (player.isInWater() || player.isInLava())) {
             return false;
         } else if (player.onClimbable()) {
             return false;

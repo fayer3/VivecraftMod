@@ -75,7 +75,7 @@ public class DebugRenderHelper {
             Vec3 camPos = RenderHelper
                 .getSmoothCameraPosition(DATA_HOLDER.currentPass, DATA_HOLDER.vrPlayer.getVRDataWorld());
 
-            for (Player p : MC.player.level().players()) {
+            for (Player p : MC.player.level.players()) {
                 if (ClientVRPlayers.getInstance().isVRPlayer(p)) {
                     ClientVRPlayers.RotInfo info = ClientVRPlayers.getInstance().getRotationsForPlayer(p.getUUID());
 

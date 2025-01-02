@@ -138,8 +138,8 @@ public class ShaderHelper {
                     WATER_EFFECT = 0.0F;
                 }
 
-                float portalTime = Mth.lerp(partialTick, MC.player.oSpinningEffectIntensity,
-                    MC.player.spinningEffectIntensity);
+                float portalTime = Mth.lerp(partialTick, MC.player.oPortalTime,
+                    MC.player.portalTime);
                 if (DATA_HOLDER.vrSettings.portalEffect &&
                     // vanilla check for portal overlay
                     portalTime > 0.0F && !MC.player.hasEffect(MobEffects.CONFUSION))

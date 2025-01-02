@@ -13,7 +13,7 @@ import org.vivecraft.client_vr.VRState;
 @Mixin(Screen.class)
 public abstract class ScreenVRMixin extends AbstractContainerEventHandler implements Renderable {
 
-    @Inject(method = "renderBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fillGradient(IIIIII)V"), cancellable = true)
+    @Inject(method = "renderBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;fillGradient(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V"), cancellable = true)
     private void vivecraft$vrNoBackground(CallbackInfo ci) {
         if (VRState.VR_RUNNING && ClientDataHolderVR.getInstance().vrSettings != null &&
             !ClientDataHolderVR.getInstance().vrSettings.menuBackground)

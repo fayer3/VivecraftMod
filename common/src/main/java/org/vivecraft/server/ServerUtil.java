@@ -339,18 +339,18 @@ public class ServerUtil {
     public static void debugParticleAxes(ServerVivePlayer vivePlayer) {
         if (vivePlayer.isVR() && vivePlayer.vrPlayerState != null) {
             debugParticleAxes(
-                vivePlayer.player.serverLevel(),
+                vivePlayer.player.getLevel(),
                 vivePlayer.getLimbPos(Limb.MAIN_HAND),
                 vivePlayer.vrPlayerState.mainHand().orientation());
 
             debugParticleAxes(
-                vivePlayer.player.serverLevel(),
+                vivePlayer.player.getLevel(),
                 vivePlayer.getLimbPos(Limb.OFF_HAND),
                 vivePlayer.vrPlayerState.offHand().orientation());
 
             if (ServerConfig.DEBUG_PARTICLES_HEAD.get()) {
                 debugParticleAxes(
-                    vivePlayer.player.serverLevel(),
+                    vivePlayer.player.getLevel(),
                     vivePlayer.getHMDPos(),
                     vivePlayer.vrPlayerState.hmd().orientation());
             }

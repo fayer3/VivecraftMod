@@ -12,7 +12,6 @@ import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.util.Mth;
@@ -208,8 +207,7 @@ public abstract class VRRenderer {
 
         RenderTarget fb = minecraft.getMainRenderTarget();
         RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, fb.viewWidth, 0.0F, fb.viewHeight, 0.0F, 20.0F),
-            VertexSorting.ORTHOGRAPHIC_Z);
+        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, fb.viewWidth, 0.0F, fb.viewHeight, 0.0F, 20.0F));
         RenderSystem.getModelViewStack().pushPose();
         RenderSystem.getModelViewStack().setIdentity();
         if (inverse) {
@@ -623,7 +621,7 @@ public abstract class VRRenderer {
                                 .withStyle(style -> style.withUnderlined(true)
                                     .withColor(ChatFormatting.GREEN)
                                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                        CommonComponents.GUI_OPEN_IN_BROWSER))
+                                        Component.translatable("chat.link.open")))
                                     .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,
                                         "https://www.vivecraft.org/faq/#gpu"))))));
             }

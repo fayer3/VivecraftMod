@@ -1,9 +1,10 @@
 package org.vivecraft.mixin.client_vr.gui;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -46,7 +47,7 @@ public abstract class EditBoxVRMixin extends AbstractWidget {
 
     @Inject(method = "renderWidget", at = @At(value = "INVOKE", target = "Ljava/lang/String;length()I", ordinal = 1))
     private void vivecraft$renderKeyboardHint(
-        GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci,
+        PoseStack poseStack, int mouseX, int mouseY, float partialTick, CallbackInfo ci,
         @Local String content, @Local(ordinal = 5) int xPos, @Local(ordinal = 6) int yPos)
     {
         if (VRState.VR_RUNNING && content.isEmpty() && !ClientDataHolderVR.getInstance().vrSettings.seated &&
@@ -56,7 +57,7 @@ public abstract class EditBoxVRMixin extends AbstractWidget {
                 // limit text to field size
                 String fullString = I18n.get("vivecraft.message.openKeyboard");
                 String cutString = this.font.plainSubstrByWidth(fullString, this.getInnerWidth());
-                guiGraphics.drawString(this.font, fullString.equals(cutString) ? cutString : cutString + "...", xPos,
+                this.font.drawShadow(poseStack, fullString.equals(cutString) ? cutString : cutString + "...", xPos,
                     yPos, this.textColorUneditable);
             }
         }
@@ -75,10 +76,11 @@ public abstract class EditBoxVRMixin extends AbstractWidget {
         }
     }
 
-    @Inject(method = "onClick", at = @At(value = "HEAD"))
-    private void vivecraft$openKeyboard(CallbackInfo ci) {
-        if (VRState.VR_RUNNING) {
+    @ModifyExpressionValue(method = "mouseClicked", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/EditBox;canLoseFocus:Z"))
+    private boolean vivecraft$openKeyboard(boolean canLoseFocus, @Local boolean hovered) {
+        if (VRState.VR_RUNNING && hovered) {
             KeyboardHandler.setOverlayShowing(true);
         }
+        return canLoseFocus || !this.isFocused();
     }
 }

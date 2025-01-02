@@ -1,9 +1,9 @@
 package org.vivecraft.client.gui.settings;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -53,10 +53,10 @@ public class GuiRadialItemsList extends ObjectSelectionList<GuiRadialItemsList.B
 
         @Override
         public void render(
-            GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY,
+            PoseStack poseStack, int index, int top, int left, int width, int height, int mouseX, int mouseY,
             boolean hovering, float partialTick)
         {
-            guiGraphics.drawString(Minecraft.getInstance().font, this.labelText,
+            Minecraft.getInstance().font.draw(poseStack, this.labelText,
                 (Minecraft.getInstance().screen.width / 2 - this.labelWidth / 2),
                 (top + height - 9 - 1), 0x67697F);
         }
@@ -73,7 +73,7 @@ public class GuiRadialItemsList extends ObjectSelectionList<GuiRadialItemsList.B
 
         @Override
         public void render(
-            GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY,
+            PoseStack poseStack, int index, int top, int left, int width, int height, int mouseX, int mouseY,
             boolean hovering, float partialTick)
         {
             ChatFormatting chatformatting = ChatFormatting.WHITE;
@@ -82,7 +82,7 @@ public class GuiRadialItemsList extends ObjectSelectionList<GuiRadialItemsList.B
                 chatformatting = ChatFormatting.GREEN;
             }
 
-            guiGraphics.drawString(Minecraft.getInstance().font, chatformatting + I18n.get(this.myKey.getName()),
+            Minecraft.getInstance().font.draw(poseStack, chatformatting + I18n.get(this.myKey.getName()),
                 (Minecraft.getInstance().screen.width / 2 - MAX_LIST_LABEL_WIDTH / 2), (top + height / 2 - 9 / 2),
                 0xFFFFFF);
         }

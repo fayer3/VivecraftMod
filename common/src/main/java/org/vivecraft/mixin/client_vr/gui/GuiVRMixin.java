@@ -5,11 +5,11 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.HumanoidArm;
@@ -46,10 +46,6 @@ public abstract class GuiVRMixin implements GuiExtension {
 
     @Shadow
     protected abstract Player getCameraPlayer();
-
-    @Shadow
-    @Final
-    private static ResourceLocation WIDGETS_LOCATION;
 
     @Inject(method = "renderVignette", at = @At("HEAD"), cancellable = true)
     private void vivecraft$cancelVignette(CallbackInfo ci) {
@@ -114,8 +110,8 @@ public abstract class GuiVRMixin implements GuiExtension {
         }
     }
 
-    @Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V", ordinal = 1, shift = At.Shift.AFTER))
-    private void vivecraft$hotbarContextIndicator(CallbackInfo ci, @Local(argsOnly = true) GuiGraphics guiGraphics) {
+    @Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V", ordinal = 1, shift = At.Shift.AFTER))
+    private void vivecraft$hotbarContextIndicator(CallbackInfo ci, @Local(argsOnly = true) PoseStack poseStack) {
         if (VRState.VR_RUNNING && ClientDataHolderVR.getInstance().interactTracker.hotbar >= 0 &&
             ClientDataHolderVR.getInstance().interactTracker.hotbar < 9 &&
             this.getCameraPlayer().getInventory().selected != ClientDataHolderVR.getInstance().interactTracker.hotbar &&
@@ -123,7 +119,7 @@ public abstract class GuiVRMixin implements GuiExtension {
         {
             int middle = this.screenWidth / 2;
             RenderSystem.setShaderColor(0.0F, 1.0F, 0.0F, 1.0F);
-            guiGraphics.blit(WIDGETS_LOCATION,
+            GuiComponent.blit(poseStack,
                 middle - 91 - 1 + ClientDataHolderVR.getInstance().interactTracker.hotbar * 20,
                 this.screenHeight - 22 - 1, 0, 22, 24, 22);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -139,25 +135,23 @@ public abstract class GuiVRMixin implements GuiExtension {
         );
     }
 
-    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V", ordinal = 2))
+    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V", ordinal = 2))
     private void vivecraft$renderVRHotbarLeftIndicator(
-        GuiGraphics instance, ResourceLocation atlasLocation, int x, int y, int uOffset, int vOffset, int uWidth,
-        int vHeight, Operation<Void> original)
+        PoseStack instance, int x, int y, int uOffset, int vOffset, int uWidth, int vHeight, Operation<Void> original)
     {
-        vivecraft$renderColoredIcon(instance, atlasLocation, x, y, uOffset, vOffset, uWidth, vHeight, original);
+        vivecraft$renderColoredIcon(instance, x, y, uOffset, vOffset, uWidth, vHeight, original);
     }
 
-    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V", ordinal = 3))
+    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V", ordinal = 3))
     private void vivecraft$renderVRHotbarRightIndicator(
-        GuiGraphics instance, ResourceLocation atlasLocation, int x, int y, int uOffset, int vOffset, int uWidth,
-        int vHeight, Operation<Void> original)
+        PoseStack instance, int x, int y, int uOffset, int vOffset, int uWidth, int vHeight, Operation<Void> original)
     {
-        vivecraft$renderColoredIcon(instance, atlasLocation, x, y, uOffset, vOffset, uWidth, vHeight, original);
+        vivecraft$renderColoredIcon(instance, x, y, uOffset, vOffset, uWidth, vHeight, original);
     }
 
     @Unique
     private void vivecraft$renderColoredIcon(
-        GuiGraphics instance, ResourceLocation atlasLocation, int x, int y, int uOffset, int vOffset, int uWidth,
+        PoseStack instance, int x, int y, int uOffset, int vOffset, int uWidth,
         int vHeight, Operation<Void> original)
     {
         boolean changeColor = VRState.VR_RUNNING && ClientDataHolderVR.getInstance().interactTracker.hotbar == 9 &&
@@ -167,27 +161,27 @@ public abstract class GuiVRMixin implements GuiExtension {
             RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
         }
 
-        original.call(instance, atlasLocation, x, y, uOffset, vOffset, uWidth, vHeight);
+        original.call(instance, x, y, uOffset, vOffset, uWidth, vHeight);
 
         if (changeColor) {
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 
-    @Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;disableBlend()V", remap = false))
-    private void vivecraft$renderViveIcons(CallbackInfo ci, @Local(argsOnly = true) GuiGraphics guiGraphics) {
+    @Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;disableBlend()V"))
+    private void vivecraft$renderViveIcons(CallbackInfo ci, @Local(argsOnly = true) PoseStack poseStack) {
         if (VRState.VR_RUNNING) {
-            this.vivecraft$renderViveHudIcons(guiGraphics);
+            this.vivecraft$renderViveHudIcons(poseStack);
         }
     }
 
     /**
      * renders the vivecraft status icons above the hotbar
      *
-     * @param guiGraphics GuiGraphics to render with
+     * @param poseStack PoseStack to render with
      */
     @Unique
-    private void vivecraft$renderViveHudIcons(GuiGraphics guiGraphics) {
+    private void vivecraft$renderViveHudIcons(PoseStack poseStack) {
         if (this.minecraft.getCameraEntity() instanceof Player player) {
             int icon = 0;
             MobEffect mobeffect = null;
@@ -215,7 +209,7 @@ public abstract class GuiVRMixin implements GuiExtension {
             int y = this.minecraft.getWindow().getGuiScaledHeight() - 39;
 
             if (icon == -1) {
-                guiGraphics.renderFakeItem(new ItemStack(Items.ELYTRA), x, y);
+                this.minecraft.getItemRenderer().renderGuiItem(poseStack, new ItemStack(Items.ELYTRA), x, y);
                 mobeffect = null;
             } else if (icon == -2) {
                 int x2 = x;
@@ -224,12 +218,13 @@ public abstract class GuiVRMixin implements GuiExtension {
                 } else {
                     mobeffect = null;
                 }
-                guiGraphics.renderFakeItem(new ItemStack(Items.RABBIT_FOOT), x2, y);
+                this.minecraft.getItemRenderer().renderGuiItem(poseStack, new ItemStack(Items.RABBIT_FOOT), x2, y);
             }
             if (mobeffect != null) {
                 TextureAtlasSprite textureatlassprite = this.minecraft.getMobEffectTextures().get(mobeffect);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                guiGraphics.blit(x, y, 0, 18, 18, textureatlassprite);
+                RenderSystem.setShaderTexture(0, textureatlassprite.atlasLocation());
+                GuiComponent.blit(poseStack, x, y, 0, 18, 18, textureatlassprite);
             }
         }
     }

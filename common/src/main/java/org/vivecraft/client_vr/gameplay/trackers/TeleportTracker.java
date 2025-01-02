@@ -369,7 +369,7 @@ public class TeleportTracker extends Tracker {
      */
     private boolean checkAndSetTeleportDestination(LocalPlayer player, Vec3 start, BlockHitResult collision) {
         BlockPos blockpos = collision.getBlockPos();
-        BlockState blockState = player.level().getBlockState(blockpos);
+        BlockState blockState = player.level.getBlockState(blockpos);
 
         if (!this.mc.level.getFluidState(blockpos).isEmpty()) {
             Vec3 hitVec = new Vec3(collision.getLocation().x, blockpos.getY(), collision.getLocation().z);
@@ -425,7 +425,7 @@ public class TeleportTracker extends Tracker {
         BlockPos hitBlock = collision.getBlockPos().below();
 
         for (int i = 0; i < 2; i++) {
-            blockState = player.level().getBlockState(hitBlock);
+            blockState = player.level.getBlockState(hitBlock);
 
             if (!blockState.getCollisionShape(this.mc.level, hitBlock).isEmpty()) {
                 double height = blockState.getCollisionShape(this.mc.level, hitBlock).max(Direction.Axis.Y);

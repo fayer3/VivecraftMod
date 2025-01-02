@@ -4,9 +4,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL30C;
@@ -122,23 +120,20 @@ public class VRPassHelper {
         // some mods mess with the backface culling?
         RenderSystem.enableCull();
 
-        // to render gui stuff
-        GuiGraphics guiGraphics = new GuiGraphics(MC, MC.renderBuffers().bufferSource());
-
         MC.getProfiler().push("gui cursor");
         // draw cursor on Gui Layer
         if (MC.screen != null || !MC.mouseHandler.isMouseGrabbed()) {
             PoseStack poseStack = RenderSystem.getModelViewStack();
             poseStack.pushPose();
             poseStack.setIdentity();
-            poseStack.translate(0.0f, 0.0f, -11000.0f);
+            poseStack.translate(0.0f, 0.0f, -2000.0f);
             RenderSystem.applyModelViewMatrix();
 
             Matrix4f guiProjection = (new Matrix4f()).setOrtho(
                 0.0F, MC.getWindow().getGuiScaledWidth(),
                 MC.getWindow().getGuiScaledHeight(), 0.0F,
-                1000.0F, 21000.0F);
-            RenderSystem.setProjectionMatrix(guiProjection, VertexSorting.ORTHOGRAPHIC_Z);
+                1000.0F, 3000.0F);
+            RenderSystem.setProjectionMatrix(guiProjection);
 
             int x = (int) (
                 MC.mouseHandler.xpos() * (double) MC.getWindow().getGuiScaledWidth() /
@@ -148,9 +143,8 @@ public class VRPassHelper {
                 MC.mouseHandler.ypos() * (double) MC.getWindow().getGuiScaledHeight() /
                     (double) MC.getWindow().getScreenHeight()
             );
-            RenderHelper.drawMouseMenuQuad(guiGraphics, x, y);
+            RenderHelper.drawMouseMenuQuad(poseStack, x, y);
 
-            guiGraphics.flush();
             poseStack.popPose();
             RenderSystem.applyModelViewMatrix();
         }
@@ -175,7 +169,7 @@ public class VRPassHelper {
             MC.mainRenderTarget = KeyboardHandler.FRAMEBUFFER;
             MC.mainRenderTarget.clear(Minecraft.ON_OSX);
             MC.mainRenderTarget.bindWrite(true);
-            RenderHelper.drawScreen(guiGraphics, actualPartialTick, KeyboardHandler.UI, true);
+            RenderHelper.drawScreen(new PoseStack(), actualPartialTick, KeyboardHandler.UI, true);
         }
 
         MC.getProfiler().popPush("Radial Menu");
@@ -183,7 +177,7 @@ public class VRPassHelper {
             MC.mainRenderTarget = RadialHandler.FRAMEBUFFER;
             MC.mainRenderTarget.clear(Minecraft.ON_OSX);
             MC.mainRenderTarget.bindWrite(true);
-            RenderHelper.drawScreen(guiGraphics, actualPartialTick, RadialHandler.UI, true);
+            RenderHelper.drawScreen(new PoseStack(), actualPartialTick, RadialHandler.UI, true);
         }
         MC.getProfiler().pop();
         RenderHelper.checkGLError("post 2d ");

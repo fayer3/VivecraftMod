@@ -1,7 +1,7 @@
 package org.vivecraft.client_vr.gui;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -91,8 +91,8 @@ public class GuiRadial extends TwoHandedScreen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
-        super.render(guiGraphics, 0, 0, partialTick);
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(poseStack);
+        super.render(poseStack, 0, 0, partialTick);
     }
 }

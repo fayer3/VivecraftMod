@@ -10,7 +10,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -376,8 +375,8 @@ public abstract class GameRendererVRMixin
         return RenderPassType.isVanilla();
     }
 
-    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;render(Lnet/minecraft/client/gui/GuiGraphics;F)V"))
-    private boolean vivecraft$noGUIWithViewOnly(Gui instance, GuiGraphics guiGraphics, float partialTick) {
+    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;render(Lcom/mojang/blaze3d/vertex/PoseStack;F)V"))
+    private boolean vivecraft$noGUIWithViewOnly(Gui instance, PoseStack poseStack, float partialTick) {
         return RenderPassType.isVanilla() || !ClientDataHolderVR.VIEW_ONLY;
     }
 

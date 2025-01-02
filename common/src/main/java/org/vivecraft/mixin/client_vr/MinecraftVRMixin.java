@@ -12,10 +12,10 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -53,6 +53,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.vivecraft.client.ClientVRPlayers;
 import org.vivecraft.client.VivecraftVRMod;
+import org.vivecraft.client.Xplat;
 import org.vivecraft.client.gui.VivecraftClickEvent;
 import org.vivecraft.client.gui.screens.ErrorScreen;
 import org.vivecraft.client.gui.screens.GarbageCollectorScreen;
@@ -164,7 +165,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
     public abstract Entity getCameraEntity();
 
     @Shadow
-    protected abstract void renderFpsMeter(GuiGraphics guiGraphics, ProfileResults profileResults);
+    protected abstract void renderFpsMeter(PoseStack poseStack, ProfileResults profileResults);
 
     @Shadow
     public abstract CompletableFuture<Void> reloadResourcePacks();
@@ -219,8 +220,22 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
         return overlay;
     }
 
-    @Inject(method = "setInitialScreen", at = @At("TAIL"))
-    private void vivecraft$showGarbageCollectorScreen(CallbackInfo ci) {
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void vivecraft$showGarbageCollectorScreenFabric(CallbackInfo ci) {
+        if (Xplat.getModloader() == Xplat.ModLoader.FABRIC) {
+            vivecraft$showGarbageCollectorScreen();
+        }
+    }
+
+    @Inject(method = "lambda$new$2", at = @At("TAIL"), remap = false, require = 0, expect = 0)
+    private void vivecraft$showGarbageCollectorScreenForge(CallbackInfo ci) {
+        if (Xplat.getModloader() == Xplat.ModLoader.FORGE) {
+            vivecraft$showGarbageCollectorScreen();
+        }
+    }
+
+    @Unique
+    private void vivecraft$showGarbageCollectorScreen() {
         // set the Garbage collector screen here, when it got reset after loading, but don't set it when using quickplay, because it would be removed after loading has finished
         if (VRState.VR_INITIALIZED && !ClientDataHolderVR.getInstance().incorrectGarbageCollector.isEmpty() &&
             !(this.screen instanceof LevelLoadingScreen ||
@@ -611,7 +626,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
                 VRSettings.LOGGER.info("Vivecraft: Saving to {}", foundFile.getAbsolutePath());
 
                 if (isLocalServer()) {
-                    final Level level = getSingleplayerServer().getLevel(this.player.level().dimension());
+                    final Level level = getSingleplayerServer().getLevel(this.player.level.dimension());
                     File finalFoundFile = foundFile;
                     CompletableFuture<Throwable> completablefuture = getSingleplayerServer().submit(() -> {
                         try {
@@ -860,9 +875,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
     public void vivecraft$drawProfiler() {
         if (this.fpsPieResults != null) {
             this.profiler.push("fpsPie");
-            GuiGraphics guiGraphics = new GuiGraphics((Minecraft) (Object) this, this.renderBuffers.bufferSource());
-            this.renderFpsMeter(guiGraphics, this.fpsPieResults);
-            guiGraphics.flush();
+            this.renderFpsMeter(new PoseStack(), this.fpsPieResults);
             this.profiler.pop();
         }
     }

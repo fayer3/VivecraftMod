@@ -4,7 +4,6 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.CreativeModeTab;
@@ -50,7 +49,7 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
 
     @Unique
     private void vivecraft$addCreativeItems(CreativeModeTab tab, NonNullList<ItemStack> items) {
-        if (tab == BuiltInRegistries.CREATIVE_MODE_TAB.get(CreativeModeTabs.FOOD_AND_DRINKS) || tab == null) {
+        if (tab == CreativeModeTabs.FOOD_AND_DRINKS || tab == null) {
             ItemStack eatMeCake = new ItemStack(Items.PUMPKIN_PIE);
             eatMeCake.setHoverName(Component.literal("EAT ME"));
 
@@ -62,7 +61,7 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
             items.add(drinkMePotion);
         }
 
-        if (tab == BuiltInRegistries.CREATIVE_MODE_TAB.get(CreativeModeTabs.TOOLS_AND_UTILITIES) || tab == null) {
+        if (tab == CreativeModeTabs.TOOLS_AND_UTILITIES || tab == null) {
             ItemStack boots = new ItemStack(Items.LEATHER_BOOTS);
             boots.setHoverName(Component.translatableWithFallback("vivecraft.item.jumpboots", "Jump Boots"));
             boots.getOrCreateTag().putBoolean("Unbreakable", true);

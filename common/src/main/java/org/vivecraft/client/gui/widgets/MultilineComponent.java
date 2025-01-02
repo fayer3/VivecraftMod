@@ -1,8 +1,8 @@
 package org.vivecraft.client.gui.widgets;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
@@ -37,13 +37,13 @@ public class MultilineComponent extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         int yPos = 0;
         for (FormattedCharSequence text : this.text) {
             if (this.centered) {
-                guiGraphics.drawCenteredString(this.font, text, getX() + this.width / 2, getY() + yPos, 0xFFFFFF);
+                drawCenteredString(poseStack, this.font, text, getX() + this.width / 2, getY() + yPos, 0xFFFFFF);
             } else {
-                guiGraphics.drawString(this.font, text, getX(), getY() + yPos, 0xFFFFFF);
+                drawString(poseStack, this.font, text, getX(), getY() + yPos, 0xFFFFFF);
             }
             yPos += this.font.lineHeight;
         }

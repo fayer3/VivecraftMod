@@ -49,7 +49,7 @@ public class VivecraftItemRendering {
             if (block instanceof TorchBlock) {
                 itemTransformType = VivecraftItemTransformType.Block_Stick;
             } else {
-                BakedModel bakedmodel = itemRenderer.getModel(itemStack, player.level(), player, 0);
+                BakedModel bakedmodel = itemRenderer.getModel(itemStack, player.level, player, 0);
 
                 if (bakedmodel.isGui3d()) {
                     itemTransformType = VivecraftItemTransformType.Block_3D;

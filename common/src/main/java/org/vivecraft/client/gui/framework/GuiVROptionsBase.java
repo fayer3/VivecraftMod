@@ -1,6 +1,6 @@
 package org.vivecraft.client.gui.framework;
 
-import net.minecraft.client.gui.GuiGraphics;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -197,7 +197,7 @@ public abstract class GuiVROptionsBase extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         if (this.reinit) {
             this.reinit = false;
             // remember selected option
@@ -212,15 +212,15 @@ public abstract class GuiVROptionsBase extends Screen {
             }
         }
 
-        this.renderBackground(guiGraphics);
+        this.renderBackground(poseStack);
 
         if (this.visibleList != null) {
-            this.visibleList.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.visibleList.render(poseStack, mouseX, mouseY, partialTick);
         }
 
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.render(poseStack, mouseX, mouseY, partialTick);
 
-        guiGraphics.drawCenteredString(this.font, Component.translatable(this.vrTitle), this.width / 2, 15, 0xFFFFFF);
+        drawCenteredString(poseStack, this.font, Component.translatable(this.vrTitle), this.width / 2, 15, 0xFFFFFF);
 
         if (this.btnDefaults != null) {
             this.btnDefaults.visible = this.drawDefaultButtons;
@@ -230,7 +230,7 @@ public abstract class GuiVROptionsBase extends Screen {
             this.btnDone.visible = this.drawDefaultButtons;
         }
 
-        renderTooltip(guiGraphics, mouseX, mouseY);
+        renderTooltip(poseStack, mouseX, mouseY);
     }
 
     protected void actionPerformed(AbstractWidget widget) {}
@@ -302,7 +302,7 @@ public abstract class GuiVROptionsBase extends Screen {
             super.charTyped(codePoint, modifiers);
     }
 
-    private void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    private void renderTooltip(PoseStack poseStack, int mouseX, int mouseY) {
         GuiEventListener hover = null;
 
         if (this.minecraft.getLastInputType().isKeyboard()) {
@@ -354,10 +354,10 @@ public abstract class GuiVROptionsBase extends Screen {
                         if (guiHover.getY() + guiHover.getHeight() + formattedText.size() * (this.font.lineHeight + 1) +
                             14 < this.height)
                         {
-                            guiGraphics.renderTooltip(this.font, this.font.split(Component.literal(tooltip), 308),
+                            renderTooltip(poseStack, this.font.split(Component.literal(tooltip), 308),
                                 this.width / 2 - 166, guiHover.getY() + guiHover.getHeight() + 14);
                         } else {
-                            guiGraphics.renderTooltip(this.font, this.font.split(Component.literal(tooltip), 308),
+                            renderTooltip(poseStack, this.font.split(Component.literal(tooltip), 308),
                                 this.width / 2 - 166,
                                 guiHover.getY() - formattedText.size() * (this.font.lineHeight + 1) + 9);
                         }
