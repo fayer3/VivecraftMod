@@ -1,7 +1,8 @@
 package org.vivecraft.neoforge.mixin;
 
-import net.minecraft.client.DeltaTracker;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Timer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,12 +17,21 @@ public class NeoForgeMinecraftVRMixin {
 
     @Shadow
     @Final
-    private DeltaTracker.Timer timer;
+    private Timer timer;
 
-    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;fireRenderFramePost(Lnet/minecraft/client/DeltaTracker;)V", shift = At.Shift.AFTER, remap = false), remap = true)
-    private void vivecraft$renderVRPassesNeoForge(boolean renderLevel, CallbackInfo ci) {
+    @Shadow
+    private volatile boolean pause;
+
+    @Shadow
+    private float pausePartialTick;
+
+    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;fireRenderFramePost(F)V", shift = At.Shift.AFTER, remap = false), remap = true)
+    private void vivecraft$renderVRPassesNeoForge(
+        boolean renderLevel, CallbackInfo ci, @Local(ordinal = 0) long nanoTime)
+    {
         if (VRState.VR_RUNNING) {
-            VRPassHelper.renderAndSubmit(renderLevel, this.timer);
+            VRPassHelper.renderAndSubmit(renderLevel, nanoTime,
+                this.pause ? this.pausePartialTick : this.timer.partialTick);
         }
     }
 }

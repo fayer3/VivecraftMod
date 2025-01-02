@@ -2,7 +2,6 @@ package org.vivecraft.client.utils.math;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
@@ -87,22 +86,23 @@ public class BezierCurve {
         double z = player.zOld + (player.getZ() - player.zOld) * partialTick;
         // GlStateManager._disableLighting();
         RenderSystem.depthMask(false);
-        BufferBuilder buffer = Tesselator.getInstance()
-            .begin(Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder buffer = tesselator.getBuilder();
+        buffer.begin(Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
         Vec3[] avec3 = this.getLinearInterpolation(vertexCount / this.nodes.size());
 
         for (int i = 0; i < avec3.length; i++) {
             this.renderVertex(buffer, avec3[i], c, x, y, z);
         }
 
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
+        tesselator.end();
         // GlStateManager._enableLighting();
         RenderSystem.depthMask(true);
     }
 
     void renderVertex(BufferBuilder buffer, Vec3 vert, Color color, double offX, double offY, double offZ) {
-        buffer.addVertex((float) (vert.x - offX), (float) (vert.y - offY), (float) (vert.z - offZ))
-            .setColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        buffer.vertex(vert.x - offX, vert.y - offY, vert.z - offZ)
+            .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
     }
 
     public static class Node {

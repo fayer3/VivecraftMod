@@ -180,8 +180,8 @@ public class BowTracker extends Tracker {
                 bow = player.getOffhandItem();
             }
 
-            int stage0 = bow.getUseDuration(player);
-            int stage1 = bow.getUseDuration(player) - 15;
+            int stage0 = bow.getUseDuration();
+            int stage1 = bow.getUseDuration() - 15;
             int stage2 = 0;
 
             if (ammo != ItemStack.EMPTY &&

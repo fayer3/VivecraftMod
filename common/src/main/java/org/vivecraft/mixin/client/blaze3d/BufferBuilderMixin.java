@@ -1,25 +1,26 @@
 package org.vivecraft.mixin.client.blaze3d;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import org.spongepowered.asm.mixin.Final;
+import org.lwjgl.system.MemoryUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.vivecraft.client.extensions.BufferBuilderExtension;
 
+import java.nio.ByteBuffer;
+
 @Mixin(BufferBuilder.class)
 public class BufferBuilderMixin implements BufferBuilderExtension {
-    @Final
     @Shadow
-    private ByteBufferBuilder buffer;
+    private ByteBuffer buffer;
 
     @Override
     public void vivecraft$freeBuffer() {
-        this.buffer.close();
+        MemoryTrackerAccessor.getAllocator().free(MemoryUtil.memAddress0(this.buffer));
+        this.buffer = null;
     }
 
     @Override
     public int vivecraft$getBufferSize() {
-        return ((ByteBufferBuilderAccessor) this.buffer).getCapacity();
+        return this.buffer.capacity();
     }
 }

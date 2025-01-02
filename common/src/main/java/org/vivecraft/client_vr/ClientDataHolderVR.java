@@ -2,7 +2,6 @@ package org.vivecraft.client_vr;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
 import org.vivecraft.client_vr.gameplay.VRPlayer;
 import org.vivecraft.client_vr.gameplay.trackers.*;
@@ -20,10 +19,10 @@ import java.util.function.BiFunction;
 
 public class ClientDataHolderVR {
 
-    public static final ModelResourceLocation THIRD_PERSON_CAMERA_MODEL = new ModelResourceLocation(
-        ResourceLocation.fromNamespaceAndPath("vivecraft", "camcorder"), "standalone");
-    public static final ModelResourceLocation THIRD_PERSON_CAMERA_DISPLAY_MODEL = new ModelResourceLocation(
-        ResourceLocation.fromNamespaceAndPath("vivecraft", "camcorder_display"), "standalone");
+    public static final ModelResourceLocation THIRD_PERSON_CAMERA_MODEL = new ModelResourceLocation("vivecraft",
+        "camcorder", "");
+    public static final ModelResourceLocation THIRD_PERSON_CAMERA_DISPLAY_MODEL = new ModelResourceLocation("vivecraft",
+        "camcorder_display", "");
 
     public static boolean KAT_VR;
     public static boolean INFINADECK;

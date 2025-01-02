@@ -51,13 +51,12 @@ public class XRCamera extends Camera {
         this.getLookVector().set(eye.getDirection());
         Vector3f up = eye.getCustomVector(MathUtils.UP);
         this.getUpVector().set(up);
-        Vector3f left = eye.getCustomVector(MathUtils.RIGHT);
+        Vector3f left = eye.getCustomVector(MathUtils.LEFT);
         this.getLeftVector().set(left);
 
-        this.rotation().rotationYXZ(
-            Mth.PI - this.yRot * Mth.DEG_TO_RAD,
-            -this.xRot * Mth.DEG_TO_RAD,
-            0.0F);
+        this.rotation().set(0.0F, 0.0F, 0.0F, 1.0F);
+        this.rotation().rotateY(Mth.DEG_TO_RAD * -this.yRot);
+        this.rotation().rotateX(Mth.DEG_TO_RAD * this.xRot);
     }
 
     /**

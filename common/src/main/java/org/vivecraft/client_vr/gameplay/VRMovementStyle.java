@@ -8,7 +8,7 @@ import net.minecraft.sounds.SoundEvents;
 
 public class VRMovementStyle {
 
-    private static final ResourceLocation BEAM_PNG = ResourceLocation.withDefaultNamespace(
+    private static final ResourceLocation BEAM_PNG = new ResourceLocation(
         "textures/entity/endercrystal/endercrystal_beam.png");
 
     public String name;

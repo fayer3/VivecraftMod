@@ -196,7 +196,7 @@ public class MenuWorldExporter {
                 default -> BuiltinDimensionTypes.OVERWORLD_EFFECTS;
             };
         } else {
-            dimName = ResourceLocation.parse(dis.readUTF());
+            dimName = new ResourceLocation(dis.readUTF());
         }
 
         boolean isFlat;
@@ -473,7 +473,7 @@ public class MenuWorldExporter {
 
                 if (dis.readBoolean()) {
                     ParticleType<?> particleType = BuiltInRegistries.PARTICLE_TYPE.get(
-                        ResourceLocation.parse(dis.readUTF()));
+                        new ResourceLocation(dis.readUTF()));
                     float probability = dis.readFloat();
                     if (particleType instanceof ParticleOptions) {
                         effectsBuilder.ambientParticle(
@@ -1005,7 +1005,7 @@ public class MenuWorldExporter {
                 .specialEffects(
                     new BiomeSpecialEffects.Builder().fogColor(1787717).waterColor(4159204).waterFogColor(329011)
                         .skyColor(7254527).ambientParticle(new AmbientParticleSettings(
-                            (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse("minecraft:ash")),
+                            (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.get(new ResourceLocation("minecraft:ash")),
                             0.006250f)).build()).generationSettings(
                     DUMMY_GENERATION_SETTINGS).mobSpawnSettings(DUMMY_MOB_SPAWN_SETTINGS).build());
             // crimson_forest
@@ -1014,7 +1014,7 @@ public class MenuWorldExporter {
                     new BiomeSpecialEffects.Builder().fogColor(3343107).waterColor(4159204).waterFogColor(329011)
                         .skyColor(7254527).ambientParticle(new AmbientParticleSettings(
                             (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.get(
-                                ResourceLocation.parse("minecraft:crimson_spore")), 0.025000f)).build()).generationSettings(
+                                new ResourceLocation("minecraft:crimson_spore")), 0.025000f)).build()).generationSettings(
                     DUMMY_GENERATION_SETTINGS).mobSpawnSettings(DUMMY_MOB_SPAWN_SETTINGS).build());
             // warped_forest
             MAP.put(172, new Biome.BiomeBuilder().hasPrecipitation(false).temperature(2.000000f).downfall(0.000000f)
@@ -1022,7 +1022,7 @@ public class MenuWorldExporter {
                     new BiomeSpecialEffects.Builder().fogColor(1705242).waterColor(4159204).waterFogColor(329011)
                         .skyColor(7254527).ambientParticle(new AmbientParticleSettings(
                             (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.get(
-                                ResourceLocation.parse("minecraft:warped_spore")), 0.014280f)).build()).generationSettings(
+                                new ResourceLocation("minecraft:warped_spore")), 0.014280f)).build()).generationSettings(
                     DUMMY_GENERATION_SETTINGS).mobSpawnSettings(DUMMY_MOB_SPAWN_SETTINGS).build());
             // basalt_deltas
             MAP.put(173, new Biome.BiomeBuilder().hasPrecipitation(false).temperature(2.000000f).downfall(0.000000f)
@@ -1030,7 +1030,7 @@ public class MenuWorldExporter {
                     new BiomeSpecialEffects.Builder().fogColor(6840176).waterColor(4159204).waterFogColor(4341314)
                         .skyColor(7254527).ambientParticle(new AmbientParticleSettings(
                             (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.get(
-                                ResourceLocation.parse("minecraft:white_ash")), 0.118093f)).build()).generationSettings(
+                                new ResourceLocation("minecraft:white_ash")), 0.118093f)).build()).generationSettings(
                     DUMMY_GENERATION_SETTINGS).mobSpawnSettings(DUMMY_MOB_SPAWN_SETTINGS).build());
         }
 

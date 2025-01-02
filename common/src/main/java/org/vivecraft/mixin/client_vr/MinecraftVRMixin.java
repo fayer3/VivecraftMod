@@ -116,6 +116,16 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
     @Final
     private Window window;
 
+    @Shadow
+    private boolean pause;
+
+    @Shadow
+    private float pausePartialTick;
+
+    @Final
+    @Shadow
+    private Timer timer;
+
     @Final
     @Shadow
     public GameRenderer gameRenderer;
@@ -177,8 +187,10 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
     public abstract SoundManager getSoundManager();
 
     @Shadow
-    @Final
-    private DeltaTracker.Timer timer;
+    public abstract boolean isPaused();
+
+    @Shadow
+    public abstract float getFrameTime();
 
     @ModifyArg(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;setOverlay(Lnet/minecraft/client/gui/screens/Overlay;)V"), index = 0)
     private Overlay vivecraft$initVivecraft(Overlay overlay) {
@@ -271,8 +283,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
                 this.getCameraEntity() != null)
             {
                 this.gameRenderer.getMainCamera().setup(this.level, this.getCameraEntity(), false, false,
-                    this.level.tickRateManager().isEntityFrozen(this.getCameraEntity()) ? 1.0f :
-                        this.timer.getGameTimeDeltaPartialTick(true));
+                    this.pause ? this.pausePartialTick : this.timer.partialTick);
             }
 
             this.profiler.push("VR Poll/VSync");
@@ -310,13 +321,14 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
     private void vivecraft$preRender(CallbackInfo ci) {
         if (VRState.VR_RUNNING) {
             this.profiler.push("preRender");
-            ClientDataHolderVR.getInstance().vrPlayer.preRender(this.timer.getGameTimeDeltaPartialTick(true));
+            ClientDataHolderVR.getInstance().vrPlayer.preRender(
+                this.pause ? this.pausePartialTick : this.timer.partialTick);
             VRHotkeys.updateMovingThirdPersonCam();
             this.profiler.pop();
         }
     }
 
-    @ModifyArg(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;render(Lnet/minecraft/client/DeltaTracker;Z)V"))
+    @ModifyArg(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;render(FJZ)V"))
     private boolean vivecraft$setupRenderGUI(boolean renderLevel) {
         if (VRState.VR_RUNNING) {
             // set gui pass before setup, to always be in that pass and not a random one from last frame
@@ -869,6 +881,6 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
     @Unique
     @Override
     public float vivecraft$getPartialTick() {
-        return this.timer.getGameTimeDeltaPartialTick(false);
+        return this.isPaused() ? this.pausePartialTick : this.getFrameTime();
     }
 }

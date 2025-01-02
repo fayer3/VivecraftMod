@@ -136,7 +136,7 @@ public abstract class ClientPacketListenerVRMixin extends ClientCommonPacketList
                 this.minecraft.level.playLocalSound(
                     controllerPos.x(), controllerPos.y(), controllerPos.z(),
                     BuiltInRegistries.SOUND_EVENT.get(
-                        ResourceLocation.parse(dataHolder.vrSettings.chatNotificationSound)),
+                        new ResourceLocation(dataHolder.vrSettings.chatNotificationSound)),
                     SoundSource.NEUTRAL, 0.3F, 0.1F, false);
             }
         }

@@ -321,7 +321,7 @@ public class ServerConfig {
                 boolean valid = true;
                 try {
                     // check if valid block
-                    Block b = BuiltInRegistries.BLOCK.get(ResourceLocation.parse((String) s));
+                    Block b = BuiltInRegistries.BLOCK.get(new ResourceLocation((String) s));
                     if (b == Blocks.AIR) {
                         valid = false;
                     }

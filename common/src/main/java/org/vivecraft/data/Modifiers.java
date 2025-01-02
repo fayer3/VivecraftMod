@@ -1,10 +1,10 @@
 package org.vivecraft.data;
 
-import net.minecraft.resources.ResourceLocation;
+import java.util.UUID;
 
 public class Modifiers {
     /**
      * id for our walk-up blocks modifier
      */
-    public static final ResourceLocation WALK_UP_BLOCKS = ResourceLocation.parse("vivecraft:walk_up_blocks");
+    public static final UUID WALK_UP_BLOCKS = UUID.fromString("eeec861f-4e0f-4b53-a102-2a6123f53d38");
 }

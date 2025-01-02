@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
@@ -42,8 +41,8 @@ public class RenderHelper {
     private static final ClientDataHolderVR DATA_HOLDER = ClientDataHolderVR.getInstance();
     private static final Minecraft MC = Minecraft.getInstance();
 
-    public static final ResourceLocation WHITE_TEXTURE = ResourceLocation.parse("vivecraft:textures/white.png");
-    public static final ResourceLocation BLACK_TEXTURE = ResourceLocation.parse("vivecraft:textures/black.png");
+    public static final ResourceLocation WHITE_TEXTURE = new ResourceLocation("vivecraft:textures/white.png");
+    public static final ResourceLocation BLACK_TEXTURE = new ResourceLocation("vivecraft:textures/black.png");
 
     private static int POLY_BLEND_SRC_A;
     private static int POLY_BLEND_DST_A;
@@ -267,14 +266,12 @@ public class RenderHelper {
     /**
      * renders the given screen to the current main target and generates mipmaps for it
      *
-     * @param guiGraphics  GuiGraphics to render with
-     * @param deltaTracker tracker to get the partial tick from
-     * @param screen       the Screen to render
-     * @param maxGuiScale  if set, renders the screen at max gui scale
+     * @param guiGraphics GuiGraphics to render with
+     * @param partialTick partial tick for the screen rendering
+     * @param screen      the Screen to render
+     * @param maxGuiScale if set, renders the screen at max gui scale
      */
-    public static void drawScreen(
-        GuiGraphics guiGraphics, DeltaTracker deltaTracker, Screen screen, boolean maxGuiScale)
-    {
+    public static void drawScreen(GuiGraphics guiGraphics, float partialTick, Screen screen, boolean maxGuiScale) {
         // setup modelview for screen rendering
         Matrix4fStack poseStack = RenderSystem.getModelViewStack();
         poseStack.pushMatrix();
@@ -296,7 +293,7 @@ public class RenderHelper {
             GlStateManager.SourceFactor.ONE,
             GlStateManager.DestFactor.ONE);
 
-        screen.render(guiGraphics, 0, 0, deltaTracker.getRealtimeDeltaTicks());
+        screen.render(guiGraphics, 0, 0, partialTick);
         guiGraphics.flush();
 
         RenderSystem.blendFuncSeparate(
@@ -361,21 +358,25 @@ public class RenderHelper {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(color[0], color[1], color[2], color[3]);
 
-        BufferBuilder bufferbuilder = Tesselator.getInstance()
-            .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         bufferbuilder
-            .addVertex(matrix, -sizeX, -sizeY, 0)
-            .setUv(0.0F, 0.0F);
+            .vertex(matrix, -sizeX, -sizeY, 0)
+            .uv(0.0F, 0.0F)
+            .endVertex();
         bufferbuilder
-            .addVertex(matrix, sizeX, -sizeY, 0)
-            .setUv(1.0F, 0.0F);
+            .vertex(matrix, sizeX, -sizeY, 0)
+            .uv(1.0F, 0.0F)
+            .endVertex();
         bufferbuilder
-            .addVertex(matrix, sizeX, sizeY, 0)
-            .setUv(1.0F, 1.0F);
+            .vertex(matrix, sizeX, sizeY, 0)
+            .uv(1.0F, 1.0F)
+            .endVertex();
         bufferbuilder
-            .addVertex(matrix, -sizeX, sizeY, 0)
-            .setUv(0.0F, 1.0F);
-        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
+            .vertex(matrix, -sizeX, sizeY, 0)
+            .uv(0.0F, 1.0F)
+            .endVertex();
+        BufferUploader.drawWithShader(bufferbuilder.end());
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
@@ -454,8 +455,8 @@ public class RenderHelper {
         RenderSystem.setShader(shader);
         MC.gameRenderer.lightTexture().turnOnLightLayer();
         MC.gameRenderer.overlayTexture().setupOverlayColor();
-        BufferBuilder bufferbuilder = Tesselator.getInstance()
-            .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
+        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
 
         // store old lights
         Vector3f light0Old = RenderSystemAccessor.getShaderLightDirections()[0];
@@ -472,27 +473,31 @@ public class RenderHelper {
         RenderSystem.setShaderLights(normal, normal);
         RenderSystem.setupShaderLights(RenderSystem.getShader());
 
-        bufferbuilder.addVertex(matrix, -sizeX, -sizeY, 0)
-            .setColor(color[0], color[1], color[2], color[3])
-            .setUv(0.0F, flipY ? 1.0F : 0.0F)
-            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(packedLight)
-            .setNormal(0, 0, 1);
-        bufferbuilder.addVertex(matrix, sizeX, -sizeY, 0)
-            .setColor(color[0], color[1], color[2], color[3])
-            .setUv(1.0F, flipY ? 1.0F : 0.0F)
-            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(packedLight)
-            .setNormal(0, 0, 1);
-        bufferbuilder.addVertex(matrix, sizeX, sizeY, 0)
-            .setColor(color[0], color[1], color[2], color[3])
-            .setUv(1.0F, flipY ? 0.0F : 1.0F)
-            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(packedLight)
-            .setNormal(0, 0, 1);
-        bufferbuilder.addVertex(matrix, -sizeX, sizeY, 0)
-            .setColor(color[0], color[1], color[2], color[3])
-            .setUv(0.0F, flipY ? 0.0F : 1.0F)
-            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(packedLight)
-            .setNormal(0, 0, 1);
-        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
+        bufferbuilder.vertex(matrix, -sizeX, -sizeY, 0)
+            .color(color[0], color[1], color[2], color[3])
+            .uv(0.0F, flipY ? 1.0F : 0.0F)
+            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+            .normal(0, 0, 1)
+            .endVertex();
+        bufferbuilder.vertex(matrix, sizeX, -sizeY, 0)
+            .color(color[0], color[1], color[2], color[3])
+            .uv(1.0F, flipY ? 1.0F : 0.0F)
+            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+            .normal(0, 0, 1)
+            .endVertex();
+        bufferbuilder.vertex(matrix, sizeX, sizeY, 0)
+            .color(color[0], color[1], color[2], color[3])
+            .uv(1.0F, flipY ? 0.0F : 1.0F)
+            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+            .normal(0, 0, 1)
+            .endVertex();
+        bufferbuilder.vertex(matrix, -sizeX, sizeY, 0)
+            .color(color[0], color[1], color[2], color[3])
+            .uv(0.0F, flipY ? 0.0F : 1.0F)
+            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
+            .normal(0, 0, 1)
+            .endVertex();
+        BufferUploader.drawWithShader(bufferbuilder.end());
 
         MC.gameRenderer.lightTexture().turnOffLightLayer();
 
@@ -519,21 +524,21 @@ public class RenderHelper {
     public static void renderFlatQuad(
         Vec3 pos, float width, float height, float yaw, int r, int g, int b, int a, Matrix4f matrix)
     {
-        BufferBuilder bufferBuilder = Tesselator.getInstance()
-            .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+        Tesselator tesselator = Tesselator.getInstance();
+        tesselator.getBuilder().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
 
         Vec3 offset = (new Vec3(width * 0.5F, 0.0, height * 0.5F))
             .yRot(Mth.DEG_TO_RAD * -yaw);
 
-        bufferBuilder.addVertex(matrix, (float) (pos.x + offset.x), (float) pos.y, (float) (pos.z + offset.z))
-            .setColor(r, g, b, a).setNormal(0.0F, 1.0F, 0.0F);
-        bufferBuilder.addVertex(matrix, (float) (pos.x + offset.x), (float) pos.y, (float) (pos.z - offset.z))
-            .setColor(r, g, b, a).setNormal(0.0F, 1.0F, 0.0F);
-        bufferBuilder.addVertex(matrix, (float) (pos.x - offset.x), (float) pos.y, (float) (pos.z - offset.z))
-            .setColor(r, g, b, a).setNormal(0.0F, 1.0F, 0.0F);
-        bufferBuilder.addVertex(matrix, (float) (pos.x - offset.x), (float) pos.y, (float) (pos.z + offset.z))
-            .setColor(r, g, b, a).setNormal(0.0F, 1.0F, 0.0F);
-        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
+        tesselator.getBuilder().vertex(matrix, (float) (pos.x + offset.x), (float) pos.y, (float) (pos.z + offset.z))
+            .color(r, g, b, a).normal(0.0F, 1.0F, 0.0F).endVertex();
+        tesselator.getBuilder().vertex(matrix, (float) (pos.x + offset.x), (float) pos.y, (float) (pos.z - offset.z))
+            .color(r, g, b, a).normal(0.0F, 1.0F, 0.0F).endVertex();
+        tesselator.getBuilder().vertex(matrix, (float) (pos.x - offset.x), (float) pos.y, (float) (pos.z - offset.z))
+            .color(r, g, b, a).normal(0.0F, 1.0F, 0.0F).endVertex();
+        tesselator.getBuilder().vertex(matrix, (float) (pos.x - offset.x), (float) pos.y, (float) (pos.z + offset.z))
+            .color(r, g, b, a).normal(0.0F, 1.0F, 0.0F).endVertex();
+        tesselator.end();
     }
 
     /**
@@ -648,9 +653,10 @@ public class RenderHelper {
     private static void addVertex(
         VertexConsumer consumer, Matrix4f matrix, Vec3 pos, Vec3i color, int alpha, Vec3 normal)
     {
-        consumer.addVertex(matrix, (float) pos.x, (float) pos.y, (float) pos.z)
-            .setColor(color.getX(), color.getY(), color.getZ(), alpha)
-            .setNormal((float) normal.x, (float) normal.y, (float) normal.z);
+        consumer.vertex(matrix, (float) pos.x, (float) pos.y, (float) pos.z)
+            .color(color.getX(), color.getY(), color.getZ(), alpha)
+            .normal((float) normal.x, (float) normal.y, (float) normal.z)
+            .endVertex();
     }
 
     /**

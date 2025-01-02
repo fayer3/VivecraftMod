@@ -37,7 +37,7 @@ public record ClimbingPayloadS2C(boolean allowed, ClimbeyBlockmode blockmode,
         if (this.blocks != null) {
             for (String block : this.blocks) {
                 try {
-                    Block b = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(block));
+                    Block b = BuiltInRegistries.BLOCK.get(new ResourceLocation(block));
                     // only send valid blocks
                     if (b != Blocks.AIR) {
                         buffer.writeUtf(block);

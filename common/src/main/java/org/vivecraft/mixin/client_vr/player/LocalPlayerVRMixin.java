@@ -189,7 +189,7 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
                         if (this.getBlockJumpFactor() == 1.0F) {
                             if (attributeInstance.getModifier(Modifiers.WALK_UP_BLOCKS) == null) {
                                 attributeInstance.addTransientModifier(
-                                    new AttributeModifier(Modifiers.WALK_UP_BLOCKS, 0.4F,
+                                    new AttributeModifier(Modifiers.WALK_UP_BLOCKS, "walk up block", 0.4F,
                                         AttributeModifier.Operation.ADD_VALUE));
                             }
                         } else {

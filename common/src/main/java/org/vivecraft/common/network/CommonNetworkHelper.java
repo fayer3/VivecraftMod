@@ -9,7 +9,7 @@ import org.joml.Vector3fc;
 
 public class CommonNetworkHelper {
 
-    public static final ResourceLocation CHANNEL = ResourceLocation.parse("vivecraft:data");
+    public static final ResourceLocation CHANNEL = new ResourceLocation("vivecraft:data");
 
     // maximum supported network version
     public static final int MAX_SUPPORTED_NETWORK_VERSION = 2;

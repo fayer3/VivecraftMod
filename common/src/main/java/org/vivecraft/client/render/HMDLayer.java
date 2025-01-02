@@ -14,9 +14,9 @@ import org.vivecraft.client.ClientVRPlayers;
 
 public class HMDLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 
-    private static final ResourceLocation DIAMOND_HMD = ResourceLocation.parse("vivecraft:textures/diamond_hmd.png");
-    private static final ResourceLocation GOLD_HMD = ResourceLocation.parse("vivecraft:textures/gold_hmd.png");
-    private static final ResourceLocation BLACK_HMD = ResourceLocation.parse("vivecraft:textures/black_hmd.png");
+    private static final ResourceLocation DIAMOND_HMD = new ResourceLocation("vivecraft:textures/diamond_hmd.png");
+    private static final ResourceLocation GOLD_HMD = new ResourceLocation("vivecraft:textures/gold_hmd.png");
+    private static final ResourceLocation BLACK_HMD = new ResourceLocation("vivecraft:textures/black_hmd.png");
 
     public HMDLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> renderer) {
         super(renderer);

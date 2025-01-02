@@ -10,14 +10,10 @@ import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.multiplayer.ServerLinksScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.ServerLinks;
 import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -29,16 +25,9 @@ import org.vivecraft.client_vr.settings.AutoCalibration;
 import org.vivecraft.client_vr.settings.VRHotkeys;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_vr.utils.external.jkatvr;
-import org.vivecraft.mod_compat_vr.modmenu.ModMenuHelper;
-
-import java.util.function.Supplier;
 
 @Mixin(value = PauseScreen.class, priority = 900)
 public abstract class PauseScreenVRMixin extends Screen {
-
-    @Final
-    @Shadow
-    private static Component SERVER_LINKS;
 
     protected PauseScreenVRMixin(Component component) {
         super(component);
@@ -52,9 +41,7 @@ public abstract class PauseScreenVRMixin extends Screen {
         // reset row to above
         // we hide 2 buttons but keep them in, so need to reset the RowHelper
         try {
-            if (!(ModMenuHelper.shouldOffsetButtons())) {
-                rowHelper.addChild(null, -2);
-            }
+            rowHelper.addChild(null, -2);
         } catch (IllegalArgumentException ignored) {
             // RowHelper doesn't actually allow negative offsets, but it does update the index before throwing this exception
         }
@@ -154,27 +141,12 @@ public abstract class PauseScreenVRMixin extends Screen {
     private LayoutElement vivecraft$hideFeedback(
         GridLayout.RowHelper rowHelper, LayoutElement child, Operation<LayoutElement> original)
     {
-        ((Button) child).visible = !VRState.VR_ENABLED ||
-            (ModMenuHelper.shouldOffsetButtons() && !this.minecraft.player.connection.serverLinks().isEmpty()) ||
-            !ClientDataHolderVR.getInstance().vrSettings.modifyPauseMenu;
+        ((Button) child).visible = !VRState.VR_ENABLED || !ClientDataHolderVR.getInstance().vrSettings.modifyPauseMenu;
         return original.call(rowHelper, child);
     }
 
-    @WrapOperation(method = "createPauseMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/PauseScreen;openScreenButton(Lnet/minecraft/network/chat/Component;Ljava/util/function/Supplier;)Lnet/minecraft/client/gui/components/Button;", ordinal = 6))
-    private Button vivecraft$linksInsteadOfReport(
-        PauseScreen instance, Component component, Supplier<Screen> supplier, Operation<Button> original)
-    {
-        ServerLinks links = this.minecraft.player.connection.serverLinks();
-        if (VRState.VR_ENABLED && !ModMenuHelper.shouldOffsetButtons() && !links.isEmpty()) {
-            Supplier<Screen> sub = () -> new ServerLinksScreen(this, links);
-            return original.call(instance, Component.empty().append(SERVER_LINKS), sub);
-        } else {
-            return original.call(instance, component, supplier);
-        }
-    }
-
-    @WrapOperation(method = "addFeedbackButtons", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;"))
-    private static LayoutElement vivecraft$hideReportBugs(
+    @WrapOperation(method = "createPauseMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;", ordinal = 3))
+    private LayoutElement vivecraft$hideReportBugs(
         GridLayout.RowHelper rowHelper, LayoutElement child, Operation<LayoutElement> original)
     {
         ((Button) child).visible = !VRState.VR_ENABLED || !ClientDataHolderVR.getInstance().vrSettings.modifyPauseMenu;

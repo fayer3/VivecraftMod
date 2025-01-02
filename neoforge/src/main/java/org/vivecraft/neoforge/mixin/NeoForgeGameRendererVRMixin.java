@@ -1,4 +1,4 @@
-package org.vivecraft.forge.mixin;
+package org.vivecraft.neoforge.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -11,7 +11,7 @@ import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.client_xr.render_pass.RenderPassType;
 
 @Mixin(GameRenderer.class)
-public class ForgeGameRendererVRMixin {
+public class NeoForgeGameRendererVRMixin {
 
     @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setAnglesInternal(FF)V", remap = false), remap = true)
     private void vivecraft$removeAnglesInternal(Camera instance, float yaw, float pitch, Operation<Void> original) {
