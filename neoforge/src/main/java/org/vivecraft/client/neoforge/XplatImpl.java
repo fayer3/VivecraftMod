@@ -2,13 +2,14 @@ package org.vivecraft.client.neoforge;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -19,6 +20,7 @@ import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 import net.neoforged.neoforge.client.textures.FluidSpriteCache;
+import net.neoforged.neoforge.common.NeoForgeMod;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
@@ -68,7 +70,7 @@ public class XplatImpl implements Xplat {
     }
 
     public static String getUseMethodName() {
-        return "useWithoutItem";
+        return "use";
     }
 
     public static TextureAtlasSprite[] getFluidTextures(
@@ -85,8 +87,25 @@ public class XplatImpl implements Xplat {
         return biome.getModifiedSpecialEffects();
     }
 
-    public static boolean serverAcceptsPacket(ClientPacketListener connection, ResourceLocation id) {
-        return connection.hasChannel(id);
+    public static double getItemEntityReach(double baseRange, ItemStack itemStack, EquipmentSlot slot) {
+        var attributes = itemStack.getAttributeModifiers(slot).get(NeoForgeMod.ENTITY_REACH.value());
+        for (var a : attributes) {
+            if (a.getOperation() == AttributeModifier.Operation.ADDITION) {
+                baseRange += a.getAmount();
+            }
+        }
+        double totalRange = baseRange;
+        for (var a : attributes) {
+            if (a.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE) {
+                totalRange += baseRange * a.getAmount();
+            }
+        }
+        for (var a : attributes) {
+            if (a.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
+                totalRange *= 1.0 + a.getAmount();
+            }
+        }
+        return totalRange;
     }
 
     public static Packet<?> getC2SPacket(VivecraftPayloadC2S payload) {

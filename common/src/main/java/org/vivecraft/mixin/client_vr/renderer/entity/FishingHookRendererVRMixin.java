@@ -3,18 +3,20 @@ package org.vivecraft.mixin.client_vr.renderer.entity;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.FishingHookRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.vivecraft.client.ClientVRPlayers;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.render.helpers.RenderHelper;
@@ -24,9 +26,9 @@ import org.vivecraft.data.ItemTags;
 @Mixin(FishingHookRenderer.class)
 public abstract class FishingHookRendererVRMixin {
 
-    @WrapOperation(method = "getPlayerHandPos", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(FFF)F", ordinal = 0))
+    @WrapOperation(method = "render(Lnet/minecraft/world/entity/projectile/FishingHook;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(FFF)F", ordinal = 0))
     private float vivecraft$fishingLineStartRotation(
-        float delta, float start, float end, Operation<Float> original, @Local(argsOnly = true) Player player)
+        float delta, float start, float end, Operation<Float> original, @Local Player player)
     {
         ClientVRPlayers.RotInfo info;
         if (player != Minecraft.getInstance().player && ClientVRPlayers.getInstance().isVRPlayer(player) &&
@@ -39,10 +41,10 @@ public abstract class FishingHookRendererVRMixin {
         }
     }
 
-    @Inject(method = "getPlayerHandPos", at = @At("HEAD"), cancellable = true)
-    private void vivecraft$fishingLineStart(
-        CallbackInfoReturnable<Vec3> cir, @Local(argsOnly = true) Player player,
-        @Local(argsOnly = true, ordinal = 1) float partialTick)
+    @ModifyVariable(method = "render(Lnet/minecraft/world/entity/projectile/FishingHook;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("LOAD"), index = 25)
+    private double vivecraft$fishingLineStartX(
+        double value, FishingHook fishingHook, @Local(ordinal = 1, argsOnly = true) float partialTick,
+        @Local Player player, @Share("linePos") LocalRef<Vec3> linePos)
     {
         boolean mainHandFishingRod = player.getMainHandItem().getItem() instanceof FishingRodItem ||
             player.getMainHandItem().is(ItemTags.VIVECRAFT_FISHING_RODS);
@@ -55,14 +57,51 @@ public abstract class FishingHookRendererVRMixin {
                 .getDirection();
             aimDirection.mul(0.47F * ClientDataHolderVR.getInstance().vrPlayer.vrdata_world_render.worldScale);
 
-            cir.setReturnValue(aimSource.add(aimDirection.x, aimDirection.y, aimDirection.z));
+            linePos.set(aimSource.add(aimDirection.x, aimDirection.y, aimDirection.z));
+            return linePos.get().x;
         } else if (ClientVRPlayers.getInstance().isVRPlayer(player) &&
             !(info = ClientVRPlayers.getInstance().getRotationsForPlayer(player.getUUID())).seated)
         {
             // other players in standing mode
             Vector3fc aimSource = mainHandFishingRod ? info.mainHandPos : info.offHandPos;
             // just set it to the hand, everything else looks silly
-            cir.setReturnValue(player.getPosition(partialTick).add(aimSource.x(), aimSource.y(), aimSource.z()));
+            linePos.set(player.getPosition(partialTick).add(aimSource.x(), aimSource.y(), aimSource.z()));
+            return linePos.get().x;
+        } else {
+            return value;
+        }
+    }
+
+    @ModifyVariable(method = "render(Lnet/minecraft/world/entity/projectile/FishingHook;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("LOAD"), index = 27)
+    private double vivecraft$fishingLineStartY(
+        double value, FishingHook fishingHook, @Share("linePos") LocalRef<Vec3> linePos)
+    {
+        if (linePos.get() != null) {
+            return linePos.get().y;
+        } else {
+            return value;
+        }
+    }
+
+    @ModifyVariable(method = "render(Lnet/minecraft/world/entity/projectile/FishingHook;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("LOAD"), index = 29)
+    private double vivecraft$fishingLineStartZ(
+        double value, FishingHook fishingHook, @Share("linePos") LocalRef<Vec3> linePos)
+    {
+        if (linePos.get() != null) {
+            return linePos.get().z;
+        } else {
+            return value;
+        }
+    }
+
+    @ModifyVariable(method = "render(Lnet/minecraft/world/entity/projectile/FishingHook;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("LOAD"), index = 31)
+    private float vivecraft$fishingLineStartHeightOffset(
+        float value, FishingHook fishingHook, @Share("linePos") LocalRef<Vec3> linePos)
+    {
+        if (linePos.get() != null) {
+            return 0.0F;
+        } else {
+            return value;
         }
     }
 }

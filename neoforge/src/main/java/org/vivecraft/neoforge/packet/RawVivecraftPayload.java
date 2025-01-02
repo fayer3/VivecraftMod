@@ -2,8 +2,6 @@ package org.vivecraft.neoforge.packet;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import org.vivecraft.common.network.CommonNetworkHelper;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
 import org.vivecraft.common.network.packet.VivecraftPayload;
 
@@ -13,8 +11,6 @@ import org.vivecraft.common.network.packet.VivecraftPayload;
  * @param rawData raw data of the packet
  */
 public record RawVivecraftPayload(byte[] rawData) implements VivecraftPayload {
-
-    public static Type<RawVivecraftPayload> TYPE = new Type<>(CommonNetworkHelper.CHANNEL);
 
     @Override
     public void write(FriendlyByteBuf buffer) {
@@ -42,10 +38,5 @@ public record RawVivecraftPayload(byte[] rawData) implements VivecraftPayload {
         byte[] data = new byte[buffer.readableBytes()];
         buffer.readBytes(data);
         return new RawVivecraftPayload(data);
-    }
-
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
     }
 }

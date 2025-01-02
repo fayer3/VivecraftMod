@@ -2,7 +2,6 @@ package org.vivecraft.mixin.server;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -18,7 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -60,11 +59,13 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
             ItemStack easterEggItem;
             if (this.random.nextInt(2) == 1) {
                 easterEggItem = new ItemStack(Items.PUMPKIN_PIE);
-                easterEggItem.set(DataComponents.CUSTOM_NAME, Component.literal("EAT ME"));
+                easterEggItem.setHoverName(Component.literal("EAT ME"));
             } else {
-                easterEggItem = PotionContents.createItemStack(Items.POTION, Potions.WATER);
-                easterEggItem.set(DataComponents.CUSTOM_NAME, Component.literal("DRINK ME"));
+                easterEggItem = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);
+                easterEggItem.setHoverName(Component.literal("DRINK ME"));
             }
+
+            easterEggItem.getOrCreateTag().putInt("HideFlags", 32);
 
             if (this.getInventory().add(easterEggItem)) {
                 this.inventoryMenu.broadcastChanges();

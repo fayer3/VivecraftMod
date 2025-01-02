@@ -507,7 +507,7 @@ public class VRPlayer {
         {
             // collision, test for climbing up a block
             // is the player significantly inside a block?
-            float climbShrink = player.getDimensions(player.getPose()).width() * 0.45F;
+            float climbShrink = player.getDimensions(player.getPose()).width * 0.45F;
             double shrunkClimbHalfWidth = playerHalfWidth - climbShrink;
 
             AABB bbClimb = new AABB(

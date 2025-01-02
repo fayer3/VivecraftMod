@@ -42,15 +42,16 @@ public class DebugRenderHelper {
     /**
      * renders debug stuff
      *
+     * @param poseStack   PoseStack to use for positioning
      * @param partialTick current partial tick
      */
-    public static void renderDebug(float partialTick) {
+    public static void renderDebug(PoseStack poseStack, float partialTick) {
         if (DATA_HOLDER.vrSettings.renderDeviceAxes) {
-            renderDeviceAxes(DATA_HOLDER.vrPlayer.getVRDataWorld());
+            renderDeviceAxes(poseStack, DATA_HOLDER.vrPlayer.getVRDataWorld());
         }
 
         if (DATA_HOLDER.vrSettings.renderVrPlayerAxes) {
-            renderPlayerAxes(partialTick);
+            renderPlayerAxes(poseStack, partialTick);
         }
 
         if (DATA_HOLDER.vrSettings.renderTrackerPositions || MC.screen instanceof FBTCalibrationScreen) {
@@ -58,16 +59,17 @@ public class DebugRenderHelper {
             if (MC.screen instanceof FBTCalibrationScreen fbtScreen) {
                 showNames = fbtScreen.isCalibrated();
             }
-            renderTackerPositions(showNames);
+            renderTackerPositions(poseStack, showNames);
         }
     }
 
     /**
      * renders all available remote devices from all players
      *
+     * @param poseStack   PoseStack to use for positioning
      * @param partialTick current partial tick
      */
-    public static void renderPlayerAxes(float partialTick) {
+    public static void renderPlayerAxes(PoseStack poseStack, float partialTick) {
         if (MC.player != null) {
             BufferBuilder bufferbuilder = null;
             Vec3 camPos = RenderHelper
@@ -90,24 +92,24 @@ public class DebugRenderHelper {
                     }
 
                     if (p != MC.player || DATA_HOLDER.currentPass == RenderPass.THIRD) {
-                        addAxes(bufferbuilder, playerPos, info.headPos, info.headRot, info.headQuat);
+                        addAxes(poseStack, bufferbuilder, playerPos, info.headPos, info.headRot, info.headQuat);
                     }
                     if (!info.seated) {
-                        addAxes(bufferbuilder, playerPos, info.mainHandPos, info.mainHandRot,
+                        addAxes(poseStack, bufferbuilder, playerPos, info.mainHandPos, info.mainHandRot,
                             info.mainHandQuat);
-                        addAxes(bufferbuilder, playerPos, info.offHandPos, info.offHandRot,
+                        addAxes(poseStack, bufferbuilder, playerPos, info.offHandPos, info.offHandRot,
                             info.offHandQuat);
                     }
                     if (info.fbtMode != FBTMode.ARMS_ONLY) {
-                        addAxes(bufferbuilder, playerPos, info.waistPos, info.waistQuat);
-                        addAxes(bufferbuilder, playerPos, info.rightFootPos, info.rightFootQuat);
-                        addAxes(bufferbuilder, playerPos, info.leftFootPos, info.leftFootQuat);
+                        addAxes(poseStack, bufferbuilder, playerPos, info.waistPos, info.waistQuat);
+                        addAxes(poseStack, bufferbuilder, playerPos, info.rightFootPos, info.rightFootQuat);
+                        addAxes(poseStack, bufferbuilder, playerPos, info.leftFootPos, info.leftFootQuat);
                     }
                     if (info.fbtMode == FBTMode.WITH_JOINTS) {
-                        addAxes(bufferbuilder, playerPos, info.rightElbowPos, info.rightElbowQuat);
-                        addAxes(bufferbuilder, playerPos, info.leftElbowPos, info.leftElbowQuat);
-                        addAxes(bufferbuilder, playerPos, info.rightKneePos, info.rightKneeQuat);
-                        addAxes(bufferbuilder, playerPos, info.leftKneePos, info.leftKneeQuat);
+                        addAxes(poseStack, bufferbuilder, playerPos, info.rightElbowPos, info.rightElbowQuat);
+                        addAxes(poseStack, bufferbuilder, playerPos, info.leftElbowPos, info.leftElbowQuat);
+                        addAxes(poseStack, bufferbuilder, playerPos, info.rightKneePos, info.rightKneeQuat);
+                        addAxes(poseStack, bufferbuilder, playerPos, info.leftKneePos, info.leftKneeQuat);
                     }
                 }
             }
@@ -120,9 +122,10 @@ public class DebugRenderHelper {
     /**
      * renders all available device axes using the provided VRData
      *
-     * @param data VRData to get the devices from
+     * @param poseStack PoseStack to use for positioning
+     * @param data      VRData to get the devices from
      */
-    public static void renderDeviceAxes(VRData data) {
+    public static void renderDeviceAxes(PoseStack poseStack, VRData data) {
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
@@ -168,7 +171,7 @@ public class DebugRenderHelper {
             list.add(data.knee_right);
         }
 
-        list.forEach(p -> addAxes(bufferbuilder, data, p));
+        list.forEach(p -> addAxes(poseStack, bufferbuilder, data, p));
 
         BufferUploader.drawWithShader(bufferbuilder.end());
     }
@@ -176,9 +179,10 @@ public class DebugRenderHelper {
     /**
      * renders cubes for all tracked devices the current VR runtime offers
      *
+     * @param poseStack PoseStack to use for positioning
      * @param showNames if device names should be shown
      */
-    private static void renderTackerPositions(boolean showNames) {
+    private static void renderTackerPositions(PoseStack poseStack, boolean showNames) {
         VRData data = DATA_HOLDER.vrPlayer.getVRDataWorld();
         Vec3 camPos = RenderHelper.getSmoothCameraPosition(DATA_HOLDER.currentPass, data);
         Quaternionf orientation = data.getEye(DATA_HOLDER.currentPass).getMatrix()
@@ -206,29 +210,27 @@ public class DebugRenderHelper {
 
             if (showNames) {
                 if (tracker.getMiddle() >= 0) {
-                    addNamedCube(pos, orientation, Component.translatable("vivecraft.formatting.name_value",
+                    addNamedCube(poseStack, pos, orientation, Component.translatable("vivecraft.formatting.name_value",
                             Component.literal(tracker.getLeft().source.toString()), labels[tracker.getMiddle()]), 0.05F,
                         DARK_GRAY);
                 } else {
-                    addNamedCube(pos, orientation, Component.translatable("vivecraft.formatting.name_value",
+                    addNamedCube(poseStack, pos, orientation, Component.translatable("vivecraft.formatting.name_value",
                         Component.literal(tracker.getLeft().source.toString() + tracker.getLeft().deviceIndex),
                         Component.translatable("vivecraft.messages.tracker.unknown")), 0.05F, DARK_GRAY);
                 }
             } else {
-                addCube(pos, 0.05F, DARK_GRAY);
+                addCube(poseStack, pos, 0.05F, DARK_GRAY);
             }
         }
         MC.renderBuffers().bufferSource().endLastBatch();
     }
 
     /**
-     * renders forward, up and right axes using the {@code matrix} position and orientation
+     * renders forward, up and right axes using the {@code poseStack} position and orientation
      *
-     * @param matrix Matrix4f to use for positioning
+     * @param poseStack PoseStack to use for positioning
      */
-    public static void renderLocalAxes(Matrix4f matrix) {
-        RenderSystem.getModelViewStack().pushMatrix().mul(matrix);
-        RenderSystem.applyModelViewMatrix();
+    public static void renderLocalAxes(PoseStack poseStack) {
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
@@ -236,24 +238,23 @@ public class DebugRenderHelper {
 
         Vector3f position = new Vector3f();
 
-        addLine(bufferbuilder, position, MathUtils.BACK, BLUE);
-        addLine(bufferbuilder, position, MathUtils.UP, GREEN);
-        addLine(bufferbuilder, position, MathUtils.RIGHT, RED);
+        addLine(poseStack, bufferbuilder, position, MathUtils.BACK, BLUE);
+        addLine(poseStack, bufferbuilder, position, MathUtils.UP, GREEN);
+        addLine(poseStack, bufferbuilder, position, MathUtils.RIGHT, RED);
 
         BufferUploader.drawWithShader(bufferbuilder.end());
-        RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.applyModelViewMatrix();
     }
 
     /**
      * adds device axes to the {@code bufferBuilder} for the given VRDevicePose
      *
+     * @param poseStack     PoseStack to use for positioning
      * @param bufferBuilder BufferBuilder to use, needs to be in DEBUG_LINE_STRIP and POSITION_COLOR mode
      * @param data          VRData to get camera position from
      * @param pose          VRDevicePose to ge the orientation and position from.
      */
     private static void addAxes(
-        BufferBuilder bufferBuilder, VRData data, VRData.VRDevicePose pose)
+        PoseStack poseStack, BufferBuilder bufferBuilder, VRData data, VRData.VRDevicePose pose)
     {
         Vector3f position = pose.getPosition()
             .subtract(RenderHelper.getSmoothCameraPosition(DATA_HOLDER.currentPass, data)).toVector3f();
@@ -264,28 +265,30 @@ public class DebugRenderHelper {
         Vector3f up = pose.getCustomVector(MathUtils.UP).mul(scale);
         Vector3f right = pose.getCustomVector(MathUtils.RIGHT).mul(scale);
 
-        addLine(bufferBuilder, position, forward, BLUE);
-        addLine(bufferBuilder, position, up, GREEN);
-        addLine(bufferBuilder, position, right, RED);
+        addLine(poseStack, bufferBuilder, position, forward, BLUE);
+        addLine(poseStack, bufferBuilder, position, up, GREEN);
+        addLine(poseStack, bufferBuilder, position, right, RED);
     }
 
     /**
      * adds device axes to the {@code bufferBuilder} for the given VRDevicePose, without dedicated direction vector
      *
+     * @param poseStack     PoseStack to use for positioning
      * @param bufferBuilder BufferBuilder to use, needs to be in DEBUG_LINE_STRIP and POSITION_COLOR mode
      * @param playerPos     player position, relative to the camera
      * @param devicePos     device position, relative to the player
      * @param rot           device rotation
      */
     private static void addAxes(
-        BufferBuilder bufferBuilder, Vector3fc playerPos, Vector3fc devicePos, Quaternionfc rot)
+        PoseStack poseStack, BufferBuilder bufferBuilder, Vector3fc playerPos, Vector3fc devicePos, Quaternionfc rot)
     {
-        addAxes(bufferBuilder, playerPos, devicePos, rot.transform(MathUtils.BACK, new Vector3f()), rot);
+        addAxes(poseStack, bufferBuilder, playerPos, devicePos, rot.transform(MathUtils.BACK, new Vector3f()), rot);
     }
 
     /**
      * adds device axes to the {@code bufferBuilder} for the given VRDevicePose
      *
+     * @param poseStack     PoseStack to use for positioning
      * @param bufferBuilder BufferBuilder to use, needs to be in DEBUG_LINE_STRIP and POSITION_COLOR mode
      * @param playerPos     player position, relative to the camera
      * @param devicePos     device position, relative to the player
@@ -293,7 +296,7 @@ public class DebugRenderHelper {
      * @param rot           device rotation
      */
     private static void addAxes(
-        BufferBuilder bufferBuilder, Vector3fc playerPos, Vector3fc devicePos, Vector3fc dir,
+        PoseStack poseStack, BufferBuilder bufferBuilder, Vector3fc playerPos, Vector3fc devicePos, Vector3fc dir,
         Quaternionfc rot)
     {
         Vector3f position = playerPos.add(devicePos, new Vector3f());
@@ -304,30 +307,31 @@ public class DebugRenderHelper {
         Vector3f up = rot.transform(MathUtils.UP, new Vector3f()).mul(scale);
         Vector3f right = rot.transform(MathUtils.RIGHT, new Vector3f()).mul(scale);
 
-        addLine(bufferBuilder, position, forward, BLUE);
-        addLine(bufferBuilder, position, up, GREEN);
-        addLine(bufferBuilder, position, right, RED);
+        addLine(poseStack, bufferBuilder, position, forward, BLUE);
+        addLine(poseStack, bufferBuilder, position, up, GREEN);
+        addLine(poseStack, bufferBuilder, position, right, RED);
     }
 
     /**
      * adds a line from {@code position} in direction {@code dir}, with the given {@code color}
      *
+     * @param poseStack     PoseStack to use for positioning
      * @param bufferBuilder BufferBuilder to use, needs to be in DEBUG_LINE_STRIP and POSITION_COLOR mode
      * @param position      line start position
      * @param dir           line end, relative to {@code position}
      * @param color         line color
      */
     private static void addLine(
-        BufferBuilder bufferBuilder, Vector3fc position, Vector3fc dir, Vector3fc color)
+        PoseStack poseStack, BufferBuilder bufferBuilder, Vector3fc position, Vector3fc dir, Vector3fc color)
     {
-        bufferBuilder.vertex(position.x(), position.y(), position.z())
+        bufferBuilder.vertex(poseStack.last().pose(), position.x(), position.y(), position.z())
             .color(color.x(), color.y(), color.z(), 0.0F).endVertex();
-        bufferBuilder.vertex(position.x(), position.y(), position.z())
+        bufferBuilder.vertex(poseStack.last().pose(), position.x(), position.y(), position.z())
             .color(color.x(), color.y(), color.z(), 1.0F).endVertex();
-        bufferBuilder.vertex(position.x() + dir.x(), position.y() + dir.y(),
+        bufferBuilder.vertex(poseStack.last().pose(), position.x() + dir.x(), position.y() + dir.y(),
                 position.z() + dir.z())
             .color(color.x(), color.y(), color.z(), 1.0F).endVertex();
-        bufferBuilder.vertex(position.x() + dir.x(), position.y() + dir.y(),
+        bufferBuilder.vertex(poseStack.last().pose(), position.x() + dir.x(), position.y() + dir.y(),
                 position.z() + dir.z())
             .color(color.x(), color.y(), color.z(), 0.0F).endVertex();
     }
@@ -335,19 +339,20 @@ public class DebugRenderHelper {
     /**
      * Renders a cube with text lable above it
      *
-     * @param cubePos position to render the cube at, camera relative
-     * @param rot     rotation facing the camera, to align the text
-     * @param label   label of the cube
-     * @param size    cube size
-     * @param color   cube color
+     * @param poseStack PoseStack to use for positioning
+     * @param cubePos   position to render the cube at, camera relative
+     * @param rot       rotation facing the camera, to align the text
+     * @param label     label of the cube
+     * @param size      cube size
+     * @param color     cube color
      */
     private static void addNamedCube(
-        Vector3fc cubePos, Quaternionf rot, Component label, float size, Vector3fc color)
+        PoseStack poseStack, Vector3fc cubePos, Quaternionf rot, Component label, float size, Vector3fc color)
     {
-        addCube(cubePos, size, color);
+        addCube(poseStack, cubePos, size, color);
 
         if (label != null) {
-            renderTextAtRelativePosition(cubePos.x(), cubePos.y(), cubePos.z(), rot, label);
+            renderTextAtRelativePosition(poseStack, cubePos.x(), cubePos.y(), cubePos.z(), rot, label);
         }
     }
 
@@ -377,54 +382,58 @@ public class DebugRenderHelper {
             .rotateY(Mth.PI);
         Vector3f pos = MathUtils.subtractToVector3f(position, camPos);
 
-        renderTextAtRelativePosition(pos.x, pos.y, pos.z, rot, text);
+        renderTextAtRelativePosition(poseStack, pos.x, pos.y, pos.z, rot, text);
     }
 
     /**
      * renders the given text at the given camera relative position, with the given rotation
      *
-     * @param x    x position relative to the camera
-     * @param y    y position relative to the camera
-     * @param z    z position relative to the camera
-     * @param rot  rotation the text should look at
-     * @param text text to render
+     * @param poseStack PoseStack to use for positioning
+     * @param x         x position relative to the camera
+     * @param y         y position relative to the camera
+     * @param z         z position relative to the camera
+     * @param rot       rotation the text should look at
+     * @param text      text to render
      */
     public static void renderTextAtRelativePosition(
-        float x, float y, float z, Quaternionf rot, String text)
+        PoseStack poseStack, float x, float y, float z, Quaternionf rot, String text)
     {
-        renderTextAtRelativePosition(x, y, z, rot, Component.literal(text));
+        renderTextAtRelativePosition(poseStack, x, y, z, rot, Component.literal(text));
     }
 
     /**
      * renders the given text at the given camera relative position, with the given rotation
      *
-     * @param x    x position relative to the camera
-     * @param y    y position relative to the camera
-     * @param z    z position relative to the camera
-     * @param rot  rotation the text should look at
-     * @param text text to render
+     * @param poseStack PoseStack to use for positioning
+     * @param x         x position relative to the camera
+     * @param y         y position relative to the camera
+     * @param z         z position relative to the camera
+     * @param rot       rotation the text should look at
+     * @param text      text to render
      */
     public static void renderTextAtRelativePosition(
-        float x, float y, float z, Quaternionf rot, Component text)
+        PoseStack poseStack, float x, float y, float z, Quaternionf rot, Component text)
     {
-        Matrix4f matrix = new Matrix4f();
-        matrix.translate(x, y + 0.05F, z);
-        matrix.rotate(rot);
-        matrix.scale(-0.005F, -0.005F, 0.005F);
+        poseStack.pushPose();
+        poseStack.translate(x, y + 0.05F, z);
+        poseStack.mulPose(rot);
+        poseStack.scale(-0.005F, -0.005F, 0.005F);
 
         MC.font.drawInBatch(text, MC.font.width(text) * -0.5F, -MC.font.lineHeight, -1, false,
-            matrix, MC.renderBuffers().bufferSource(), Font.DisplayMode.NORMAL, 0,
+            poseStack.last().pose(), MC.renderBuffers().bufferSource(), Font.DisplayMode.NORMAL, 0,
             LightTexture.FULL_BRIGHT);
+        poseStack.popPose();
     }
 
     /**
      * Renders a cube
      *
-     * @param position position to render the cube at, camera relative
-     * @param size     cube size
-     * @param color    cube color
+     * @param poseStack PoseStack to use for positioning
+     * @param position  position to render the cube at, camera relative
+     * @param size      cube size
+     * @param color     cube color
      */
-    private static void addCube(Vector3fc position, float size, Vector3fc color) {
+    private static void addCube(PoseStack poseStack, Vector3fc position, float size, Vector3fc color) {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.setShaderTexture(0, RenderHelper.WHITE_TEXTURE);
 
@@ -434,7 +443,7 @@ public class DebugRenderHelper {
         Vec3i iColor = new Vec3i((int) (color.x() * 255), (int) (color.y() * 255), (int) (color.z() * 255));
         Vec3 start = new Vec3(position.x(), position.y(), position.z()).add(MathUtils.FORWARD_D.scale(size * 0.5F));
         Vec3 end = new Vec3(position.x(), position.y(), position.z()).add(MathUtils.BACK_D.scale(size * 0.5F));
-        RenderHelper.renderBox(bufferbuilder, start, end, size, size, iColor, (byte) 255, new Matrix4f());
+        RenderHelper.renderBox(bufferbuilder, start, end, size, size, iColor, (byte) 255, poseStack);
 
         BufferUploader.drawWithShader(bufferbuilder.end());
     }

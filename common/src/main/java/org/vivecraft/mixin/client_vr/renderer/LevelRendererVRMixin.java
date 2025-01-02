@@ -8,7 +8,6 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
@@ -43,7 +42,6 @@ import org.vivecraft.client_vr.extensions.GameRendererExtension;
 import org.vivecraft.client_vr.extensions.LevelRendererExtension;
 import org.vivecraft.client_vr.gameplay.trackers.InteractTracker;
 import org.vivecraft.client_vr.render.RenderPass;
-import org.vivecraft.client_vr.render.helpers.RenderHelper;
 import org.vivecraft.client_vr.render.helpers.VREffectsHelper;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_xr.render_pass.RenderPassManager;
@@ -180,7 +178,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
 
     @Inject(method = "renderLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;hitResult:Lnet/minecraft/world/phys/HitResult;", ordinal = 1))
     private void vivecraft$interactOutline(
-        CallbackInfo ci, @Local(argsOnly = true) Camera camera, @Local PoseStack poseStack)
+        CallbackInfo ci, @Local(argsOnly = true) Camera camera, @Local(argsOnly = true) PoseStack poseStack)
     {
         if (RenderPassType.isVanilla()) return;
 
@@ -219,27 +217,29 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endBatch()V", ordinal = 0, shift = Shift.AFTER))
     private void vivecraft$renderVrStuffPart1(
-        CallbackInfo ci, @Local(argsOnly = true) float partialTick, @Share("guiRendered") LocalBooleanRef guiRendered)
+        CallbackInfo ci, @Local(argsOnly = true) PoseStack poseStack, @Local(argsOnly = true) float partialTick,
+        @Share("guiRendered") LocalBooleanRef guiRendered)
     {
         if (RenderPassType.isVanilla()) return;
 
         if (this.transparencyChain != null) {
-            VREffectsHelper.renderVRFabulous(partialTick, (LevelRenderer) (Object) this);
+            VREffectsHelper.renderVRFabulous(partialTick, (LevelRenderer) (Object) this, poseStack);
         } else {
-            VREffectsHelper.renderVrFast(partialTick, false);
+            VREffectsHelper.renderVrFast(partialTick, false, poseStack);
             if (ShadersHelper.isShaderActive() && ClientDataHolderVR.getInstance().vrSettings.shaderGUIRender ==
                 VRSettings.ShaderGUIRender.BEFORE_TRANSLUCENT_SOLID)
             {
                 // shaders active, and render gui before translucents
-                VREffectsHelper.renderVrFast(partialTick, true);
+                VREffectsHelper.renderVrFast(partialTick, true, poseStack);
                 guiRendered.set(true);
             }
         }
     }
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getCloudsType()Lnet/minecraft/client/CloudStatus;"))
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", ordinal = 3))
     private void vivecraft$renderVrStuffPart2(
-        CallbackInfo ci, @Local(argsOnly = true) float partialTick, @Share("guiRendered") LocalBooleanRef guiRendered)
+        CallbackInfo ci, @Local(argsOnly = true) PoseStack poseStack, @Local(argsOnly = true) float partialTick,
+        @Share("guiRendered") LocalBooleanRef guiRendered)
     {
         if (RenderPassType.isVanilla()) return;
 
@@ -248,7 +248,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
         ))
         {
             // no shaders, or shaders, and gui after translucents
-            VREffectsHelper.renderVrFast(partialTick, true);
+            VREffectsHelper.renderVrFast(partialTick, true, poseStack);
             guiRendered.set(true);
         }
     }
@@ -257,21 +257,13 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
     // or if shaders are on, and option AFTER_SHADER is selected
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void vivecraft$renderVrStuffFinal(
-        CallbackInfo ci, @Local(argsOnly = true) float partialTick, @Share("guiRendered") LocalBooleanRef guiRendered)
+        CallbackInfo ci, @Local(argsOnly = true) PoseStack poseStack, @Local(argsOnly = true) float partialTick,
+        @Share("guiRendered") LocalBooleanRef guiRendered)
     {
         if (RenderPassType.isVanilla()) return;
 
         if (!guiRendered.get() && this.transparencyChain == null) {
-            // re set up modelView, since this is after everything got cleared
-            RenderSystem.getModelViewStack().pushMatrix().identity();
-            RenderHelper.applyVRModelView(ClientDataHolderVR.getInstance().currentPass,
-                RenderSystem.getModelViewStack());
-            RenderSystem.applyModelViewMatrix();
-
-            VREffectsHelper.renderVrFast(partialTick, true);
-
-            RenderSystem.getModelViewStack().popMatrix();
-            RenderSystem.applyModelViewMatrix();
+            VREffectsHelper.renderVrFast(partialTick, true, poseStack);
         }
     }
 

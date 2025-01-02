@@ -32,7 +32,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRendererMixin<Abst
         super(context);
     }
 
-    @ModifyArg(method = "setupRotations(Lnet/minecraft/client/player/AbstractClientPlayer;Lcom/mojang/blaze3d/vertex/PoseStack;FFFF)V", at = @At(value = "INVOKE", target = "Ljava/lang/Math;acos(D)D"))
+    @ModifyArg(method = "setupRotations(Lnet/minecraft/client/player/AbstractClientPlayer;Lcom/mojang/blaze3d/vertex/PoseStack;FFF)V", at = @At(value = "INVOKE", target = "Ljava/lang/Math;acos(D)D"))
     private double vivecraft$fixFlicker(double acos) {
         // because of imprecision issues this can cause nans
         // is fixed in 1.21.4

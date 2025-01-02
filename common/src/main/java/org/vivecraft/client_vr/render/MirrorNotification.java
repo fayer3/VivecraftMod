@@ -50,8 +50,8 @@ public class MirrorNotification {
                 screenY, 0.0F, 1000.0F, 21000.0F);
             RenderSystem.setProjectionMatrix(projection, VertexSorting.ORTHOGRAPHIC_Z);
 
-            RenderSystem.getModelViewStack().pushMatrix();
-            RenderSystem.getModelViewStack().identity();
+            RenderSystem.getModelViewStack().pushPose();
+            RenderSystem.getModelViewStack().setIdentity();
             RenderSystem.getModelViewStack().translate(0, 0, -11000);
             RenderSystem.applyModelViewMatrix();
 
@@ -83,7 +83,7 @@ public class MirrorNotification {
             }
             guiGraphics.flush();
 
-            RenderSystem.getModelViewStack().popMatrix();
+            RenderSystem.getModelViewStack().popPose();
             RenderSystem.applyModelViewMatrix();
         }
     }

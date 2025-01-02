@@ -10,8 +10,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -205,24 +203,13 @@ public class ServerNetworking {
 
                     // attribute modification, based on vanilla code: LivingEntity#collectEquipmentChanges
                     if (player.equipmentHasChanged(oldItem, newItem)) {
-                        AttributeMap attributeMap = player.getAttributes();
                         if (!oldItem.isEmpty()) {
-                            oldItem.forEachModifier(EquipmentSlot.MAINHAND, (holder, attributeModifier) -> {
-                                AttributeInstance attributeInstance = attributeMap.getInstance(holder);
-                                if (attributeInstance != null) {
-                                    attributeInstance.removeModifier(attributeModifier);
-                                }
-                            });
+                            player.getAttributes()
+                                .removeAttributeModifiers(oldItem.getAttributeModifiers(EquipmentSlot.MAINHAND));
                         }
-
                         if (!newItem.isEmpty()) {
-                            newItem.forEachModifier(EquipmentSlot.MAINHAND, (holder, attributeModifier) -> {
-                                AttributeInstance attributeInstance = attributeMap.getInstance(holder);
-                                if (attributeInstance != null) {
-                                    attributeInstance.removeModifier(attributeModifier.id());
-                                    attributeInstance.addTransientModifier(attributeModifier);
-                                }
-                            });
+                            player.getAttributes()
+                                .addTransientAttributeModifiers(newItem.getAttributeModifiers(EquipmentSlot.MAINHAND));
                         }
                     }
                 }

@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
@@ -34,6 +33,12 @@ public abstract class GuiVRMixin implements GuiExtension {
 
     @Unique
     public boolean vivecraft$showPlayerList;
+
+    @Shadow
+    private int screenWidth;
+
+    @Shadow
+    private int screenHeight;
 
     @Final
     @Shadow
@@ -82,26 +87,24 @@ public abstract class GuiVRMixin implements GuiExtension {
         }
     }
 
-    @Inject(method = "renderSleepOverlay", at = @At("HEAD"), cancellable = true)
-    private void vivecraft$noSleepOverlay(CallbackInfo ci) {
-        if (RenderPassType.isGuiOnly()) {
-            ci.cancel();
-        }
+    @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getSleepTimer()I", ordinal = 0))
+    private int vivecraft$noSleepOverlay(int sleepTimer) {
+        return RenderPassType.isGuiOnly() ? 0 : sleepTimer;
     }
 
-    @ModifyExpressionValue(method = "renderTabList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z"))
+    @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z"))
     private boolean vivecraft$toggleableTabList(boolean keyDown) {
         return keyDown || this.vivecraft$showPlayerList;
     }
 
-    @Inject(method = "renderItemHotbar", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "renderHotbar", at = @At("HEAD"), cancellable = true)
     private void vivecraft$noHotbarOnScreens(CallbackInfo ci) {
         if (VRState.VR_RUNNING && this.minecraft.screen != null) {
             ci.cancel();
         }
     }
 
-    @WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/HumanoidArm;getOpposite()Lnet/minecraft/world/entity/HumanoidArm;"))
+    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/HumanoidArm;getOpposite()Lnet/minecraft/world/entity/HumanoidArm;"))
     private HumanoidArm vivecraft$offhandSlotSide(HumanoidArm instance, Operation<HumanoidArm> original) {
         if (!VRState.VR_RUNNING) {
             return original.call(instance);
@@ -111,24 +114,24 @@ public abstract class GuiVRMixin implements GuiExtension {
         }
     }
 
-    @Inject(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 1, shift = At.Shift.AFTER))
+    @Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 1, shift = At.Shift.AFTER))
     private void vivecraft$hotbarContextIndicator(CallbackInfo ci, @Local(argsOnly = true) GuiGraphics guiGraphics) {
         if (VRState.VR_RUNNING && ClientDataHolderVR.getInstance().interactTracker.hotbar >= 0 &&
             ClientDataHolderVR.getInstance().interactTracker.hotbar < 9 &&
             this.getCameraPlayer().getInventory().selected != ClientDataHolderVR.getInstance().interactTracker.hotbar &&
             ClientDataHolderVR.getInstance().interactTracker.isActive(this.minecraft.player))
         {
-            int middle = guiGraphics.guiWidth() / 2;
+            int middle = this.screenWidth / 2;
             RenderSystem.setShaderColor(0.0F, 1.0F, 0.0F, 1.0F);
             guiGraphics.blitSprite(HOTBAR_SELECTION_SPRITE,
                 middle - 91 - 1 + ClientDataHolderVR.getInstance().interactTracker.hotbar * 20,
-                guiGraphics.guiHeight() - 22 - 1, 24, 23);
+                this.screenHeight - 22 - 1, 24, 23);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 
 
-    @ModifyExpressionValue(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 0))
+    @ModifyExpressionValue(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 0))
     private boolean vivecraft$offhandSlotAlwaysVisible(boolean offhandEmpty) {
         // the result is inverted, so we need to invert ours as well
         return offhandEmpty && !(VRState.VR_RUNNING && ClientDataHolderVR.getInstance().vrSettings.vrTouchHotbar &&
@@ -136,14 +139,14 @@ public abstract class GuiVRMixin implements GuiExtension {
         );
     }
 
-    @WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 2))
+    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 2))
     private void vivecraft$renderVRHotbarLeftIndicator(
         GuiGraphics instance, ResourceLocation sprite, int x, int y, int width, int height, Operation<Void> original)
     {
         vivecraft$renderColoredIcon(instance, sprite, x, y, width, height, original);
     }
 
-    @WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 3))
+    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 3))
     private void vivecraft$renderVRHotbarRightIndicator(
         GuiGraphics instance, ResourceLocation sprite, int x, int y, int width, int height, Operation<Void> original)
     {
@@ -168,7 +171,7 @@ public abstract class GuiVRMixin implements GuiExtension {
         }
     }
 
-    @Inject(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;disableBlend()V", remap = false, ordinal = 0))
+    @Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;disableBlend()V", remap = false))
     private void vivecraft$renderViveIcons(CallbackInfo ci, @Local(argsOnly = true) GuiGraphics guiGraphics) {
         if (VRState.VR_RUNNING) {
             this.vivecraft$renderViveHudIcons(guiGraphics);
@@ -184,7 +187,7 @@ public abstract class GuiVRMixin implements GuiExtension {
     private void vivecraft$renderViveHudIcons(GuiGraphics guiGraphics) {
         if (this.minecraft.getCameraEntity() instanceof Player player) {
             int icon = 0;
-            Holder<MobEffect> mobeffect = null;
+            MobEffect mobeffect = null;
 
             if (player.isSprinting()) {
                 mobeffect = MobEffects.MOVEMENT_SPEED;

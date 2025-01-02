@@ -71,8 +71,6 @@ public class VivecraftItemRendering {
             }
         } else if (itemStack.getUseAnimation() == UseAnim.TOOT_HORN) {
             itemTransformType = VivecraftItemTransformType.Horn;
-        } else if (item instanceof MaceItem || itemStack.is(ItemTags.VIVECRAFT_MACES)) {
-            itemTransformType = VivecraftItemTransformType.Mace;
         } else if (item instanceof SwordItem || itemStack.is(ItemTags.VIVECRAFT_SWORDS)) {
             itemTransformType = VivecraftItemTransformType.Sword;
         } else if (item instanceof ShieldItem || itemStack.is(ItemTags.VIVECRAFT_SHIELDS)) {
@@ -425,14 +423,6 @@ public class VivecraftItemRendering {
                 translateY = 0.0F;
                 translateZ = -0.1F * scale;
             }
-            case Mace -> {
-                preRotation = Axis.XP.rotationDegrees(gunAngle);
-                rotation = rotation.mul(Axis.XP.rotationDegrees(-gunAngle));
-                translateX = 0.0F;
-                translateY = 0.0125F;
-                translateZ = -0.06F;
-                scale = 0.56F;
-            }
             // case Sword -> {}
             default -> {}
         }
@@ -461,7 +451,6 @@ public class VivecraftItemRendering {
         Crossbow,
         Telescope,
         Compass,
-        Horn,
-        Mace
+        Horn
     }
 }

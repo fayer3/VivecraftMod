@@ -2,7 +2,6 @@ package org.vivecraft.client_vr.gameplay.trackers;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -54,11 +53,11 @@ public class JumpTracker extends Tracker {
     public static boolean isBoots(ItemStack itemStack) {
         if (itemStack.isEmpty()) {
             return false;
-        } else if (!itemStack.has(DataComponents.CUSTOM_NAME)) {
+        } else if (!itemStack.hasCustomHoverName()) {
             return false;
         } else if (itemStack.getItem() != Items.LEATHER_BOOTS) {
             return false;
-        } else if (!itemStack.has(DataComponents.UNBREAKABLE)) {
+        } else if (!itemStack.hasTag() || !itemStack.getTag().getBoolean("Unbreakable")) {
             return false;
         } else {
             return itemStack.getHoverName().getString().equals("Jump Boots") ||

@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
@@ -151,7 +150,7 @@ public class ShaderHelper {
                 ItemStack itemstack = MC.player.getInventory().getArmor(3);
 
                 if (DATA_HOLDER.vrSettings.pumpkinEffect && itemstack.getItem() == Blocks.CARVED_PUMPKIN.asItem() &&
-                    (!itemstack.has(DataComponents.CUSTOM_MODEL_DATA)))
+                    (!itemstack.hasTag() || itemstack.getTag().getInt("CustomModelData") == 0))
                 {
                     pumpkinEffect = 1.0F;
                 }

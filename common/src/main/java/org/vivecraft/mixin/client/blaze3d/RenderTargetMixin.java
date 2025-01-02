@@ -90,12 +90,12 @@ public abstract class RenderTargetMixin implements RenderTargetExtension {
         return this.vivecraft$stencil ? GL30.GL_FLOAT_32_UNSIGNED_INT_24_8_REV : type;
     }
 
-    @ModifyArg(method = "createBuffers", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/pipeline/RenderTarget;setFilterMode(IZ)V"))
+    @ModifyArg(method = "createBuffers", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/pipeline/RenderTarget;setFilterMode(I)V"))
     private int vivecraft$linearFiltering(int filterMode) {
         return this.vivecraft$linearFilter ? GL11.GL_LINEAR : filterMode;
     }
 
-    @ModifyArg(method = "setFilterMode(IZ)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;_texParameter(III)V", remap = false, ordinal = 0), index = 2)
+    @ModifyArg(method = "setFilterMode", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;_texParameter(III)V", remap = false, ordinal = 0), index = 2)
     private int vivecraft$modifyTextureMinFilter(int attachment) {
         if (this.vivecraft$mipmaps) {
             return attachment == GL11.GL_LINEAR ? GL11.GL_LINEAR_MIPMAP_LINEAR : GL11.GL_NEAREST_MIPMAP_NEAREST;

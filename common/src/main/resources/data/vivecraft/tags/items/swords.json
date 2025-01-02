@@ -32,7 +32,6 @@
       "required": false
     },
 
-    "#vivecraft:moditems/mvw_weapons",
-    "#vivecraft:maces"
+    "#vivecraft:moditems/mvw_weapons"
   ]
 }

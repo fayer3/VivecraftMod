@@ -363,7 +363,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
 
             // draw screen/gui to buffer
             // push pose so we can pop it later
-            RenderSystem.getModelViewStack().pushMatrix();
+            RenderSystem.getModelViewStack().pushPose();
             ((GameRendererExtension) this.gameRenderer).vivecraft$setShouldDrawScreen(true);
             // only draw the gui when the level was rendered once, since some mods expect that
             ((GameRendererExtension) this.gameRenderer).vivecraft$setShouldDrawGui(

@@ -40,14 +40,12 @@ import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.client.extensions.BufferBuilderExtension;
 import org.vivecraft.client.utils.ClientUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
-import org.vivecraft.client_vr.extensions.StateHolderExtension;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.mixin.client.renderer.RenderStateShardAccessor;
 import org.vivecraft.mod_compat_vr.iris.IrisHelper;
@@ -185,7 +183,7 @@ public class MenuWorldRenderer {
         }
     }
 
-    public void render(Matrix4fStack poseStack) {
+    public void render(PoseStack poseStack) {
 
         // temporarily disable fabulous to render the menu world
         GraphicsStatus current = this.mc.options.graphicsMode().get();
@@ -195,10 +193,10 @@ public class MenuWorldRenderer {
 
         turnOnLightLayer();
 
-        poseStack.pushMatrix();
+        poseStack.pushPose();
 
         // rotate World
-        poseStack.rotate(Axis.YP.rotationDegrees(this.worldRotation));
+        poseStack.mulPose(Axis.YP.rotationDegrees(this.worldRotation));
 
         // small offset to center on source block, and add the partial block offset, this shouldn't be too noticeable on the fog
         poseStack.translate(-0.5F, -Mth.frac(this.blockAccess.getGround()), -0.5F);
@@ -217,13 +215,14 @@ public class MenuWorldRenderer {
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.enableBlend();
 
+        Matrix4f modelView = poseStack.last().pose();
         Matrix4f projection = RenderSystem.getProjectionMatrix();
 
         RenderSystem.disableBlend();
 
-        renderChunkLayer(RenderType.solid(), poseStack, projection);
-        renderChunkLayer(RenderType.cutoutMipped(), poseStack, projection);
-        renderChunkLayer(RenderType.cutout(), poseStack, projection);
+        renderChunkLayer(RenderType.solid(), modelView, projection);
+        renderChunkLayer(RenderType.cutoutMipped(), modelView, projection);
+        renderChunkLayer(RenderType.cutout(), modelView, projection);
 
         RenderSystem.enableBlend();
 
@@ -238,8 +237,8 @@ public class MenuWorldRenderer {
                 eyePosition.z);
         }
 
-        renderChunkLayer(RenderType.translucent(), poseStack, projection);
-        renderChunkLayer(RenderType.tripwire(), poseStack, projection);
+        renderChunkLayer(RenderType.translucent(), modelView, projection);
+        renderChunkLayer(RenderType.tripwire(), modelView, projection);
 
         if (eyePosition.y + this.blockAccess.getGround() + this.blockAccess.getMinBuildHeight() >= cloudHeight) {
             renderClouds(poseStack, eyePosition.x,
@@ -251,7 +250,7 @@ public class MenuWorldRenderer {
         renderSnowAndRain(poseStack, eyePosition.x, 0, eyePosition.z);
         RenderSystem.depthMask(true);
 
-        poseStack.popMatrix();
+        poseStack.popPose();
         turnOffLightLayer();
         this.mc.options.graphicsMode().set(current);
     }
@@ -684,7 +683,7 @@ public class MenuWorldRenderer {
     }
     // End VanillaFix support
 
-    public void renderSky(Matrix4fStack poseStack, Vec3 position) {
+    public void renderSky(PoseStack poseStack, Vec3 position) {
         if (this.dimensionInfo.skyType() == DimensionSpecialEffects.SkyType.END) {
             this.renderEndSky(poseStack);
         } else if (this.dimensionInfo.skyType() == DimensionSpecialEffects.SkyType.NORMAL) {
@@ -709,7 +708,7 @@ public class MenuWorldRenderer {
 
             if (!OptifineHelper.isOptifineLoaded() || OptifineHelper.isSkyEnabled()) {
                 this.skyVBO.bind();
-                this.skyVBO.drawWithShader(poseStack, RenderSystem.getProjectionMatrix(), skyShader);
+                this.skyVBO.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), skyShader);
                 VertexBuffer.unbind();
             }
 
@@ -728,15 +727,16 @@ public class MenuWorldRenderer {
                 // RenderSystem.disableTexture();
                 RenderSystem.setShader(GameRenderer::getPositionColorShader);
                 RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-                poseStack.pushMatrix();
+                poseStack.pushPose();
 
-                poseStack.rotate(Axis.XP.rotationDegrees(90.0f));
-                poseStack.rotate(Axis.ZP.rotationDegrees(Mth.sin(this.getSunAngle()) < 0.0f ? 180.0f : 0.0f));
-                poseStack.rotate(Axis.ZP.rotationDegrees(90.0f));
+                poseStack.mulPose(Axis.XP.rotationDegrees(90.0f));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(Mth.sin(this.getSunAngle()) < 0.0f ? 180.0f : 0.0f));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(90.0f));
 
+                Matrix4f modelView = poseStack.last().pose();
                 bufferBuilder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
                 bufferBuilder
-                    .vertex(poseStack, 0.0f, 100.0f, 0.0f)
+                    .vertex(modelView, 0.0f, 100.0f, 0.0f)
                     .color(sunriseColor[0], sunriseColor[1], sunriseColor[2], sunriseColor[3])
                     .endVertex();
 
@@ -745,41 +745,42 @@ public class MenuWorldRenderer {
                     float f7 = Mth.sin(f6);
                     float f8 = Mth.cos(f6);
                     bufferBuilder
-                        .vertex(poseStack, f7 * 120.0F, f8 * 120.0F, -f8 * 40.0F * sunriseColor[3])
+                        .vertex(modelView, f7 * 120.0F, f8 * 120.0F, -f8 * 40.0F * sunriseColor[3])
                         .color(sunriseColor[0], sunriseColor[1], sunriseColor[2], 0.0F)
                         .endVertex();
                 }
 
                 BufferUploader.drawWithShader(bufferBuilder.end());
-                poseStack.popMatrix();
+                poseStack.popPose();
             }
 
             // RenderSystem.enableTexture();
 
             RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE,
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-            poseStack.pushMatrix();
+            poseStack.pushPose();
 
             float f10 = 1.0F - getRainLevel();
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, f10);
-            poseStack.rotate(Axis.YP.rotationDegrees(-90.0f));
+            poseStack.mulPose(Axis.YP.rotationDegrees(-90.0f));
+            Matrix4f modelView = poseStack.last().pose();
 
             // if (OptifineHelper.isOptifineLoaded()) {
             // needs a full Level
             // CustomSky.renderSky(this.world, poseStack, ClientUtils.getCurrentPartialTick());
             // }
 
-            poseStack.rotate(Axis.XP.rotationDegrees(this.getTimeOfDay() * 360.0f));
+            poseStack.mulPose(Axis.XP.rotationDegrees(this.getTimeOfDay() * 360.0f));
 
             float size = 30.0F;
             if (!OptifineHelper.isOptifineLoaded() || OptifineHelper.isSunMoonEnabled()) {
                 RenderSystem.setShader(GameRenderer::getPositionTexShader);
                 RenderSystem.setShaderTexture(0, SUN_LOCATION);
                 bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                bufferBuilder.vertex(poseStack, -size, 100.0F, -size).uv(0.0F, 0.0F).endVertex();
-                bufferBuilder.vertex(poseStack, size, 100.0F, -size).uv(1.0F, 0.0F).endVertex();
-                bufferBuilder.vertex(poseStack, size, 100.0F, size).uv(1.0F, 1.0F).endVertex();
-                bufferBuilder.vertex(poseStack, -size, 100.0F, size).uv(0.0F, 1.0F).endVertex();
+                bufferBuilder.vertex(modelView, -size, 100.0F, -size).uv(0.0F, 0.0F).endVertex();
+                bufferBuilder.vertex(modelView, size, 100.0F, -size).uv(1.0F, 0.0F).endVertex();
+                bufferBuilder.vertex(modelView, size, 100.0F, size).uv(1.0F, 1.0F).endVertex();
+                bufferBuilder.vertex(modelView, -size, 100.0F, size).uv(0.0F, 1.0F).endVertex();
                 BufferUploader.drawWithShader(bufferBuilder.end());
             }
 
@@ -794,10 +795,10 @@ public class MenuWorldRenderer {
                 float u1 = (float) (l + 1) / 4.0F;
                 float v1 = (float) (i1 + 1) / 2.0F;
                 bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                bufferBuilder.vertex(poseStack, -size, -100.0f, size).uv(u0, v1).endVertex();
-                bufferBuilder.vertex(poseStack, size, -100.0f, size).uv(u1, v1).endVertex();
-                bufferBuilder.vertex(poseStack, size, -100.0f, -size).uv(u1, v0).endVertex();
-                bufferBuilder.vertex(poseStack, -size, -100.0f, -size).uv(u0, v0).endVertex();
+                bufferBuilder.vertex(modelView, -size, -100.0f, size).uv(u0, v1).endVertex();
+                bufferBuilder.vertex(modelView, size, -100.0f, size).uv(u1, v1).endVertex();
+                bufferBuilder.vertex(modelView, size, -100.0f, -size).uv(u1, v0).endVertex();
+                bufferBuilder.vertex(modelView, -size, -100.0f, -size).uv(u0, v0).endVertex();
                 BufferUploader.drawWithShader(bufferBuilder.end());
             }
 
@@ -811,7 +812,7 @@ public class MenuWorldRenderer {
                 RenderSystem.setShaderColor(starBrightness, starBrightness, starBrightness, starBrightness);
                 this.fogRenderer.setupNoFog();
                 this.starVBO.bind();
-                this.starVBO.drawWithShader(poseStack, RenderSystem.getProjectionMatrix(),
+                this.starVBO.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(),
                     GameRenderer.getPositionShader());
                 VertexBuffer.unbind();
                 this.fogRenderer.setupFog(FogRenderer.FogMode.FOG_SKY);
@@ -821,19 +822,19 @@ public class MenuWorldRenderer {
             RenderSystem.disableBlend();
             RenderSystem.defaultBlendFunc();
 
-            poseStack.popMatrix();
+            poseStack.popPose();
             // RenderSystem.disableTexture();
 
             double horizonDistance = position.y - this.blockAccess.getHorizon();
 
             if (horizonDistance < 0.0D) {
                 RenderSystem.setShaderColor(0.0f, 0.0f, 0.0f, 1.0f);
-                poseStack.pushMatrix();
+                poseStack.pushPose();
                 poseStack.translate(0.0f, 12.0f, 0.0f);
                 this.sky2VBO.bind();
-                this.sky2VBO.drawWithShader(poseStack, RenderSystem.getProjectionMatrix(), skyShader);
+                this.sky2VBO.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(), skyShader);
                 VertexBuffer.unbind();
-                poseStack.popMatrix();
+                poseStack.popPose();
             }
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -841,7 +842,7 @@ public class MenuWorldRenderer {
         }
     }
 
-    private void renderEndSky(Matrix4fStack poseStack) {
+    private void renderEndSky(PoseStack poseStack) {
         if (!OptifineHelper.isOptifineLoaded() || OptifineHelper.isSkyEnabled()) {
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
@@ -854,15 +855,16 @@ public class MenuWorldRenderer {
             BufferBuilder bufferBuilder = tesselator.getBuilder();
 
             for (int i = 0; i < 6; ++i) {
-                poseStack.pushMatrix();
+                poseStack.pushPose();
                 switch (i) {
-                    case 1 -> poseStack.rotate(Axis.XP.rotationDegrees(90.0f));
-                    case 2 -> poseStack.rotate(Axis.XP.rotationDegrees(-90.0f));
-                    case 3 -> poseStack.rotate(Axis.XP.rotationDegrees(180.0f));
-                    case 4 -> poseStack.rotate(Axis.ZP.rotationDegrees(90.0f));
-                    case 5 -> poseStack.rotate(Axis.ZP.rotationDegrees(-90.0f));
+                    case 1 -> poseStack.mulPose(Axis.XP.rotationDegrees(90.0f));
+                    case 2 -> poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f));
+                    case 3 -> poseStack.mulPose(Axis.XP.rotationDegrees(180.0f));
+                    case 4 -> poseStack.mulPose(Axis.ZP.rotationDegrees(90.0f));
+                    case 5 -> poseStack.mulPose(Axis.ZP.rotationDegrees(-90.0f));
                 }
 
+                Matrix4f modelView = poseStack.last().pose();
                 bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
                 int r = 40;
@@ -876,16 +878,16 @@ public class MenuWorldRenderer {
                     g = (int) (newSkyColor.y * 255.0D);
                     b = (int) (newSkyColor.z * 255.0D);
                 }
-                bufferBuilder.vertex(poseStack, -100.0f, -100.0f, -100.0f)
+                bufferBuilder.vertex(modelView, -100.0f, -100.0f, -100.0f)
                     .uv(0.0f, 0.0f).color(r, g, b, 255).endVertex();
-                bufferBuilder.vertex(poseStack, -100.0f, -100.0f, 100.0f)
+                bufferBuilder.vertex(modelView, -100.0f, -100.0f, 100.0f)
                     .uv(0.0f, 16.0f).color(r, g, b, 255).endVertex();
-                bufferBuilder.vertex(poseStack, 100.0f, -100.0f, 100.0f)
+                bufferBuilder.vertex(modelView, 100.0f, -100.0f, 100.0f)
                     .uv(16.0f, 16.0f).color(r, g, b, 255).endVertex();
-                bufferBuilder.vertex(poseStack, 100.0f, -100.0f, -100.0f)
+                bufferBuilder.vertex(modelView, 100.0f, -100.0f, -100.0f)
                     .uv(16.0f, 0.0f).color(r, g, b, 255).endVertex();
                 tesselator.end();
-                poseStack.popMatrix();
+                poseStack.popPose();
             }
 
             RenderSystem.depthMask(true);
@@ -893,7 +895,7 @@ public class MenuWorldRenderer {
         }
     }
 
-    public void renderClouds(Matrix4fStack poseStack, double x, double y, double z) {
+    public void renderClouds(PoseStack poseStack, double x, double y, double z) {
         float cloudHeight = this.dimensionInfo.getCloudHeight();
 
         if (!Float.isNaN(cloudHeight) && this.mc.options.getCloudsType() != CloudStatus.OFF) {
@@ -955,10 +957,10 @@ public class MenuWorldRenderer {
             }
 
             // render
-            RenderSystem.setShader(GameRenderer::getRendertypeCloudsShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
             RenderSystem.setShaderTexture(0, CLOUDS_LOCATION);
             this.fogRenderer.levelFogColor();
-            poseStack.pushMatrix();
+            poseStack.pushPose();
             poseStack.scale(12.0f, 1.0f, 12.0f);
             poseStack.translate(-cloudXfract, cloudYfract, -cloudZfract);
             if (this.cloudVBO != null) {
@@ -970,12 +972,12 @@ public class MenuWorldRenderer {
                     } else {
                         RenderSystem.colorMask(true, true, true, true);
                     }
-                    this.cloudVBO.drawWithShader(poseStack, RenderSystem.getProjectionMatrix(),
+                    this.cloudVBO.drawWithShader(poseStack.last().pose(), RenderSystem.getProjectionMatrix(),
                         RenderSystem.getShader());
                 }
                 VertexBuffer.unbind();
             }
-            poseStack.popMatrix();
+            poseStack.popPose();
             RenderSystem.enableCull();
             RenderSystem.disableBlend();
             RenderSystem.defaultBlendFunc();
@@ -1001,7 +1003,7 @@ public class MenuWorldRenderer {
         float redZ = redTop * 0.8f;
         float greenZ = greenTop * 0.8f;
         float blueZ = blueTop * 0.8f;
-        RenderSystem.setShader(GameRenderer::getRendertypeCloudsShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
         float z = (float) Math.floor(cloudY / 4.0) * 4.0f;
         if (this.prevCloudsType == CloudStatus.FANCY) {
@@ -1156,13 +1158,13 @@ public class MenuWorldRenderer {
         return bufferBuilder.end();
     }
 
-    private void renderSnowAndRain(Matrix4fStack poseStack, double inX, double inY, double inZ) {
+    private void renderSnowAndRain(PoseStack poseStack, double inX, double inY, double inZ) {
         if (getRainLevel() <= 0.0f) {
             return;
         }
 
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().mul(poseStack);
+        RenderSystem.getModelViewStack().pushPose();
+        RenderSystem.getModelViewStack().mulPoseMatrix(poseStack.last().pose());
         RenderSystem.applyModelViewMatrix();
 
         int xFloor = Mth.floor(inX);
@@ -1287,7 +1289,7 @@ public class MenuWorldRenderer {
         if (count >= 0) {
             tesselator.end();
         }
-        RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.getModelViewStack().popPose();
         RenderSystem.applyModelViewMatrix();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
@@ -1985,9 +1987,7 @@ public class MenuWorldRenderer {
 
         @SuppressWarnings("unchecked")
         public FluidStateWrapper(FluidState fluidState) {
-            // need to do it this way, because FerriteCore changes the field type, which would error on a cast
-            super(fluidState.getType(), null, fluidState.propertiesCodec);
-            ((StateHolderExtension) (this)).vivecraft$setValues(fluidState.getValues());
+            super(fluidState.getType(), fluidState.getValues(), fluidState.propertiesCodec);
 
             this.fluidState = fluidState;
         }

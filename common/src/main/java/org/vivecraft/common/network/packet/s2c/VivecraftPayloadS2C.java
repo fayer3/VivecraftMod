@@ -1,10 +1,7 @@
 package org.vivecraft.common.network.packet.s2c;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.vivecraft.client_vr.settings.VRSettings;
-import org.vivecraft.common.network.CommonNetworkHelper;
 import org.vivecraft.common.network.packet.PayloadIdentifier;
 import org.vivecraft.common.network.packet.VivecraftPayload;
 
@@ -12,19 +9,6 @@ import org.vivecraft.common.network.packet.VivecraftPayload;
  * Vivecraft packet sent from the Server to the Clients
  */
 public interface VivecraftPayloadS2C extends VivecraftPayload {
-
-    StreamCodec<FriendlyByteBuf, VivecraftPayloadS2C> CODEC = CustomPacketPayload.codec(VivecraftPayloadS2C::write,
-        VivecraftPayloadS2C::readPacket);
-
-    Type<VivecraftPayloadS2C> TYPE = new Type<>(CommonNetworkHelper.CHANNEL);
-
-    /**
-     * @return ResourceLocation identifying this packet
-     */
-    @Override
-    default Type<VivecraftPayloadS2C> type() {
-        return TYPE;
-    }
 
     /**
      * creates the correct VivecraftPacket based on the {@link PayloadIdentifier} stored in the first byte

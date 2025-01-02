@@ -210,8 +210,8 @@ public abstract class VRRenderer {
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, fb.viewWidth, 0.0F, fb.viewHeight, 0.0F, 20.0F),
             VertexSorting.ORTHOGRAPHIC_Z);
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().identity();
+        RenderSystem.getModelViewStack().pushPose();
+        RenderSystem.getModelViewStack().setIdentity();
         if (inverse) {
             // draw on far clip
             RenderSystem.getModelViewStack().translate(0, 0, -20);
@@ -228,7 +228,7 @@ public abstract class VRRenderer {
         }
 
         RenderSystem.restoreProjectionMatrix();
-        RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.getModelViewStack().popPose();
 
         RenderSystem.depthMask(true); // Do write to depth buffer
         RenderSystem.colorMask(true, true, true, true);

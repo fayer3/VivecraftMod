@@ -12,7 +12,7 @@ public class ScaleHelper {
      * @return scale of the entities eye height
      */
     public static float getEntityEyeHeightScale(LivingEntity entity, float partialTick) {
-        float scale = entity.getScale();
+        float scale = 1F;
         if (PehkuiHelper.isLoaded()) {
             scale *= PehkuiHelper.getEntityEyeHeightScale(entity, partialTick);
         }
@@ -27,7 +27,7 @@ public class ScaleHelper {
      * @return scale of the entities bounding box
      */
     public static float getEntityBbScale(LivingEntity entity, float partialTick) {
-        float scale = entity.getScale();
+        float scale = 1F;
         if (PehkuiHelper.isLoaded()) {
             scale *= PehkuiHelper.getEntityBbScale(entity, partialTick);
         }

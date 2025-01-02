@@ -1,6 +1,7 @@
 package org.vivecraft.client_vr.gameplay.screenhandlers;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -496,13 +497,13 @@ public class GuiHandler {
     }
 
     /**
-     * sets up the {@code poseMatrix} to render the gui, and returns the world position of the gui
+     * sets up the {@code poseStack} to render the gui, and returns the world position of the gui
      *
      * @param currentPass renderpass to position the gui for
-     * @param poseMatrix  matrix to alter
+     * @param poseStack   PoseStack to alter
      * @return gui position in world space
      */
-    public static Vec3 applyGUIModelView(RenderPass currentPass, Matrix4f poseMatrix) {
+    public static Vec3 applyGUIModelView(RenderPass currentPass, PoseStack poseStack) {
         MC.getProfiler().push("applyGUIModelView");
 
         if (MC.screen != null && GUI_POS_ROOM == null) {
@@ -675,14 +676,14 @@ public class GuiHandler {
         Vec3 eye = RenderHelper.getSmoothCameraPosition(currentPass, DH.vrPlayer.vrdata_world_render);
 
         Vec3 translation = guipos.subtract(eye);
-        poseMatrix.translate((float) translation.x, (float) translation.y, (float) translation.z);
+        poseStack.translate(translation.x, translation.y, translation.z);
 
         // offset from eye to gui pos
-        poseMatrix.mul(guirot);
-        poseMatrix.translate(guilocal.x, guilocal.y, guilocal.z);
+        poseStack.mulPoseMatrix(guirot);
+        poseStack.translate(guilocal.x, guilocal.y, guilocal.z);
 
         float thescale = scale * DH.vrPlayer.vrdata_world_render.worldScale;
-        poseMatrix.scale(thescale, thescale, thescale);
+        poseStack.scale(thescale, thescale, thescale);
 
         GUI_SCALE_APPLIED = thescale;
         GUI_POS_WORLD = guipos;
