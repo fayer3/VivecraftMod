@@ -3,7 +3,6 @@ package org.vivecraft.client.render;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -445,7 +444,7 @@ public class VRPlayerModel_WithArms<T extends LivingEntity> extends VRPlayerMode
 
         if (side == this.attackArm) {
             poseStack.translate(0.0F, 0.5F, 0.0F);
-            poseStack.mulPose(Axis.XP.rotation(Mth.sin(this.attackTime * Mth.PI)));
+            poseStack.mulPose(com.mojang.math.Vector3f.XP.rotation(Mth.sin(this.attackTime * Mth.PI)));
             poseStack.translate(0.0F, -0.5F, 0.0F);
         }
     }

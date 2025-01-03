@@ -17,7 +17,7 @@ public abstract class FabricModelBakeryMixin {
     @Shadow
     protected abstract void loadTopLevel(ModelResourceLocation modelResourceLocation);
 
-    @Inject(method = "<init>", at = @At(value = "CONSTANT", args = "stringValue=special"))
+    @Inject(method = "<init>", at = @At(value = "CONSTANT", args = "stringValue=textures"))
     private void vivecraft$fabricLoadModels(CallbackInfo ci) {
         this.loadTopLevel(TelescopeTracker.SCOPE_MODEL);
         this.loadTopLevel(ClimbTracker.CLAWS_MODEL);

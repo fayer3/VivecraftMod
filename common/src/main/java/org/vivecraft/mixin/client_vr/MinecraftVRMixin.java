@@ -199,11 +199,11 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
 
         // register a resource reload listener, to reload the menu world
         this.resourceManager.registerReloadListener((ResourceManagerReloadListener) resourceManager -> {
-            List<String> newPacks = resourceManager.listPacks().map(PackResources::packId).toList();
+            List<String> newPacks = resourceManager.listPacks().map(PackResources::getName).toList();
 
             if (this.vivecraft$resourcepacks == null) {
                 // first load
-                this.vivecraft$resourcepacks = this.resourceManager.listPacks().map(PackResources::packId).toList();
+                this.vivecraft$resourcepacks = this.resourceManager.listPacks().map(PackResources::getName).toList();
             } else if (!this.vivecraft$resourcepacks.equals(newPacks) &&
                 ClientDataHolderVR.getInstance().menuWorldRenderer != null &&
                 ClientDataHolderVR.getInstance().menuWorldRenderer.isReady())
@@ -669,9 +669,9 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
             if (VivecraftVRMod.INSTANCE.keyQuickCommands[i].consumeClick()) {
                 String command = ClientDataHolderVR.getInstance().vrSettings.vrQuickCommands[i];
                 if (command.startsWith("/")) {
-                    this.player.connection.sendCommand(command.substring(1));
+                    this.player.commandSigned(command.substring(1), Component.empty());
                 } else {
-                    this.player.connection.sendChat(command);
+                    this.player.chatSigned(command, Component.empty());
                 }
             }
         }

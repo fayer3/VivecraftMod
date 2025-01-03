@@ -16,6 +16,7 @@
     "JcppProcessorVRMixin",
     "coderbot.IrisChunkProgramOverridesMixin",
     "coderbot.IrisChunkProgramOverridesMixinSodium_0_4_11",
+    "coderbot.IrisChunkProgramOverridesMixinSodium_0_4_8",
     "coderbot.IrisChunkProgramOverridesMixinSodium_0_4_9",
     "coderbot.IrisNewWorldRenderingPipelineVRMixin",
     "coderbot.IrisPipelineManagerVRMixin",

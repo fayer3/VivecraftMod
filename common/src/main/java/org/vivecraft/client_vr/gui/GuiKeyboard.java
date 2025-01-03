@@ -45,138 +45,121 @@ public class GuiKeyboard extends TwoHandedScreen {
                 String label = String.valueOf(buttonChar);
                 final int code = index < this.dh.vrSettings.keyboardCodes.length ?
                     this.dh.vrSettings.keyboardCodes[index] : GLFW.GLFW_KEY_UNKNOWN;
-                this.addRenderableWidget(new Button.Builder(Component.literal(label),
+                this.addRenderableWidget(new Button(
+                    margin + column * (buttonWidth + spacing), margin + row * (20 + spacing), buttonWidth, 20,
+                    Component.literal(label),
                     (p) -> {
                         InputSimulator.pressKeyForBind(code);
                         InputSimulator.releaseKeyForBind(code);
                         InputSimulator.typeChars(label);
-                    })
-                    .size(buttonWidth, 20)
-                    .pos(margin + column * (buttonWidth + spacing), margin + row * (20 + spacing))
-                    .build());
+                    }));
             }
         }
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("Shift"),
-            (p) -> this.setShift(!this.isShift))
-            .size(30, 20)
-            .pos(0, margin + 3 * (20 + spacing))
-            .build());
+        this.addRenderableWidget(new Button(0, margin + 3 * (20 + spacing), 30, 20,
+            Component.literal("Shift"),
+            (p) -> this.setShift(!this.isShift)));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal(" "),
+        this.addRenderableWidget(new Button(
+            margin + 4 * (buttonWidth + spacing), margin + rows * (20 + spacing), 5 * (buttonWidth + spacing), 20,
+            Component.literal(" "),
             (p) -> {
                 InputSimulator.pressKeyForBind(GLFW.GLFW_KEY_SPACE);
                 InputSimulator.releaseKeyForBind(GLFW.GLFW_KEY_SPACE);
                 InputSimulator.typeChars(" ");
-            })
-            .size(5 * (buttonWidth + spacing), 20)
-            .pos(margin + 4 * (buttonWidth + spacing), margin + rows * (20 + spacing))
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("BKSP"),
+        this.addRenderableWidget(new Button(
+            columns * (buttonWidth + spacing) + margin, margin, 35, 20,
+            Component.literal("BKSP"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_BACKSPACE);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_BACKSPACE);
-            })
-            .size(35, 20)
-            .pos(columns * (buttonWidth + spacing) + margin, margin)
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("ENTER"),
+        this.addRenderableWidget(new Button(
+            columns * (buttonWidth + spacing) + margin, margin + 2 * (20 + spacing), 35, 20,
+            Component.literal("ENTER"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_ENTER);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_ENTER);
-            })
-            .size(35, 20)
-            .pos(columns * (buttonWidth + spacing) + margin, margin + 2 * (20 + spacing))
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("TAB"),
+        this.addRenderableWidget(new Button(0, margin + 20 + spacing, 30, 20,
+            Component.literal("TAB"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_TAB);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_TAB);
-            })
-            .size(30, 20)
-            .pos(0, margin + 20 + spacing)
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("ESC"),
+        this.addRenderableWidget(new Button(0, margin, 30, 20,
+            Component.literal("ESC"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_ESCAPE);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_ESCAPE);
-            })
-            .size(30, 20)
-            .pos(0, margin)
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("\u2191"),
+        this.addRenderableWidget(new Button(
+            (columns - 1) * (buttonWidth + spacing) + margin, margin + rows * (20 + spacing), buttonWidth, 20,
+            Component.literal("\u2191"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_UP);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_UP);
-            })
-            .size(buttonWidth, 20)
-            .pos((columns - 1) * (buttonWidth + spacing) + margin, margin + rows * (20 + spacing))
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("\u2193"),
+        this.addRenderableWidget(new Button(
+            (columns - 1) * (buttonWidth + spacing) + margin, margin + (rows + 1) * (20 + spacing), buttonWidth, 20,
+            Component.literal("\u2193"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_DOWN);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_DOWN);
-            })
-            .size(buttonWidth, 20)
-            .pos((columns - 1) * (buttonWidth + spacing) + margin, margin + (rows + 1) * (20 + spacing))
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("\u2190"),
+        this.addRenderableWidget(new Button(
+            (columns - 2) * (buttonWidth + spacing) + margin, margin + (rows + 1) * (20 + spacing), buttonWidth, 20,
+            Component.literal("\u2190"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_LEFT);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_LEFT);
-            })
-            .size(buttonWidth, 20)
-            .pos((columns - 2) * (buttonWidth + spacing) + margin, margin + (rows + 1) * (20 + spacing))
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("\u2192"),
+        this.addRenderableWidget(new Button(
+            columns * (buttonWidth + spacing) + margin, margin + (rows + 1) * (20 + spacing), buttonWidth, 20,
+            Component.literal("\u2192"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_RIGHT);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_RIGHT);
-            })
-            .size(buttonWidth, 20)
-            .pos(columns * (buttonWidth + spacing) + margin, margin + (rows + 1) * (20 + spacing))
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("CUT"),
+        this.addRenderableWidget(new Button(
+            margin, margin + -1 * (20 + spacing), 35, 20,
+            Component.literal("CUT"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_LEFT_CONTROL);
                 InputSimulator.pressKey(GLFW.GLFW_KEY_X);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_X);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL);
-            })
-            .size(35, 20)
-            .pos(margin, margin + -1 * (20 + spacing))
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("COPY"),
+        this.addRenderableWidget(new Button(
+            35 + spacing + margin, margin + -1 * (20 + spacing), 35, 20,
+            Component.literal("COPY"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_LEFT_CONTROL);
                 InputSimulator.pressKey(GLFW.GLFW_KEY_C);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_C);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL);
-            })
-            .size(35, 20)
-            .pos(35 + spacing + margin, margin + -1 * (20 + spacing))
-            .build());
+            }));
 
-        this.addRenderableWidget(new Button.Builder(Component.literal("PASTE"),
+        this.addRenderableWidget(new Button(
+            2 * (35 + spacing) + margin, margin + -1 * (20 + spacing), 35, 20,
+            Component.literal("PASTE"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_LEFT_CONTROL);
                 InputSimulator.pressKey(GLFW.GLFW_KEY_V);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_V);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL);
-            })
-            .size(35, 20)
-            .pos(2 * (35 + spacing) + margin, margin + -1 * (20 + spacing))
-            .build());
+            }));
     }
 
     public void setShift(boolean shift) {

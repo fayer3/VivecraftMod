@@ -4,7 +4,8 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Axis;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -24,7 +25,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Triple;
-import org.joml.*;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
+import org.joml.Vector3fc;
 import org.lwjgl.opengl.GL11C;
 import org.vivecraft.client.VivecraftVRMod;
 import org.vivecraft.client.Xevents;
@@ -51,7 +54,6 @@ import org.vivecraft.mod_compat_vr.immersiveportals.ImmersivePortalsHelper;
 import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
 import org.vivecraft.mod_compat_vr.shaders.ShadersHelper;
 
-import java.lang.Math;
 import java.util.Calendar;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -72,7 +74,7 @@ public class VREffectsHelper {
         if (MC.level == null) {
             return false;
         } else {
-            BlockPos blockpos = BlockPos.containing(pos);
+            BlockPos blockpos = new BlockPos(pos);
             return MC.level.getBlockState(blockpos).isSolidRender(MC.level, blockpos);
         }
     }
@@ -106,6 +108,7 @@ public class VREffectsHelper {
     public static void drawScopeFB(PoseStack poseStack, int c) {
         poseStack.pushPose();
         RenderSystem.enableDepthTest();
+        RenderSystem.enableTexture();
 
         if (c == 0) {
             DATA_HOLDER.vrRenderer.telescopeFramebufferR.bindRead();
@@ -129,7 +132,7 @@ public class VREffectsHelper {
         // slight offset to not cause z fighting
         poseStack.translate(0.0F, 0.0F, 0.00001F);
         // get light at the controller position
-        int light = LevelRenderer.getLightColor(MC.level, BlockPos.containing(
+        int light = LevelRenderer.getLightColor(MC.level, new BlockPos(
             DATA_HOLDER.vrPlayer.vrdata_world_render.getController(c).getPosition()));
         // draw the overlay, and flip it vertically
         RenderHelper.drawSizedQuadWithLightmapCutout(720.0F, 720.0F, scale, light, poseStack.last().pose(), true);
@@ -488,6 +491,8 @@ public class VREffectsHelper {
         RenderSystem.enableBlend();
         RenderSystem.enableCull();
         RenderSystem.enableDepthTest();
+        RenderSystem.enableTexture();
+        RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
         // use irl time for sky, or fast forward
@@ -619,6 +624,7 @@ public class VREffectsHelper {
         VRArmHelper.renderVRHands(partialTick, renderHands && !DATA_HOLDER.menuHandMain,
             renderHands && !DATA_HOLDER.menuHandOff, false, false, poseStack);
 
+        RenderSystem.enableTexture();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1, 1, 1, 1);
         // rebind the original buffer
@@ -820,7 +826,7 @@ public class VREffectsHelper {
         // code adapted from net.minecraft.client.renderer.ScreenEffectRenderer.renderFire
 
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-        RenderSystem.setShaderTexture(0, fireSprite.atlasLocation());
+        RenderSystem.setShaderTexture(0, fireSprite.atlas().location());
         float uMin = fireSprite.getU0();
         float uMax = fireSprite.getU1();
         float uMid = (uMin + uMax) / 2.0F;
@@ -843,7 +849,7 @@ public class VREffectsHelper {
 
         for (int i = 0; i < 4; i++) {
             posestack.pushPose();
-            posestack.mulPose(Axis.YP.rotationDegrees(
+            posestack.mulPose(Vector3f.YP.rotationDegrees(
                 i * 90.0F - DATA_HOLDER.vrPlayer.vrdata_world_render.getBodyYaw()));
             posestack.translate(0.0D, -headHeight, 0.0D);
 
@@ -887,7 +893,8 @@ public class VREffectsHelper {
         // convert previously calculated coords to world coords
         Vec3 keyboardPos = VRPlayer.roomToWorldPos(KeyboardHandler.POS_ROOM, DATA_HOLDER.vrPlayer.vrdata_world_render);
 
-        Matrix4f keyboardRot = new Matrix4f().rotationY(DATA_HOLDER.vrPlayer.vrdata_world_render.rotation_radians)
+        org.joml.Matrix4f keyboardRot = new org.joml.Matrix4f().rotationY(
+                DATA_HOLDER.vrPlayer.vrdata_world_render.rotation_radians)
             .mul(KeyboardHandler.ROTATION_ROOM);
 
         // offset from eye to keyboard pos
@@ -895,7 +902,7 @@ public class VREffectsHelper {
             (float) (keyboardPos.y - eye.y),
             (float) (keyboardPos.z - eye.z));
 
-        poseStack.mulPoseMatrix(keyboardRot);
+        poseStack.mulPoseMatrix(MathUtils.toMcMat4(keyboardRot));
 
         float scale = DATA_HOLDER.vrPlayer.vrdata_world_render.worldScale;
         poseStack.scale(scale, scale, scale);
@@ -965,6 +972,7 @@ public class VREffectsHelper {
         framebuffer.bindRead();
         // disable culling to show the screen from both sides
         RenderSystem.disableCull();
+        RenderSystem.enableTexture();
         RenderSystem.setShaderTexture(0, framebuffer.getColorTextureId());
 
         // cache fog distance
@@ -1011,7 +1019,7 @@ public class VREffectsHelper {
             }
 
             int minLight = ShadersHelper.ShaderLight();
-            int light = ClientUtils.getCombinedLightWithMin(MC.level, BlockPos.containing(pos), minLight);
+            int light = ClientUtils.getCombinedLightWithMin(MC.level, new BlockPos(pos), minLight);
 
             RenderHelper.drawSizedQuadWithLightmapCutout(
                 (float) MC.getWindow().getGuiScaledWidth(), (float) MC.getWindow().getGuiScaledHeight(),
@@ -1060,7 +1068,7 @@ public class VREffectsHelper {
                 (float) (DATA_HOLDER.vrPlayer.vrdata_world_render.origin.z - eye.z));
 
             // remove world rotation or the room doesn't align with the screen
-            poseStack.mulPose(Axis.YN.rotation(-DATA_HOLDER.vrPlayer.vrdata_world_render.rotation_radians));
+            poseStack.mulPose(Vector3f.YN.rotation(-DATA_HOLDER.vrPlayer.vrdata_world_render.rotation_radians));
 
             if (DATA_HOLDER.menuWorldRenderer.isReady()) {
                 try {
@@ -1100,7 +1108,7 @@ public class VREffectsHelper {
      * @param poseStack   PoseStack to use for positioning
      */
     public static void render2D(
-        float partialTick, RenderTarget framebuffer, Vector3fc pos, Matrix4f rot, boolean depthAlways,
+        float partialTick, RenderTarget framebuffer, Vector3fc pos, org.joml.Matrix4f rot, boolean depthAlways,
         PoseStack poseStack)
     {
         if (DATA_HOLDER.bowTracker.isDrawing) return;
@@ -1117,11 +1125,12 @@ public class VREffectsHelper {
 
         Vec3 worldPos = VRPlayer.roomToWorldPos(pos, DATA_HOLDER.vrPlayer.vrdata_world_render);
 
-        Matrix4f worldRotation = new Matrix4f().rotationY(DATA_HOLDER.vrPlayer.vrdata_world_render.rotation_radians)
+        org.joml.Matrix4f worldRotation = new org.joml.Matrix4f().rotationY(
+                DATA_HOLDER.vrPlayer.vrdata_world_render.rotation_radians)
             .mul(rot);
 
         poseStack.translate(worldPos.x - eye.x, worldPos.y - eye.y, worldPos.z - eye.z);
-        poseStack.mulPoseMatrix(worldRotation);
+        poseStack.mulPoseMatrix(MathUtils.toMcMat4(worldRotation));
 
         float scale = GuiHandler.GUI_SCALE * DATA_HOLDER.vrPlayer.vrdata_world_render.worldScale;
         poseStack.scale(scale, scale, scale);
@@ -1163,6 +1172,7 @@ public class VREffectsHelper {
         RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0f);
 
         RenderSystem.depthFunc(GL11C.GL_ALWAYS);
+        RenderSystem.disableTexture();
         RenderSystem.depthMask(true);
         RenderSystem.enableBlend();
         RenderSystem.disableCull();
@@ -1176,6 +1186,7 @@ public class VREffectsHelper {
         bufferbuilder.vertex(mat, -100.F, 100.F, -2.0F).endVertex();
         tesselator.end();
         RenderSystem.depthFunc(GL11C.GL_LEQUAL);
+        RenderSystem.enableTexture();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
@@ -1246,7 +1257,7 @@ public class VREffectsHelper {
 
         poseStack.pushPose();
 
-        Vector3f translate = MathUtils.subtractToVector3f(crosshairRenderPos, MC.getCameraEntity().position());
+        org.joml.Vector3f translate = MathUtils.subtractToVector3f(crosshairRenderPos, MC.getCameraEntity().position());
         poseStack.translate(translate.x, translate.y, translate.z);
 
         if (MC.hitResult != null && MC.hitResult.getType() == HitResult.Type.BLOCK) {
@@ -1256,24 +1267,26 @@ public class VREffectsHelper {
             switch (blockhitresult.getDirection()) {
                 case DOWN -> {
                     poseStack.mulPose(
-                        Axis.YP.rotationDegrees(DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getYaw()));
-                    poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
+                        Vector3f.YP.rotationDegrees(
+                            DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getYaw()));
+                    poseStack.mulPose(Vector3f.XP.rotationDegrees(-90.0F));
                 }
                 case UP -> {
                     poseStack.mulPose(
-                        Axis.YP.rotationDegrees(-DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getYaw()));
-                    poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+                        Vector3f.YP.rotationDegrees(
+                            -DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getYaw()));
+                    poseStack.mulPose(Vector3f.XP.rotationDegrees(90.0F));
                 }
-                case WEST -> poseStack.mulPose(Axis.YP.rotationDegrees(90.0F));
-                case EAST -> poseStack.mulPose(Axis.YP.rotationDegrees(-90.0F));
-                case SOUTH -> poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+                case WEST -> poseStack.mulPose(Vector3f.YP.rotationDegrees(90.0F));
+                case EAST -> poseStack.mulPose(Vector3f.YP.rotationDegrees(-90.0F));
+                case SOUTH -> poseStack.mulPose(Vector3f.YP.rotationDegrees(180.0F));
             }
         } else {
             // if there is no block hit, make it face the controller
             poseStack.mulPose(
-                Axis.YP.rotationDegrees(-DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getYaw()));
+                Vector3f.YP.rotationDegrees(-DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getYaw()));
             poseStack.mulPose(
-                Axis.XP.rotationDegrees(-DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getPitch()));
+                Vector3f.XP.rotationDegrees(-DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getPitch()));
         }
 
         float scale = (float) (0.125F * DATA_HOLDER.vrSettings.crosshairScale *
@@ -1303,7 +1316,7 @@ public class VREffectsHelper {
             GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ZERO,
             GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 
-        int light = LevelRenderer.getLightColor(MC.level, BlockPos.containing(crosshairRenderPos));
+        int light = LevelRenderer.getLightColor(MC.level, new BlockPos(crosshairRenderPos));
         float brightness = 1.0F;
 
         if (MC.hitResult == null || MC.hitResult.getType() == HitResult.Type.MISS) {

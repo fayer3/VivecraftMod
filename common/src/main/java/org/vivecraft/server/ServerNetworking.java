@@ -1,7 +1,7 @@
 package org.vivecraft.server;
 
 import net.minecraft.ResourceLocationException;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceLocation;
@@ -202,7 +202,7 @@ public class ServerNetworking {
                     ItemStack newItem = player.getItemBySlot(EquipmentSlot.MAINHAND);
 
                     // attribute modification, based on vanilla code: LivingEntity#collectEquipmentChanges
-                    if (player.equipmentHasChanged(oldItem, newItem)) {
+                    if (!ItemStack.matches(oldItem, newItem)) {
                         if (!oldItem.isEmpty()) {
                             player.getAttributes()
                                 .removeAttributeModifiers(oldItem.getAttributeModifiers(EquipmentSlot.MAINHAND));
@@ -268,7 +268,7 @@ public class ServerNetworking {
             blocks = new ArrayList<>();
             for (String block : ServerConfig.CLIMBEY_BLOCKLIST.get()) {
                 try {
-                    Block b = BuiltInRegistries.BLOCK.get(new ResourceLocation(block));
+                    Block b = Registry.BLOCK.get(new ResourceLocation(block));
                     // only send valid blocks
                     if (b != Blocks.AIR) {
                         blocks.add(block);

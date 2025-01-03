@@ -1,6 +1,8 @@
 package org.vivecraft.mixin.client_vr.renderer.entity;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -8,7 +10,6 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionf;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -36,7 +37,7 @@ public abstract class EntityRenderDispatcherVRMixin implements EntityRenderDispa
     public Camera camera;
 
     @Inject(method = "cameraOrientation", at = @At("HEAD"), cancellable = true)
-    private void vivecraft$cameraOrientation(CallbackInfoReturnable<Quaternionf> cir) {
+    private void vivecraft$cameraOrientation(CallbackInfoReturnable<Quaternion> cir) {
         if (RenderPassType.isWorldOnly()) {
             cir.setReturnValue(this.vivecraft$getVRCameraOrientation(0.5F, 0.0F));
         }
@@ -60,7 +61,7 @@ public abstract class EntityRenderDispatcherVRMixin implements EntityRenderDispa
 
     @Override
     @Unique
-    public Quaternionf vivecraft$getVRCameraOrientation(float scale, float offset) {
+    public Quaternion vivecraft$getVRCameraOrientation(float scale, float offset) {
         Entity entity = ((LevelRendererExtension) Minecraft.getInstance().levelRenderer).vivecraft$getRenderedEntity();
         if (entity == null) {
             return this.camera.rotation();
@@ -77,9 +78,9 @@ public abstract class EntityRenderDispatcherVRMixin implements EntityRenderDispa
                 .add(0.0D, entity.getBbHeight() * scale + offset, 0.0D)
                 .subtract(source).normalize();
 
-            return new Quaternionf()
-                .rotateY((float) -Math.atan2(-direction.x, direction.z))
-                .rotateX((float) -Math.asin(direction.y / direction.length()));
+            Quaternion q = Vector3f.YP.rotation((float) -Math.atan2(-direction.x, direction.z));
+            q.mul(Vector3f.XP.rotation((float) -Math.asin(direction.y / direction.length())));
+            return q;
         }
     }
 

@@ -197,7 +197,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
                 (interactTracker.inBlockHit[c] != null || interactTracker.bukkit[c]))
             {
                 BlockPos blockpos = interactTracker.inBlockHit[c] != null ?
-                    interactTracker.inBlockHit[c].getBlockPos() : BlockPos.containing(
+                    interactTracker.inBlockHit[c].getBlockPos() : new BlockPos(
                     ClientDataHolderVR.getInstance().vrPlayer.vrdata_world_render.getController(c).getPosition());
                 BlockState blockstate = this.level.getBlockState(blockpos);
                 this.renderHitOutline(poseStack,
@@ -238,7 +238,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
         }
     }
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", ordinal = 3))
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", ordinal = 4))
     private void vivecraft$renderVrStuffPart2(
         CallbackInfo ci, @Local(argsOnly = true) PoseStack poseStack, @Local(argsOnly = true) float partialTick,
         @Share("guiRendered") LocalBooleanRef guiRendered)
@@ -287,14 +287,12 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
             this.minecraft.player.isAlive() && this.minecraft.player.blockPosition().distSqr(pos) < 25.0D;
         if (playerNearAndVR) {
             switch (type) {
-                /* pre 1.19.4, they are now separate
-                case LevelEvent.LevelEvent.SOUND_CLOSE_IRON_DOOR,
-                        LevelEvent.SOUND_CLOSE_WOODEN_DOOR,
-                        LevelEvent.SOUND_CLOSE_WOODEN_TRAP_DOOR,
-                        LevelEvent.SOUND_CLOSE_FENCE_GATE,
-                        LevelEvent.SOUND_CLOSE_IRON_TRAP_DOOR
-                        -> ClientDataHolderVR.getInstance().vr.triggerHapticPulse(0, 250);
-                 */
+                case LevelEvent.SOUND_CLOSE_IRON_DOOR,
+                     LevelEvent.SOUND_CLOSE_WOODEN_DOOR,
+                     LevelEvent.SOUND_CLOSE_WOODEN_TRAP_DOOR,
+                     LevelEvent.SOUND_CLOSE_FENCE_GATE,
+                     LevelEvent.SOUND_CLOSE_IRON_TRAP_DOOR ->
+                    ClientDataHolderVR.getInstance().vr.triggerHapticPulse(0, 250);
                 case LevelEvent.SOUND_ZOMBIE_WOODEN_DOOR,
                      LevelEvent.SOUND_ZOMBIE_IRON_DOOR,
                      LevelEvent.SOUND_ZOMBIE_DOOR_CRASH -> {

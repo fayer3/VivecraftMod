@@ -22,14 +22,8 @@ import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler;
 import org.vivecraft.client_vr.settings.VRSettings;
 
-import javax.annotation.Nullable;
-
 @Mixin(EditBox.class)
 public abstract class EditBoxVRMixin extends AbstractWidget {
-
-    @Shadow
-    @Nullable
-    private Component hint;
 
     @Shadow
     @Final
@@ -41,11 +35,14 @@ public abstract class EditBoxVRMixin extends AbstractWidget {
     @Shadow
     public abstract int getInnerWidth();
 
+    @Shadow
+    private String value;
+
     public EditBoxVRMixin(int x, int y, int width, int height, Component message) {
         super(x, y, width, height, message);
     }
 
-    @Inject(method = "renderWidget", at = @At(value = "INVOKE", target = "Ljava/lang/String;length()I", ordinal = 1))
+    @Inject(method = "renderButton", at = @At(value = "INVOKE", target = "Ljava/lang/String;length()I", ordinal = 1))
     private void vivecraft$renderKeyboardHint(
         PoseStack poseStack, int mouseX, int mouseY, float partialTick, CallbackInfo ci,
         @Local String content, @Local(ordinal = 5) int xPos, @Local(ordinal = 6) int yPos)
@@ -53,7 +50,7 @@ public abstract class EditBoxVRMixin extends AbstractWidget {
         if (VRState.VR_RUNNING && content.isEmpty() && !ClientDataHolderVR.getInstance().vrSettings.seated &&
             !KeyboardHandler.SHOWING)
         {
-            if (this.hint == null || this.isFocused()) {
+            if (this.value.isEmpty() || this.isFocused()) {
                 // limit text to field size
                 String fullString = I18n.get("vivecraft.message.openKeyboard");
                 String cutString = this.font.plainSubstrByWidth(fullString, this.getInnerWidth());
@@ -63,7 +60,7 @@ public abstract class EditBoxVRMixin extends AbstractWidget {
         }
     }
 
-    @Inject(method = "setFocused", at = @At("HEAD"))
+    @Inject(method = "setFocus", at = @At("HEAD"))
     private void vivecraft$autoOpenKeyboard(boolean focused, CallbackInfo ci) {
         if (VRState.VR_RUNNING && focused && !(Minecraft.getInstance().screen instanceof InBedChatScreen)) {
             if (ClientDataHolderVR.getInstance().vrSettings.autoOpenKeyboard == VRSettings.AutoOpenKeyboard.ON ||

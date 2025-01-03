@@ -538,7 +538,7 @@ public class VRPlayer {
                         this.setRoomOrigin(dest.x, dest.y, dest.z, false);
 
                         player.fallDistance = 0.0F;
-                        ((PlayerExtension) player).vivecraft$stepSound(BlockPos.containing(player.position()),
+                        ((PlayerExtension) player).vivecraft$stepSound(new BlockPos(player.position()),
                             player.position());
                         break;
                     }
@@ -640,7 +640,7 @@ public class VRPlayer {
             // use r_hand aim
 
             VRData data = this.dh.vrPlayer.vrdata_world_pre;
-            out = new Vec3(data.getController(c).getDirection());
+            out = MathUtils.toMcVec3(data.getController(c).getDirection());
             Vector3fc aim = this.dh.bowTracker.getAimVector();
 
             if (this.dh.bowTracker.isNotched() && aim != null && aim.lengthSquared() > 0.0F) {

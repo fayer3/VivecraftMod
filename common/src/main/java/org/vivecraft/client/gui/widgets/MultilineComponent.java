@@ -37,20 +37,20 @@ public class MultilineComponent extends AbstractWidget {
     }
 
     @Override
-    public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         int yPos = 0;
         for (FormattedCharSequence text : this.text) {
             if (this.centered) {
-                drawCenteredString(poseStack, this.font, text, getX() + this.width / 2, getY() + yPos, 0xFFFFFF);
+                drawCenteredString(poseStack, this.font, text, this.x + this.width / 2, this.y + yPos, 0xFFFFFF);
             } else {
-                drawString(poseStack, this.font, text, getX(), getY() + yPos, 0xFFFFFF);
+                drawString(poseStack, this.font, text, this.x, this.y + yPos, 0xFFFFFF);
             }
             yPos += this.font.lineHeight;
         }
     }
 
     @Override
-    protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+    public void updateNarration(NarrationElementOutput narrationElementOutput) {
 
     }
 }

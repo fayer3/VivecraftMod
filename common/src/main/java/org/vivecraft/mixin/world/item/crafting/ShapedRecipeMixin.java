@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -32,7 +32,7 @@ public abstract class ShapedRecipeMixin {
     @Unique
     private static Item vivecraft$getVivecraftVanillaItem(JsonObject jsonObject) {
         String vanillaItem = GsonHelper.getAsString(jsonObject, "vanillaitem");
-        return BuiltInRegistries.ITEM.getOptional(new ResourceLocation(vanillaItem))
+        return Registry.ITEM.getOptional(new ResourceLocation(vanillaItem))
             .orElseThrow(() -> new JsonSyntaxException("Unknown item '" + vanillaItem + "'"));
     }
 
@@ -58,8 +58,7 @@ public abstract class ShapedRecipeMixin {
             } else {
                 ItemStack itemStack = new ItemStack(vanillaItem, i);
                 if (jsonObject.has("fallbackname")) {
-                    itemStack.setHoverName(Component.translatableWithFallback(jsonObject.get("name").getAsString(),
-                        jsonObject.get("fallbackname").getAsString()));
+                    itemStack.setHoverName(Component.translatable(jsonObject.get("name").getAsString()));
                 } else {
                     itemStack.setHoverName(Component.translatable(jsonObject.get("name").getAsString()));
                 }

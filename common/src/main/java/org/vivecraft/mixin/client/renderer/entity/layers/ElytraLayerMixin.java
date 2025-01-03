@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -34,9 +33,9 @@ public abstract class ElytraLayerMixin<T extends LivingEntity, M extends EntityM
         super(renderer);
     }
 
-    @WrapOperation(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V"))
+    @WrapOperation(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(DDD)V"))
     private void vivecraft$elytraPosition(
-        PoseStack instance, float x, float y, float z, Operation<Void> original,
+        PoseStack instance, double x, double y, double z, Operation<Void> original,
         @Local(argsOnly = true) LivingEntity entity, @Local(argsOnly = true, ordinal = 2) float partialTick)
     {
         ClientVRPlayers.RotInfo rotInfo = ClientVRPlayers.getInstance().getRotationsForPlayer(entity.getUUID());
@@ -69,11 +68,12 @@ public abstract class ElytraLayerMixin<T extends LivingEntity, M extends EntityM
 
             // no yaw, since we  need the vector to be player rotated anyway
             ModelUtils.modelToWorld(entity, this.vivecraft$tempV, rotInfo, 0F, false, false, this.vivecraft$tempV);
-            original.call(instance, this.vivecraft$tempV.x, -this.vivecraft$tempV.y, -this.vivecraft$tempV.z);
+            original.call(instance, (double) this.vivecraft$tempV.x, (double) -this.vivecraft$tempV.y,
+                (double) -this.vivecraft$tempV.z);
 
             // rotate elytra
-            instance.mulPose(Axis.XP.rotation(xRotation));
-            instance.mulPose(Axis.YP.rotation(yRotation));
+            instance.mulPose(com.mojang.math.Vector3f.XP.rotation(xRotation));
+            instance.mulPose(com.mojang.math.Vector3f.YP.rotation(yRotation));
         } else {
             original.call(instance, x, y, z);
         }

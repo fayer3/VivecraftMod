@@ -2,7 +2,7 @@ package org.vivecraft.mixin.client_vr.multiplayer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -18,15 +18,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRState;
+import org.vivecraft.client_vr.extensions.PlayerExtension;
 import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.provider.ControllerType;
 import org.vivecraft.client_vr.settings.VRSettings;
 
 @Mixin(ClientPacketListener.class)
 public abstract class ClientPacketListenerVRMixin {
-
-    @Unique
-    private String vivecraft$lastMsg = null;
 
     @Final
     @Shadow
@@ -74,7 +72,7 @@ public abstract class ClientPacketListenerVRMixin {
         }
     }
 
-    @Inject(method = "close", at = @At("TAIL"))
+    @Inject(method = "cleanup", at = @At("TAIL"))
     private void vivecraft$cleanup(CallbackInfo ci) {
         ClientNetworking.resetServerSettings();
         ClientNetworking.DISPLAYED_CHAT_MESSAGE = false;
@@ -82,36 +80,27 @@ public abstract class ClientPacketListenerVRMixin {
         ClientNetworking.NEEDS_RESET = true;
     }
 
-    @Inject(method = "sendChat", at = @At("TAIL"))
-    private void vivecraft$storeChatMsg(String message, CallbackInfo ci) {
-        this.vivecraft$lastMsg = message;
-    }
-
-    @Inject(method = "sendCommand", at = @At("TAIL"))
-    private void vivecraft$storeCommandMsg(String command, CallbackInfo ci) {
-        this.vivecraft$lastMsg = command;
-    }
-
     @Inject(method = "handlePlayerChat", at = @At("TAIL"))
     private void vivecraft$chatHapticsPlayer(ClientboundPlayerChatPacket packet, CallbackInfo ci) {
-        if (VRState.VR_RUNNING && (this.minecraft.player == null || this.vivecraft$lastMsg == null ||
-            packet.sender() == this.minecraft.player.getUUID()
+        String lastMsg = ((PlayerExtension) this.minecraft.player).vivecraft$getLastMsg();
+        ((PlayerExtension) this.minecraft.player).vivecraft$setLastMsg(null);
+        if (VRState.VR_RUNNING && (this.minecraft.player == null || lastMsg == null ||
+            packet.message().signedHeader().sender() == this.minecraft.player.getUUID()
         ))
         {
             vivecraft$triggerHapticSound();
         }
-        this.vivecraft$lastMsg = null;
     }
 
     @Inject(method = "handleSystemChat", at = @At("TAIL"))
     private void vivecraft$chatHapticsSystem(ClientboundSystemChatPacket packet, CallbackInfo ci) {
-        if (VRState.VR_RUNNING && (this.minecraft.player == null || this.vivecraft$lastMsg == null ||
-            packet.content().getString().contains(this.vivecraft$lastMsg)
-        ))
+        String lastMsg = ((PlayerExtension) this.minecraft.player).vivecraft$getLastMsg();
+        ((PlayerExtension) this.minecraft.player).vivecraft$setLastMsg(null);
+        if (VRState.VR_RUNNING &&
+            (this.minecraft.player == null || lastMsg == null || packet.content().getString().contains(lastMsg)))
         {
             vivecraft$triggerHapticSound();
         }
-        this.vivecraft$lastMsg = null;
     }
 
     @Unique
@@ -132,8 +121,7 @@ public abstract class ClientPacketListenerVRMixin {
                 Vec3 controllerPos = dataHolder.vrPlayer.vrdata_world_pre.getController(1).getPosition();
                 this.minecraft.level.playLocalSound(
                     controllerPos.x(), controllerPos.y(), controllerPos.z(),
-                    BuiltInRegistries.SOUND_EVENT.get(
-                        new ResourceLocation(dataHolder.vrSettings.chatNotificationSound)),
+                    Registry.SOUND_EVENT.get(new ResourceLocation(dataHolder.vrSettings.chatNotificationSound)),
                     SoundSource.NEUTRAL, 0.3F, 0.1F, false);
             }
         }

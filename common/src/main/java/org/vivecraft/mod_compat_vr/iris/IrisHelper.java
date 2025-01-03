@@ -2,7 +2,6 @@ package org.vivecraft.mod_compat_vr.iris;
 
 import net.irisshaders.iris.api.v0.IrisApi;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_xr.render_pass.RenderPassManager;
@@ -169,12 +168,12 @@ public class IrisHelper {
      * needed, because some Iris versions return a Matrix4f and others a Matrix4fc, which causes a runtime exception
      *
      * @param source CapturedRenderingState INSTANCE to call this on
-     * @return Matrix4fc current projection matrix
+     * @return Matrix4fc as Object, current projection matrix
      */
-    public static Matrix4fc getGbufferProjection(Object source) {
+    public static Object getGbufferProjection(Object source) {
         if (init() && DH_PRESENT) {
             try {
-                return (Matrix4fc) CapturedRenderingState_getGbufferProjection.invoke(source);
+                return CapturedRenderingState_getGbufferProjection.invoke(source);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 VRSettings.LOGGER.error("Vivecraft: couldn't get iris gbuffer projection matrix:", e);
             }

@@ -24,7 +24,7 @@ public class GuiVROptionButton extends Button implements GuiVROption {
         int id, int x, int y, int width, int height, @Nullable VRSettings.VrOptions option, String text,
         OnPress onPress)
     {
-        super(x, y, width, height, Component.translatable(text), onPress, Button.DEFAULT_NARRATION);
+        super(x, y, width, height, Component.translatable(text), onPress);
         this.id = id;
         this.enumOptions = option;
         ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();

@@ -52,9 +52,6 @@ public abstract class LocalPlayer_EntityVRMixin {
     protected abstract float getBlockJumpFactor();
 
     @Shadow
-    public abstract void setMaxUpStep(float maxUpStep);
-
-    @Shadow
     public abstract Vec3 getDeltaMovement();
 
     @Shadow
@@ -71,6 +68,12 @@ public abstract class LocalPlayer_EntityVRMixin {
 
     @Shadow
     public abstract double getX();
+
+    @Shadow
+    public float maxUpStep;
+
+    @Shadow
+    public abstract void moveTo(double x, double y, double z, float yRot, float xRot);
 
     /**
      * dummy to be overridden in {@link LocalPlayerVRMixin}

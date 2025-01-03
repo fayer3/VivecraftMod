@@ -2,7 +2,7 @@ package org.vivecraft.client.render.armor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import net.minecraft.client.model.HumanoidArmorModel;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
@@ -15,7 +15,7 @@ import org.vivecraft.client.render.models.HandModel;
 import org.vivecraft.client.utils.ModelUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
-public class VRArmorModel_WithArms<T extends LivingEntity> extends HumanoidArmorModel<T> implements HandModel {
+public class VRArmorModel_WithArms<T extends LivingEntity> extends HumanoidModel<T> implements HandModel {
 
     public final ModelPart leftHand;
     public final ModelPart rightHand;
@@ -29,7 +29,7 @@ public class VRArmorModel_WithArms<T extends LivingEntity> extends HumanoidArmor
     }
 
     public static MeshDefinition createBodyLayer(CubeDeformation cubeDeformation) {
-        MeshDefinition meshDefinition = HumanoidArmorModel.createBodyLayer(cubeDeformation);
+        MeshDefinition meshDefinition = HumanoidModel.createMesh(cubeDeformation, 0F);
         PartDefinition partDefinition = meshDefinition.getRoot();
 
         boolean connected = ClientDataHolderVR.getInstance().vrSettings.playerLimbsConnected;

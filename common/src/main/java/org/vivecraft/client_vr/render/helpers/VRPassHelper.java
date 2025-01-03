@@ -4,8 +4,8 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
-import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL30C;
 import org.vivecraft.client.utils.ClientUtils;
@@ -129,9 +129,9 @@ public class VRPassHelper {
             poseStack.translate(0.0f, 0.0f, -2000.0f);
             RenderSystem.applyModelViewMatrix();
 
-            Matrix4f guiProjection = (new Matrix4f()).setOrtho(
+            Matrix4f guiProjection = Matrix4f.orthographic(
                 0.0F, MC.getWindow().getGuiScaledWidth(),
-                MC.getWindow().getGuiScaledHeight(), 0.0F,
+                0.0F, MC.getWindow().getGuiScaledHeight(),
                 1000.0F, 3000.0F);
             RenderSystem.setProjectionMatrix(guiProjection);
 

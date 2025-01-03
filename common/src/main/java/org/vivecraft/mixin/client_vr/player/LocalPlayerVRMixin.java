@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
@@ -58,6 +59,9 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
     @Unique
     private final ClientDataHolderVR vivecraft$dataholder = ClientDataHolderVR.getInstance();
 
+    @Unique
+    public String vivecraft$lastMsg = null;
+
     @Final
     @Shadow
     protected Minecraft minecraft;
@@ -108,7 +112,7 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
         }
     }
 
-    @ModifyVariable(method = "sendPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isPassenger()Z"), ordinal = 2)
+    @ModifyVariable(method = "sendPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isPassenger()Z"), ordinal = 3)
     private boolean vivecraft$directTeleport(boolean updateRotation) {
         if (this.vivecraft$teleported) {
             updateRotation = true;
@@ -132,6 +136,12 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
             this.minecraft.options.autoJump().set(false);
         }
     }
+
+    @Inject(method = "chatSigned", at = @At("TAIL"))
+    private void vivecraft$chatMsg(String string, Component component, CallbackInfo ci) {
+        this.vivecraft$lastMsg = string;
+    }
+
 
     @Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;aiStep()V"))
     private void vivecraft$VRPlayerTick(CallbackInfo ci) {
@@ -179,9 +189,9 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
                 super.move(type, pos);
 
                 if (ClientDataHolderVR.getInstance().vrSettings.walkUpBlocks) {
-                    this.setMaxUpStep(this.getBlockJumpFactor() == 1.0F ? 1.0F : 0.6F);
+                    this.maxUpStep = this.getBlockJumpFactor() == 1.0F ? 1.0F : 0.6F;
                 } else {
-                    this.setMaxUpStep(0.6F);
+                    this.maxUpStep = 0.6F;
                     this.updateAutoJump((float) (this.getX() - oldX), (float) (this.getZ() - oldZ));
                 }
 
@@ -548,5 +558,17 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
         } else {
             return 0.0D;
         }
+    }
+
+    @Override
+    @Unique
+    public String vivecraft$getLastMsg() {
+        return vivecraft$lastMsg;
+    }
+
+    @Override
+    @Unique
+    public void vivecraft$setLastMsg(String string) {
+        this.vivecraft$lastMsg = string;
     }
 }

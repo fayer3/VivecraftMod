@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
@@ -25,6 +26,15 @@ public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsLi
         PoseStack poseStack, int top, int width, int height, int outerColor, int innerColor)
     {}
 
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        GuiEventListener focused = this.getFocused();
+        if (focused != null) {
+            focused.changeFocus(false);
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
     public class CommandEntry extends Entry<CommandEntry> {
         private final Button btnDelete;
         public final EditBox txt;
@@ -34,19 +44,17 @@ public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsLi
                 Component.literal(""));
             this.txt.setMaxLength(256);
             this.txt.setValue(command);
-            this.btnDelete = new Button.Builder(Component.literal("X"), (p) ->
-            {
+            this.btnDelete = new Button(0, 0, 18, 18,
+                Component.literal("X"), (p) -> {
                 this.txt.setValue("");
-                this.txt.setFocused(true);
-            })
-                .size(18, 18)
-                .pos(0, 0)
-                .build();
+                this.txt.changeFocus(true);
+            });
         }
 
         @Override
-        public void setFocused(boolean focused) {
-            this.txt.setFocused(focused);
+        public boolean changeFocus(boolean focused) {
+            this.txt.changeFocus(focused);
+            return focused;
         }
 
         @Override
@@ -107,11 +115,11 @@ public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsLi
             PoseStack poseStack, int index, int top, int left, int width, int height, int mouseX, int mouseY,
             boolean hovering, float partialTick)
         {
-            this.txt.setX(left);
-            this.txt.setY(top);
+            this.txt.x = left;
+            this.txt.y = top;
             this.txt.render(poseStack, mouseX, mouseY, partialTick);
-            this.btnDelete.setX(this.txt.getX() + this.txt.getWidth() + 2);
-            this.btnDelete.setY(this.txt.getY());
+            this.btnDelete.x = this.txt.x + this.txt.getWidth() + 2;
+            this.btnDelete.y = this.txt.y;
             this.btnDelete.visible = true;
             this.btnDelete.render(poseStack, mouseX, mouseY, partialTick);
         }

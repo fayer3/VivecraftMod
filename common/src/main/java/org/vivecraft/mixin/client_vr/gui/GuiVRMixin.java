@@ -29,7 +29,7 @@ import org.vivecraft.client_vr.extensions.GuiExtension;
 import org.vivecraft.client_xr.render_pass.RenderPassType;
 
 @Mixin(Gui.class)
-public abstract class GuiVRMixin implements GuiExtension {
+public abstract class GuiVRMixin extends GuiComponent implements GuiExtension {
 
     @Unique
     public boolean vivecraft$showPlayerList;
@@ -119,7 +119,7 @@ public abstract class GuiVRMixin implements GuiExtension {
         {
             int middle = this.screenWidth / 2;
             RenderSystem.setShaderColor(0.0F, 1.0F, 0.0F, 1.0F);
-            GuiComponent.blit(poseStack,
+            blit(poseStack,
                 middle - 91 - 1 + ClientDataHolderVR.getInstance().interactTracker.hotbar * 20,
                 this.screenHeight - 22 - 1, 0, 22, 24, 22);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -137,22 +137,24 @@ public abstract class GuiVRMixin implements GuiExtension {
 
     @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V", ordinal = 2))
     private void vivecraft$renderVRHotbarLeftIndicator(
-        PoseStack instance, int x, int y, int uOffset, int vOffset, int uWidth, int vHeight, Operation<Void> original)
+        Gui instance, PoseStack poseStack, int x, int y, int uOffset, int vOffset, int uWidth, int vHeight,
+        Operation<Void> original)
     {
-        vivecraft$renderColoredIcon(instance, x, y, uOffset, vOffset, uWidth, vHeight, original);
+        vivecraft$renderColoredIcon(instance, poseStack, x, y, uOffset, vOffset, uWidth, vHeight, original);
     }
 
     @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V", ordinal = 3))
     private void vivecraft$renderVRHotbarRightIndicator(
-        PoseStack instance, int x, int y, int uOffset, int vOffset, int uWidth, int vHeight, Operation<Void> original)
+        Gui instance, PoseStack poseStack, int x, int y, int uOffset, int vOffset, int uWidth, int vHeight,
+        Operation<Void> original)
     {
-        vivecraft$renderColoredIcon(instance, x, y, uOffset, vOffset, uWidth, vHeight, original);
+        vivecraft$renderColoredIcon(instance, poseStack, x, y, uOffset, vOffset, uWidth, vHeight, original);
     }
 
     @Unique
     private void vivecraft$renderColoredIcon(
-        PoseStack instance, int x, int y, int uOffset, int vOffset, int uWidth,
-        int vHeight, Operation<Void> original)
+        Gui instance, PoseStack poseStack, int x, int y, int uOffset, int vOffset, int uWidth, int vHeight,
+        Operation<Void> original)
     {
         boolean changeColor = VRState.VR_RUNNING && ClientDataHolderVR.getInstance().interactTracker.hotbar == 9 &&
             ClientDataHolderVR.getInstance().interactTracker.isActive(this.minecraft.player);
@@ -161,7 +163,7 @@ public abstract class GuiVRMixin implements GuiExtension {
             RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
         }
 
-        original.call(instance, x, y, uOffset, vOffset, uWidth, vHeight);
+        original.call(instance, poseStack, x, y, uOffset, vOffset, uWidth, vHeight);
 
         if (changeColor) {
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -209,7 +211,7 @@ public abstract class GuiVRMixin implements GuiExtension {
             int y = this.minecraft.getWindow().getGuiScaledHeight() - 39;
 
             if (icon == -1) {
-                this.minecraft.getItemRenderer().renderGuiItem(poseStack, new ItemStack(Items.ELYTRA), x, y);
+                this.minecraft.getItemRenderer().renderGuiItem(new ItemStack(Items.ELYTRA), x, y);
                 mobeffect = null;
             } else if (icon == -2) {
                 int x2 = x;
@@ -218,12 +220,12 @@ public abstract class GuiVRMixin implements GuiExtension {
                 } else {
                     mobeffect = null;
                 }
-                this.minecraft.getItemRenderer().renderGuiItem(poseStack, new ItemStack(Items.RABBIT_FOOT), x2, y);
+                this.minecraft.getItemRenderer().renderGuiItem(new ItemStack(Items.RABBIT_FOOT), x2, y);
             }
             if (mobeffect != null) {
                 TextureAtlasSprite textureatlassprite = this.minecraft.getMobEffectTextures().get(mobeffect);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                RenderSystem.setShaderTexture(0, textureatlassprite.atlasLocation());
+                RenderSystem.setShaderTexture(0, textureatlassprite.atlas().location());
                 GuiComponent.blit(poseStack, x, y, 0, 18, 18, textureatlassprite);
             }
         }

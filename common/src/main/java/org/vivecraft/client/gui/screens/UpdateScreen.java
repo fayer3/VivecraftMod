@@ -1,6 +1,7 @@
 package org.vivecraft.client.gui.screens;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -29,24 +30,33 @@ public class UpdateScreen extends Screen {
             new TextScrollWidget(this.width / 2 - 155, 30, 310, this.height - 30 - 60, UpdateChecker.CHANGELOG));
 
         this.addRenderableWidget(
-            new Button.Builder(Component.translatable("vivecraft.gui.downloadfrom", Component.literal("Modrinth")),
-                ConfirmLinkScreen.confirmLink("https://modrinth.com/mod/vivecraft", this, true))
-                .pos(this.width / 2 - 155, this.height - 56)
-                .size(150, 20)
-                .build());
+            new Button(this.width / 2 - 155, this.height - 56, 150, 20,
+                Component.translatable("vivecraft.gui.downloadfrom", Component.literal("Modrinth")),
+                button ->
+                    this.minecraft.setScreen(new ConfirmLinkScreen(bl -> {
+                        if (bl) {
+                            Util.getPlatform().openUri("https://modrinth.com/mod/vivecraft");
+                        }
+                        this.minecraft.setScreen(this);
+                    }, "https://modrinth.com/mod/vivecraft", true))
+            ));
 
         this.addRenderableWidget(
-            new Button.Builder(Component.translatable("vivecraft.gui.downloadfrom", Component.literal("CurseForge")),
-                ConfirmLinkScreen.confirmLink("https://www.curseforge.com/minecraft/mc-mods/vivecraft", this, true))
-                .pos(this.width / 2 + 5, this.height - 56)
-                .size(150, 20)
-                .build());
+            new Button(this.width / 2 + 5, this.height - 56, 150, 20,
+                Component.translatable("vivecraft.gui.downloadfrom", Component.literal("CurseForge")),
+                button ->
+                    this.minecraft.setScreen(new ConfirmLinkScreen(bl -> {
+                        if (bl) {
+                            Util.getPlatform().openUri("https://www.curseforge.com/minecraft/mc-mods/vivecraft");
+                        }
+                        this.minecraft.setScreen(this);
+                    }, "https://www.curseforge.com/minecraft/mc-mods/vivecraft", true))
+            ));
 
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.back"), (p) ->
-            Minecraft.getInstance().setScreen(this.lastScreen))
-            .pos(this.width / 2 - 75, this.height - 32)
-            .size(150, 20)
-            .build());
+        this.addRenderableWidget(
+            new Button(this.width / 2 - 75, this.height - 32, 150, 20,
+                Component.translatable("gui.back"), (p) ->
+                Minecraft.getInstance().setScreen(this.lastScreen)));
     }
 
     @Override

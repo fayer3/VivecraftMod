@@ -47,12 +47,11 @@
   ],
   "depends": {
     "fabricloader": ">=0.16.1",
-    "minecraft": ["1.19.4"],
+    "minecraft": ["1.19.2"],
     "java": ">=17"
   },
   "breaks": {
-    "sodium": ["0.4.11+build.25", "0.4.11+build.26"],
-    "modmenu": ["<6.2.0"]
+    "sodium": ["0.4.11+build.25", "0.4.11+build.26"]
   },
   "suggests": {
     "another-mod": "*"
@@ -65,8 +64,7 @@
   "custom": {
     "mc-publish": {
       "dependencies": [
-        "sodium(incompatible)#(ignore)",
-        "modmenu(incompatible)#(ignore)"
+        "sodium(incompatible)#(ignore)"
       ]
     },
     "modmenu": {

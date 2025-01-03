@@ -3,7 +3,6 @@ package org.vivecraft.client_vr.render.helpers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.Vec3i;
@@ -85,10 +84,10 @@ public class DebugRenderHelper {
                         bufferbuilder.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
                     }
 
-                    Vector3f playerPos = p.getPosition(partialTick).subtract(camPos).toVector3f();
+                    Vector3f playerPos = MathUtils.subtractToVector3f(p.getPosition(partialTick), camPos);
                     if (p == MC.player) {
-                        playerPos = ((GameRendererExtension) MC.gameRenderer).vivecraft$getRvePos(partialTick)
-                            .subtract(camPos).toVector3f();
+                        playerPos = MathUtils.subtractToVector3f(
+                            ((GameRendererExtension) MC.gameRenderer).vivecraft$getRvePos(partialTick), camPos);
                     }
 
                     if (p != MC.player || DATA_HOLDER.currentPass == RenderPass.THIRD) {
@@ -256,8 +255,8 @@ public class DebugRenderHelper {
     private static void addAxes(
         PoseStack poseStack, BufferBuilder bufferBuilder, VRData data, VRData.VRDevicePose pose)
     {
-        Vector3f position = pose.getPosition()
-            .subtract(RenderHelper.getSmoothCameraPosition(DATA_HOLDER.currentPass, data)).toVector3f();
+        Vector3f position = MathUtils.subtractToVector3f(pose.getPosition(),
+            RenderHelper.getSmoothCameraPosition(DATA_HOLDER.currentPass, data));
 
         float scale = 0.25F * DATA_HOLDER.vrPlayer.worldScale;
 
@@ -416,11 +415,11 @@ public class DebugRenderHelper {
     {
         poseStack.pushPose();
         poseStack.translate(x, y + 0.05F, z);
-        poseStack.mulPose(rot);
+        poseStack.mulPose(MathUtils.toMcQuat(rot));
         poseStack.scale(-0.005F, -0.005F, 0.005F);
 
         MC.font.drawInBatch(text, MC.font.width(text) * -0.5F, -MC.font.lineHeight, -1, false,
-            poseStack.last().pose(), MC.renderBuffers().bufferSource(), Font.DisplayMode.NORMAL, 0,
+            poseStack.last().pose(), MC.renderBuffers().bufferSource(), false, 0,
             LightTexture.FULL_BRIGHT);
         poseStack.popPose();
     }

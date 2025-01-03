@@ -2,8 +2,8 @@ package org.vivecraft.client_vr.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
-import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11C;
 import org.vivecraft.client.utils.TextUtils;
 import org.vivecraft.client_vr.extensions.WindowExtension;
@@ -45,8 +45,8 @@ public class MirrorNotification {
             int screenY = ((WindowExtension) (Object) MC.getWindow()).vivecraft$getActualScreenHeight();
 
             RenderSystem.viewport(0, 0, screenX, screenY);
-            Matrix4f projection = new Matrix4f().setOrtho(0.0F, screenX,
-                screenY, 0.0F, 1000.0F, 3000.0F);
+            Matrix4f projection = Matrix4f.orthographic(0.0F, screenX,
+                0.0F, screenY, 1000.0F, 3000.0F);
             RenderSystem.setProjectionMatrix(projection);
 
             RenderSystem.getModelViewStack().pushPose();

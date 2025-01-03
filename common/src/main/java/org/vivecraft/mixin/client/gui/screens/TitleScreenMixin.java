@@ -44,27 +44,25 @@ public abstract class TitleScreenMixin extends Screen {
 
     @Unique
     private void vivecraft$addVRModeButton() {
-        this.vivecraft$vrModeButton = new Button.Builder(Component.translatable("vivecraft.gui.vr",
-            VRState.VR_ENABLED ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF), (button) -> {
+        this.vivecraft$vrModeButton = new Button(
+            this.width / 2 + 104, this.height / 4 + 72, 56, 20,
+            Component.translatable("vivecraft.gui.vr",
+                VRState.VR_ENABLED ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF), (button) -> {
             VRState.VR_ENABLED = !VRState.VR_ENABLED;
             ClientDataHolderVR.getInstance().vrSettings.vrEnabled = VRState.VR_ENABLED;
             ClientDataHolderVR.getInstance().vrSettings.saveOptions();
 
             button.setMessage(Component.translatable("vivecraft.gui.vr",
                 VRState.VR_ENABLED ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF));
-        })
-            .size(56, 20)
-            .pos(this.width / 2 + 104, this.height / 4 + 72)
-            .build();
+        });
         this.vivecraft$vrModeButton.visible = ClientDataHolderVR.getInstance().vrSettings.vrToggleButtonEnabled;
 
         this.addRenderableWidget(this.vivecraft$vrModeButton);
 
-        this.vivecraft$updateButton = new Button.Builder(Component.translatable("vivecraft.gui.update"),
-            (button) -> this.minecraft.setScreen(new UpdateScreen()))
-            .size(56, 20)
-            .pos(this.width / 2 + 104, this.height / 4 + 96)
-            .build();
+        this.vivecraft$updateButton = new Button(
+            this.width / 2 + 104, this.height / 4 + 96, 56, 20,
+            Component.translatable("vivecraft.gui.update"),
+            (button) -> this.minecraft.setScreen(new UpdateScreen()));
 
         this.vivecraft$updateButton.visible = UpdateChecker.HAS_UPDATE;
 

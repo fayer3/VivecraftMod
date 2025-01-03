@@ -9,9 +9,9 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.blocks.BlockInput;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
+import net.minecraft.core.Registry;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -262,7 +262,7 @@ public class ServerUtil {
                     .then(Commands.argument("block", BlockStateArgument.block(buildContext))
                         .executes(context -> {
                             try {
-                                String newValue = BuiltInRegistries.BLOCK.getKey(
+                                String newValue = Registry.BLOCK.getKey(
                                     context.getArgument("block", BlockInput.class).getState().getBlock()).toString();
                                 List list = listConfig.get();
                                 list.add(newValue);
@@ -386,7 +386,8 @@ public class ServerUtil {
      * @param direction direction ot spawn the particles to
      */
     public static void spawnParticlesDirection(ServerLevel level, Vector3f color, Vec3 position, Vector3f direction) {
-        ParticleOptions particle = new DustParticleOptions(color, 0.25F);
+        ParticleOptions particle = new DustParticleOptions(new com.mojang.math.Vector3f(color.x, color.y, color.z),
+            0.25F);
         for (int i = 0; i < 5; i++) {
             Vector3f offset = direction.mul(0.25F / 4F * i, new Vector3f());
             level.sendParticles(particle,

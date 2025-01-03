@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -21,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Triple;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
@@ -171,7 +171,8 @@ public abstract class GameRendererVRMixin
         if (!VRState.VR_RUNNING) {
             return original.call(instance, partialTick);
         } else {
-            return new Vec3(vivecraft$DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getDirection());
+            return MathUtils.toMcVec3(
+                vivecraft$DATA_HOLDER.vrPlayer.vrdata_world_render.getController(0).getDirection());
         }
     }
 
@@ -201,9 +202,9 @@ public abstract class GameRendererVRMixin
         }
     }
 
-    @WrapOperation(method = "getProjectionMatrix", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;setPerspective(FFFF)Lorg/joml/Matrix4f;", remap = false), remap = true)
+    @WrapOperation(method = "getProjectionMatrix", at = @At(value = "INVOKE", target = "Lcom/mojang/math/Matrix4f;perspective(DFFF)Lcom/mojang/math/Matrix4f;"))
     private Matrix4f vivecraft$customProjectionMatrix(
-        Matrix4f instance, float fovy, float aspect, float zNear, float zFar, Operation<Matrix4f> original)
+        double fovy, float aspect, float zNear, float zFar, Operation<Matrix4f> original)
     {
         if (VRState.VR_RUNNING) {
             zNear = vivecraft$MIN_CLIP_DISTANCE;
@@ -230,14 +231,14 @@ public abstract class GameRendererVRMixin
             };
 
             fovy = switch (vivecraft$DATA_HOLDER.currentPass) {
-                case THIRD -> Mth.DEG_TO_RAD * vivecraft$DATA_HOLDER.vrSettings.mixedRealityFov;
-                case CAMERA -> Mth.DEG_TO_RAD * vivecraft$DATA_HOLDER.vrSettings.handCameraFov;
-                case SCOPEL, SCOPER -> Mth.DEG_TO_RAD * (70F / 8F);
+                case THIRD -> vivecraft$DATA_HOLDER.vrSettings.mixedRealityFov;
+                case CAMERA -> vivecraft$DATA_HOLDER.vrSettings.handCameraFov;
+                case SCOPEL, SCOPER -> 70F / 8F;
                 default -> fovy;
             };
         }
 
-        Matrix4f proj = original.call(instance, fovy, aspect, zNear, zFar);
+        Matrix4f proj = original.call(fovy, aspect, zNear, zFar);
 
         if (VRState.VR_RUNNING && vivecraft$DATA_HOLDER.currentPass == RenderPass.THIRD) {
             this.vivecraft$thirdPassProjectionMatrix = proj;
@@ -408,9 +409,9 @@ public abstract class GameRendererVRMixin
         }
     }
 
-    @WrapOperation(method = "renderItemActivationAnimation", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V"))
+    @WrapOperation(method = "renderItemActivationAnimation", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(DDD)V"))
     private void vivecraft$noTranslateItemInVR(
-        PoseStack instance, float x, float y, float z, Operation<Void> original)
+        PoseStack instance, double x, double y, double z, Operation<Void> original)
     {
         if (RenderPassType.isVanilla()) {
             original.call(instance, x, y, z);
@@ -512,7 +513,9 @@ public abstract class GameRendererVRMixin
     @Override
     @Unique
     public void vivecraft$setupRVE() {
-        if (this.vivecraft$cached) {
+        if (this.vivecraft$cached &&
+            !(ImmersivePortalsHelper.isLoaded() && ImmersivePortalsHelper.isRenderingPortal()))
+        {
             VRData.VRDevicePose eyePose = vivecraft$DATA_HOLDER.vrPlayer.vrdata_world_render
                 .getEye(vivecraft$DATA_HOLDER.currentPass);
             Vec3 eye = eyePose.getPosition();
@@ -539,7 +542,9 @@ public abstract class GameRendererVRMixin
     @Override
     @Unique
     public void vivecraft$cacheRVEPos(Entity entity) {
-        if (this.minecraft.getCameraEntity() != null && !this.vivecraft$cached) {
+        if (this.minecraft.getCameraEntity() != null && !this.vivecraft$cached &&
+            !(ImmersivePortalsHelper.isLoaded() && ImmersivePortalsHelper.isRenderingPortal()))
+        {
             this.vivecraft$rveX = entity.getX();
             this.vivecraft$rveY = entity.getY();
             this.vivecraft$rveZ = entity.getZ();
@@ -566,7 +571,9 @@ public abstract class GameRendererVRMixin
     @Override
     @Unique
     public void vivecraft$restoreRVEPos(Entity entity) {
-        if (entity != null) {
+        if (entity != null &&
+            !(ImmersivePortalsHelper.isLoaded() && ImmersivePortalsHelper.isRenderingPortal()))
+        {
             entity.setPosRaw(this.vivecraft$rveX, this.vivecraft$rveY, this.vivecraft$rveZ);
             entity.xOld = this.vivecraft$rvelastX;
             entity.yOld = this.vivecraft$rvelastY;

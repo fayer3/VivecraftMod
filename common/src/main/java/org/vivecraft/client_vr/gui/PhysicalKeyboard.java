@@ -435,7 +435,7 @@ public class PhysicalKeyboard {
 
     private void drawBox(BufferBuilder buf, AABB box, RGBAColor color, PoseStack poseStack) {
         // Alright let's draw a box
-        Matrix4f matrix = poseStack.last().pose();
+        com.mojang.math.Matrix4f matrix = poseStack.last().pose();
         float minX = (float) box.minX, minY = (float) box.minY, minZ = (float) box.minZ;
         float maxX = (float) box.maxX, maxY = (float) box.maxY, maxZ = (float) box.maxZ;
 
@@ -530,6 +530,7 @@ public class PhysicalKeyboard {
         Vector3f center = this.getCenterPos();
         poseStack.translate(-center.x, -center.y, -center.z);
         RenderSystem.disableCull();
+        RenderSystem.disableTexture();
         RenderSystem.enableBlend();
 
         if (this.easterEggActive) {
@@ -604,6 +605,7 @@ public class PhysicalKeyboard {
         tesselator.end();
 
         RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.enableTexture();
 
         // Start building vertices for text
         MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(tesselator.getBuilder());
@@ -614,7 +616,7 @@ public class PhysicalKeyboard {
             poseStack.translate(label.getB().x, label.getB().y, label.getB().z);
             poseStack.scale(textScale, textScale, 1.0F);
             font.drawInBatch(label.getA(), 0.0F, 0.0F, 0xFFFFFFFF, false, poseStack.last().pose(), bufferSource,
-                Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT, font.isBidirectional());
+                false, 0, LightTexture.FULL_BRIGHT, font.isBidirectional());
             poseStack.popPose();
         }
 

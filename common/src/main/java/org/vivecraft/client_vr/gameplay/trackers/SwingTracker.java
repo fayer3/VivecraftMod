@@ -4,8 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -104,7 +102,6 @@ public class SwingTracker extends Tracker {
             item == Items.STICK ||
             item == Items.DEBUG_STICK ||
             item instanceof FlintAndSteelItem ||
-            item instanceof BrushItem ||
             item.getDefaultInstance().is(ItemTags.VIVECRAFT_TOOLS);
     }
 
@@ -251,7 +248,7 @@ public class SwingTracker extends Tracker {
                     continue;
                 }
 
-                BlockPos blockpos = BlockPos.containing(this.miningPoint[i]);
+                BlockPos blockpos = new BlockPos(this.miningPoint[i]);
                 BlockState blockstate = this.mc.level.getBlockState(blockpos);
 
                 boolean mineableByItem = this.dh.vrSettings.swordBlockCollision &&
@@ -317,15 +314,6 @@ public class SwingTracker extends Tracker {
                                 this.mc.gameMode.useItem(player,
                                     c == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND);
                             }
-                        }
-                        // roomscale brushes
-                        else if (isHand && (item instanceof BrushItem /*|| itemstack.is(ItemTags.VIVECRAFT_BRUSHES*/)) {
-                            ((BrushItem) item).spawnDustParticles(player.level, blockHit, blockstate,
-                                player.getViewVector(0.0F));
-                            player.level.playSound(player, blockHit.getBlockPos(),
-                                SoundEvents.BRUSH_BRUSHING, SoundSource.PLAYERS);
-                            this.mc.gameMode.useItemOn(player,
-                                c == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND, blockHit);
                         }
                         // roomscale noteblocks
                         else if (blockstate.getBlock() instanceof NoteBlock ||

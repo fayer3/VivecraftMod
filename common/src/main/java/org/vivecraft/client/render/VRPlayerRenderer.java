@@ -89,13 +89,11 @@ public class VRPlayerRenderer extends PlayerRenderer {
             if (type == ModelType.SPLIT_ARMS) {
                 this.addLayer(new VRArmorLayer<>(this,
                     new VRArmorModel_WithArms<>(VRArmorLayer.VR_ARMOR_DEF_ARMS_INNER.bakeRoot()),
-                    new VRArmorModel_WithArms<>(VRArmorLayer.VR_ARMOR_DEF_ARMS_OUTER.bakeRoot()),
-                    context.getModelManager()));
+                    new VRArmorModel_WithArms<>(VRArmorLayer.VR_ARMOR_DEF_ARMS_OUTER.bakeRoot())));
             } else {
                 this.addLayer(new VRArmorLayer<>(this,
                     new VRArmorModel_WithArmsLegs<>(VRArmorLayer.VR_ARMOR_DEF_ARMS_LEGS_INNER.bakeRoot()),
-                    new VRArmorModel_WithArmsLegs<>(VRArmorLayer.VR_ARMOR_DEF_ARMS_LEGS_OUTER.bakeRoot()),
-                    context.getModelManager()));
+                    new VRArmorModel_WithArmsLegs<>(VRArmorLayer.VR_ARMOR_DEF_ARMS_LEGS_OUTER.bakeRoot())));
             }
         }
     }

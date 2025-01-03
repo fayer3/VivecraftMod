@@ -27,8 +27,8 @@ public class ModelUtils {
         // some mods remove the base parts
         if (source.cubes.isEmpty()) return;
 
-        copyUV(source.cubes.get(0).polygons[1], target.cubes.get(0).polygons[1]);
-        copyUV(source.cubes.get(0).polygons[1], target.cubes.get(0).polygons[0]);
+        copyUV(source.cubes.get(0).polygons[3], target.cubes.get(0).polygons[3]);
+        copyUV(source.cubes.get(0).polygons[3], target.cubes.get(0).polygons[2]);
 
         // sodium has custom internal ModelPart geometry which also needs to be modified
         if (SodiumHelper.isLoaded()) {
@@ -49,10 +49,10 @@ public class ModelUtils {
         if (source.cubes.isEmpty()) return;
 
         // set bottom of target
-        copyUV(source.cubes.get(0).polygons[1], target.cubes.get(0).polygons[1]);
+        copyUV(source.cubes.get(0).polygons[3], target.cubes.get(0).polygons[3]);
         // set those to the top of the source
-        copyUV(source.cubes.get(0).polygons[0], target.cubes.get(0).polygons[0]);
-        copyUV(source.cubes.get(0).polygons[0], source.cubes.get(0).polygons[1]);
+        copyUV(source.cubes.get(0).polygons[2], target.cubes.get(0).polygons[2]);
+        copyUV(source.cubes.get(0).polygons[2], source.cubes.get(0).polygons[3]);
 
         // sodium has custom internal ModelPart geometry which also needs to be modified
         if (SodiumHelper.isLoaded()) {

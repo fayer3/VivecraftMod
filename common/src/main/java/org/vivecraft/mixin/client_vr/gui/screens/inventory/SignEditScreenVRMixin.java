@@ -1,6 +1,6 @@
 package org.vivecraft.mixin.client_vr.gui.screens.inventory;
 
-import net.minecraft.client.gui.screens.inventory.AbstractSignEditScreen;
+import net.minecraft.client.gui.screens.inventory.SignEditScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -9,8 +9,8 @@ import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler;
 
-@Mixin(AbstractSignEditScreen.class)
-public class AbstractSignEditScreenVRMixin {
+@Mixin(SignEditScreen.class)
+public class SignEditScreenVRMixin {
 
     @Inject(method = "init", at = @At("HEAD"))
     private void vivecraft$showOverlay(CallbackInfo ci) {

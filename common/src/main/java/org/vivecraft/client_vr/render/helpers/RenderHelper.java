@@ -3,7 +3,8 @@ package org.vivecraft.client_vr.render.helpers;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Axis;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.Screen;
@@ -16,8 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL30C;
@@ -57,10 +56,11 @@ public class RenderHelper {
      */
     public static Matrix4f getVRModelView(RenderPass renderPass) {
         if (renderPass == RenderPass.CENTER && DATA_HOLDER.vrSettings.displayMirrorCenterSmooth > 0.0F) {
-            return new Matrix4f().rotation(MCVR.get().hmdRotHistory
-                .averageRotation(DATA_HOLDER.vrSettings.displayMirrorCenterSmooth));
+            return MathUtils.toMcMat4(new org.joml.Matrix4f().rotation(MCVR.get().hmdRotHistory
+                .averageRotation(DATA_HOLDER.vrSettings.displayMirrorCenterSmooth)));
         } else {
-            return DATA_HOLDER.vrPlayer.vrdata_world_render.getEye(renderPass).getMatrix().transpose();
+            return MathUtils.toMcMat4(
+                DATA_HOLDER.vrPlayer.vrdata_world_render.getEye(renderPass).getMatrix().transpose());
         }
     }
 
@@ -72,7 +72,7 @@ public class RenderHelper {
      */
     public static void applyVRModelView(RenderPass renderPass, PoseStack poseStack) {
         Matrix4f modelView = getVRModelView(renderPass);
-        poseStack.last().pose().mul(modelView);
+        poseStack.last().pose().multiply(modelView);
         poseStack.last().normal().mul(new Matrix3f(modelView));
     }
 
@@ -182,15 +182,16 @@ public class RenderHelper {
             TelescopeTracker.isTelescope(MC.player.getUseItem()) &&
             TelescopeTracker.isTelescope(c == 0 ? MC.player.getMainHandItem() : MC.player.getOffhandItem()))
         {
-            poseStack.mulPoseMatrix(DATA_HOLDER.vrPlayer.vrdata_world_render.hmd.getMatrix().invert().transpose());
-            poseStack.mulPose(Axis.XP.rotationDegrees(90F));
+            poseStack.mulPoseMatrix(
+                MathUtils.toMcMat4(DATA_HOLDER.vrPlayer.vrdata_world_render.hmd.getMatrix().invert().transpose()));
+            poseStack.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(90F));
             // move to the eye center, seems to be magic numbers that work for the vive at least
             poseStack.translate((c == (DATA_HOLDER.vrSettings.reverseHands ? 1 : 0) ? 0.075F : -0.075F) * sc,
                 -0.025F * sc,
                 0.0325F * sc);
         } else {
-            poseStack.mulPoseMatrix(
-                DATA_HOLDER.vrPlayer.vrdata_world_render.getController(c).getMatrix().invert().transpose());
+            poseStack.mulPoseMatrix(MathUtils.toMcMat4(
+                DATA_HOLDER.vrPlayer.vrdata_world_render.getController(c).getMatrix().invert().transpose()));
         }
 
         poseStack.scale(sc, sc, sc);
@@ -218,6 +219,7 @@ public class RenderHelper {
             POLY_CULL = true;
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
+            RenderSystem.disableTexture();
             // GlStateManager._disableLighting();
             RenderSystem.disableCull();
 
@@ -234,6 +236,7 @@ public class RenderHelper {
             }
 
             if (POLY_TEX) {
+                RenderSystem.enableTexture();
             }
 
             if (POLY_LIGHT) {
@@ -267,9 +270,9 @@ public class RenderHelper {
 
         double guiScale = maxGuiScale ? GuiHandler.GUI_SCALE_FACTOR_MAX : MC.getWindow().getGuiScale();
 
-        Matrix4f guiProjection = (new Matrix4f()).setOrtho(
+        Matrix4f guiProjection = Matrix4f.orthographic(
             0.0F, (float) (MC.getMainRenderTarget().width / guiScale),
-            (float) (MC.getMainRenderTarget().height / guiScale), 0.0F,
+            0.0F, (float) (MC.getMainRenderTarget().height / guiScale),
             1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(guiProjection);
 
@@ -316,7 +319,6 @@ public class RenderHelper {
 
         float size = 15.0F * Math.max(ClientDataHolderVR.getInstance().vrSettings.menuCrosshairScale,
             1.0F / (float) MC.getWindow().getGuiScale());
-        float halfSize = size * 0.5F;
 
         int x = (int) (mouseX - size * 0.5F + 1);
         int y = (int) (mouseY - size * 0.5F + 1);
@@ -327,10 +329,10 @@ public class RenderHelper {
 
         BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferBuilder.vertex(x - halfSize, y - halfSize, 0).uv(0, 0).endVertex();
-        bufferBuilder.vertex(x - halfSize, y + halfSize, 0).uv(0, 15F / 265F).endVertex();
-        bufferBuilder.vertex(x + halfSize, y + halfSize, 0).uv(15F / 265F, 15F / 265F).endVertex();
-        bufferBuilder.vertex(x + halfSize, y - halfSize, 0).uv(15F / 265F, 0).endVertex();
+        bufferBuilder.vertex(x, y, 0).uv(0, 0).endVertex();
+        bufferBuilder.vertex(x, y + size, 0).uv(0, 15F / 265F).endVertex();
+        bufferBuilder.vertex(x + size, y + size, 0).uv(15F / 265F, 15F / 265F).endVertex();
+        bufferBuilder.vertex(x + size, y, 0).uv(15F / 265F, 0).endVertex();
         BufferUploader.drawWithShader(bufferBuilder.end());
 
         RenderSystem.defaultBlendFunc();
@@ -457,11 +459,11 @@ public class RenderHelper {
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
 
         // store old lights
-        Vector3f light0Old = RenderSystemAccessor.getShaderLightDirections()[0];
-        Vector3f light1Old = RenderSystemAccessor.getShaderLightDirections()[1];
+        com.mojang.math.Vector3f light0Old = RenderSystemAccessor.getShaderLightDirections()[0];
+        com.mojang.math.Vector3f light1Old = RenderSystemAccessor.getShaderLightDirections()[1];
 
         // set lights to front
-        RenderSystem.setShaderLights(new Vector3f(0, 0, 1), new Vector3f(0, 0, 1));
+        RenderSystem.setShaderLights(new com.mojang.math.Vector3f(0, 0, 1), new com.mojang.math.Vector3f(0, 0, 1));
         RenderSystem.setupShaderLights(RenderSystem.getShader());
 
         bufferbuilder.vertex(matrix, -sizeX, -sizeY, 0)

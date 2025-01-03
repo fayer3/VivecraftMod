@@ -53,7 +53,7 @@ public class ServerVivePlayer {
                 default -> this.vrPlayerState.mainHand();
             };
 
-            return new Vec3(limbPose.orientation().transform(direction, new Vector3f()));
+            return MathUtils.toMcVec3(limbPose.orientation().transform(direction, new Vector3f()));
         } else {
             return this.player.getLookAngle();
         }
@@ -84,7 +84,7 @@ public class ServerVivePlayer {
      */
     public Vec3 getHMDDir() {
         if (this.vrPlayerState != null) {
-            return new Vec3(this.vrPlayerState.hmd().orientation().transform(MathUtils.BACK, new Vector3f()));
+            return MathUtils.toMcVec3(this.vrPlayerState.hmd().orientation().transform(MathUtils.BACK, new Vector3f()));
         } else {
             return this.player.getLookAngle();
         }

@@ -2,7 +2,6 @@ package org.vivecraft.client.gui.screens;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Axis;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -102,7 +101,7 @@ public class FBTCalibrationScreen extends Screen {
             Component.translatable("vivecraft.messages.fbtcalibration"), true, this.font);
 
         this.unlabeledTrackersWarningText = new MultilineComponent(this.width / 2,
-            this.calibrationText.getY() + this.calibrationText.getHeight(), 400,
+            this.calibrationText.y + this.calibrationText.getHeight(), 400,
             Component.translatable("vivecraft.messages.fbtcalibration.unlabeledTrackers"), true, this.font);
         this.unlabeledTrackersWarningText.visible = this.usingUnlabeledTrackers;
 
@@ -110,17 +109,13 @@ public class FBTCalibrationScreen extends Screen {
             Component.translatable("vivecraft.messages.fbtcalibration.unlabeledTrackersConfirm"), true, this.font);
         this.unlabeledTrackersConfirmationText.visible = false;
 
-        this.resetButton = Button.builder(Component.translatable("controls.reset"), p -> reset())
-            .pos(this.width / 2 - 75, this.height - 54)
-            .width(150)
-            .build();
+        this.resetButton = new Button(this.width / 2 - 75, this.height - 54, 150, 20,
+            Component.translatable("controls.reset"), p -> reset());
         this.resetButton.visible = this.calibrated;
 
-        this.cancelButton = Button.builder(Component.translatable(this.calibrated ? "vivecraft.gui.ok" : "gui.cancel"),
-                p -> this.minecraft.setScreen(this.parent))
-            .pos(this.width / 2 - 75, this.height - 32)
-            .width(150)
-            .build();
+        this.cancelButton = new Button(this.width / 2 - 75, this.height - 32, 150, 20,
+            Component.translatable(this.calibrated ? "vivecraft.gui.ok" : "gui.cancel"),
+            p -> this.minecraft.setScreen(this.parent));
 
         this.addRenderableWidget(this.calibrationText);
         this.addRenderableWidget(this.unlabeledTrackersWarningText);
@@ -185,7 +180,7 @@ public class FBTCalibrationScreen extends Screen {
             float min = Math.min(this.width, this.height) / (4F * 16F);
             poseStack.translate(this.width / 2F, this.height - 32F, 0);
             poseStack.scale(min, -min, min);
-            poseStack.mulPose(Axis.YP.rotation(Mth.PI));
+            poseStack.mulPose(com.mojang.math.Vector3f.YP.rotation(Mth.PI));
 
             BufferBuilder builder = Tesselator.getInstance().getBuilder();
 
@@ -225,7 +220,7 @@ public class FBTCalibrationScreen extends Screen {
             BufferUploader.drawWithShader(builder.end());
 
             if (VRState.VR_RUNNING) {
-                poseStack.mulPose(Axis.YP.rotation(
+                poseStack.mulPose(com.mojang.math.Vector3f.YP.rotation(
                     this.yaw - ClientDataHolderVR.getInstance().vrPlayer.vrdata_room_post.hmd.getYawRad()));
             }
 

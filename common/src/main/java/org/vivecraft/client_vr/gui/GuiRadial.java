@@ -67,7 +67,9 @@ public class GuiRadial extends TwoHandedScreen {
             int index = i;
 
             if (!"?".equals(label)) {
-                this.addRenderableWidget(new Button.Builder(Component.translatable(label),
+                this.addRenderableWidget(new Button(
+                    centerX + x - buttonWidth / 2, centerY + y - 10, buttonWidth, 20,
+                    Component.translatable(label),
                     (p) -> {
                         VRInputAction vrinputaction = MCVR.get().getInputAction(this.arr[index]);
 
@@ -75,10 +77,7 @@ public class GuiRadial extends TwoHandedScreen {
                             vrinputaction.pressBinding();
                             vrinputaction.unpressBinding(2);
                         }
-                    })
-                    .size(buttonWidth, 20)
-                    .pos(centerX + x - buttonWidth / 2, centerY + y - 10)
-                    .build());
+                    }));
             }
         }
     }

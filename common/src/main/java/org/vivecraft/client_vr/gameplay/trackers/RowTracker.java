@@ -137,7 +137,7 @@ public class RowTracker extends Tracker {
             Mth.DEG_TO_RAD * -(boat.getYRot() % 360.0F),
             Mth.DEG_TO_RAD * boat.getXRot(),
             0.0F).normalize();
-        return boat.position().add(new Vec3(boatRot.transform(attachmentPoint)));
+        return boat.position().add(MathUtils.toMcVec3(boatRot.transform(attachmentPoint)));
     }
 
     private Vec3 getAbsArmPos(int side) {
@@ -149,7 +149,7 @@ public class RowTracker extends Tracker {
     private boolean isPaddleUnderWater(int paddle, Boat boat) {
         Vec3 attachAbs = this.getAttachmentPoint(paddle, boat);
         Vec3 armToPaddle = this.getArmToPaddleVector(paddle, boat).normalize();
-        BlockPos blockPos = BlockPos.containing(attachAbs.add(armToPaddle));
+        BlockPos blockPos = new BlockPos(attachAbs.add(armToPaddle));
         return boat.level.getBlockState(blockPos).getMaterial().isLiquid();
     }
 }

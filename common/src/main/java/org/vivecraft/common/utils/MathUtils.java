@@ -1,11 +1,11 @@
 package org.vivecraft.common.utils;
 
+import com.mojang.math.Quaternion;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
-import org.joml.Vector3f;
-import org.joml.Vector3fc;
+import org.joml.*;
+
+import java.lang.Math;
 
 public class MathUtils {
 
@@ -32,6 +32,44 @@ public class MathUtils {
      */
     public static Vector3f subtractToVector3f(Vec3 a, Vec3 b) {
         return new Vector3f((float) (a.x - b.x), (float) (a.y - b.y), (float) (a.z - b.z));
+    }
+
+    /**
+     * @return {@code v} as a Vec3
+     */
+    public static Vec3 toMcVec3(Vector3f v) {
+        return new Vec3(v.x, v.y, v.z);
+    }
+
+    /**
+     * @return {@code m} as a Minecraft Matrix4f
+     */
+    public static com.mojang.math.Matrix4f toMcMat4(Matrix4f m) {
+        com.mojang.math.Matrix4f mcMat = new com.mojang.math.Matrix4f();
+        mcMat.m00 = m.m00();
+        mcMat.m01 = m.m10();
+        mcMat.m02 = m.m20();
+        mcMat.m03 = m.m30();
+        mcMat.m10 = m.m01();
+        mcMat.m11 = m.m11();
+        mcMat.m12 = m.m21();
+        mcMat.m13 = m.m31();
+        mcMat.m20 = m.m02();
+        mcMat.m21 = m.m12();
+        mcMat.m22 = m.m22();
+        mcMat.m23 = m.m32();
+        mcMat.m30 = m.m03();
+        mcMat.m31 = m.m13();
+        mcMat.m32 = m.m23();
+        mcMat.m33 = m.m33();
+        return mcMat;
+    }
+
+    /**
+     * @return {@code v} as a Vec3
+     */
+    public static Quaternion toMcQuat(Quaternionf q) {
+        return new Quaternion(q.x, q.y, q.z, q.w);
     }
 
     public static double lerpMod(double from, double to, double percent, double mod) {

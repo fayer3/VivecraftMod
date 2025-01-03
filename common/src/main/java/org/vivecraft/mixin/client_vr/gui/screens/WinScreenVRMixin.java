@@ -1,9 +1,12 @@
 package org.vivecraft.mixin.client_vr.gui.screens;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.WinScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,5 +24,10 @@ public class WinScreenVRMixin {
         } else {
             original.call(sourceFactor, destFactor);
         }
+    }
+
+    @WrapWithCondition(method = "respawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;setScreen(Lnet/minecraft/client/gui/screens/Screen;)V"))
+    private boolean vivecraft$dontClearScreenInLevel(Minecraft instance, Screen guiScreen) {
+        return Minecraft.getInstance().level == null;
     }
 }

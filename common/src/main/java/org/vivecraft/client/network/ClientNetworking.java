@@ -2,7 +2,7 @@ package org.vivecraft.client.network;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -276,7 +276,7 @@ public class ClientNetworking {
 
                 if (packet.blocks() != null) {
                     for (String blockId : packet.blocks()) {
-                        Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation(blockId));
+                        Block block = Registry.BLOCK.get(new ResourceLocation(blockId));
 
                         // if the block is not there AIR is returned
                         if (block != Blocks.AIR) {

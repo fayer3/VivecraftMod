@@ -23,6 +23,7 @@ import org.vivecraft.client_vr.render.MirrorNotification;
 import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.client_vr.render.VRShaders;
 import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.common.utils.MathUtils;
 import org.vivecraft.mod_compat_vr.iris.IrisHelper;
 
 public class ShaderHelper {
@@ -327,7 +328,7 @@ public class ShaderHelper {
         // set uniforms
         VRShaders.MIXED_REALITY_PROJECTION_MATRIX_UNIFORM.set(
             ((GameRendererExtension) MC.gameRenderer).vivecraft$getThirdPassProjectionMatrix());
-        VRShaders.MIXED_REALITY_VIEW_MATRIX_UNIFORM.set(viewMatrix);
+        VRShaders.MIXED_REALITY_VIEW_MATRIX_UNIFORM.set(MathUtils.toMcMat4(viewMatrix));
 
         VRShaders.MIXED_REALITY_HMD_VIEW_POSITION_UNIFORM.set((float) camPlayer.x, (float) camPlayer.y,
             (float) camPlayer.z);

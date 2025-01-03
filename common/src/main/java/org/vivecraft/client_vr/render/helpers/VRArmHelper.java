@@ -126,7 +126,7 @@ public class VRArmHelper {
         if (MC.level != null) {
             // make the hands darker in dim places
             float light = (float) MC.level.getMaxLocalRawBrightness(
-                BlockPos.containing(DATA_HOLDER.vrPlayer.vrdata_world_render.hmd.getPosition()));
+                new BlockPos(DATA_HOLDER.vrPlayer.vrdata_world_render.hmd.getPosition()));
 
             int minLight = ShadersHelper.ShaderLight();
 
@@ -274,6 +274,7 @@ public class VRArmHelper {
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+            RenderSystem.disableTexture();
 
             // TP energy
             if (ClientNetworking.isLimitedSurvivalTeleport() && !DATA_HOLDER.vrPlayer.getFreeMove() &&
@@ -324,6 +325,7 @@ public class VRArmHelper {
                 }*/
             }
 
+            RenderSystem.enableTexture();
             RenderSystem.defaultBlendFunc();
         }
     }

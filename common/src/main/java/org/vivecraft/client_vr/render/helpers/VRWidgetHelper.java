@@ -6,6 +6,8 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -18,8 +20,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.vivecraft.client.utils.ClientUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -131,7 +131,7 @@ public class VRWidgetHelper {
         // orient and scale model
         poseStack.translate(widgetOffset.x, widgetOffset.y, widgetOffset.z);
 
-        Matrix4f rotation = DATA_HOLDER.vrPlayer.vrdata_world_render.getEye(renderPass).getMatrix();
+        Matrix4f rotation = MathUtils.toMcMat4(DATA_HOLDER.vrPlayer.vrdata_world_render.getEye(renderPass).getMatrix());
         poseStack.mulPoseMatrix(rotation);
         poseStack.last().normal().mul(new Matrix3f(rotation));
 
@@ -147,7 +147,7 @@ public class VRWidgetHelper {
         poseStack.translate(offsetX, offsetY, offsetZ);
 
         // lighting for the model
-        BlockPos blockpos = BlockPos.containing(
+        BlockPos blockpos = new BlockPos(
             DATA_HOLDER.vrPlayer.vrdata_world_render.getEye(renderPass).getPosition());
         int combinedLight = ClientUtils.getCombinedLightWithMin(MC.level, blockpos, 0);
 
@@ -184,7 +184,7 @@ public class VRWidgetHelper {
         // need to render this manually, because the uvs in the model are for the atlas texture, and not fullscreen
         for (BakedQuad bakedquad : MC.getModelManager().getModel(displayModel).getQuads(null, null, RANDOM)) {
             if (displayFaceFunc.apply(bakedquad.getDirection()) != DisplayFace.NONE &&
-                bakedquad.getSprite().contents().name().equals(TRANSPARENT_TEXTURE))
+                bakedquad.getSprite().getName().equals(TRANSPARENT_TEXTURE))
             {
                 int[] vertexList = bakedquad.getVertices();
                 boolean mirrored = displayFaceFunc.apply(bakedquad.getDirection()) == DisplayFace.MIRROR;

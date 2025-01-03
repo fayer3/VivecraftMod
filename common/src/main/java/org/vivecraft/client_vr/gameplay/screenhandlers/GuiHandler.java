@@ -8,8 +8,8 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.AbstractSignEditScreen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
+import net.minecraft.client.gui.screens.inventory.SignEditScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
@@ -424,7 +424,7 @@ public class GuiHandler {
         if ((previousGuiScreen == null && newScreen != null) ||
             newScreen instanceof ChatScreen ||
             newScreen instanceof BookEditScreen ||
-            newScreen instanceof AbstractSignEditScreen)
+            newScreen instanceof SignEditScreen)
         {
             // check if screen is a container screen
             // and if the pointed at block is the same that was last interacted with
@@ -468,7 +468,7 @@ public class GuiHandler {
 
                 if (newScreen instanceof ChatScreen) {
                     offset.set(0.0F, 0.5F, -2.0F);
-                } else if (newScreen instanceof BookEditScreen || newScreen instanceof AbstractSignEditScreen) {
+                } else if (newScreen instanceof BookEditScreen || newScreen instanceof SignEditScreen) {
                     offset.set(0.0F, 0.25F, -2.0F);
                 }
 
@@ -679,7 +679,7 @@ public class GuiHandler {
         poseStack.translate(translation.x, translation.y, translation.z);
 
         // offset from eye to gui pos
-        poseStack.mulPoseMatrix(guirot);
+        poseStack.mulPoseMatrix(MathUtils.toMcMat4(guirot));
         poseStack.translate(guilocal.x, guilocal.y, guilocal.z);
 
         float thescale = scale * DH.vrPlayer.vrdata_world_render.worldScale;

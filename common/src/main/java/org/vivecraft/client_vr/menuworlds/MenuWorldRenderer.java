@@ -5,7 +5,8 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Axis;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
 import net.minecraft.Util;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.GraphicsStatus;
@@ -39,8 +40,6 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.client.extensions.BufferBuilderExtension;
@@ -196,7 +195,7 @@ public class MenuWorldRenderer {
         poseStack.pushPose();
 
         // rotate World
-        poseStack.mulPose(Axis.YP.rotationDegrees(this.worldRotation));
+        poseStack.mulPose(Vector3f.YP.rotationDegrees(this.worldRotation));
 
         // small offset to center on source block, and add the partial block offset, this shouldn't be too noticeable on the fog
         poseStack.translate(-0.5F, -Mth.frac(this.blockAccess.getGround()), -0.5F);
@@ -407,7 +406,7 @@ public class MenuWorldRenderer {
                         FluidState fluidState = state.getFluidState();
                         if (!fluidState.isEmpty() && ItemBlockRenderTypes.getRenderLayer(fluidState) == layer) {
                             for (var sprite : Xplat.getFluidTextures(this.blockAccess, pos, fluidState)) {
-                                if (sprite != null && sprite.contents().getUniqueFrames().sum() > 1) {
+                                if (sprite != null && sprite.getUniqueFrames().sum() > 1) {
                                     this.animatedSprites.add(sprite);
                                 }
                             }
@@ -421,7 +420,7 @@ public class MenuWorldRenderer {
                         {
                             for (var quad : this.mc.getModelManager().getBlockModelShaper().getBlockModel(state)
                                 .getQuads(state, null, randomSource)) {
-                                if (quad.getSprite().contents().getUniqueFrames().sum() > 1) {
+                                if (quad.getSprite().getUniqueFrames().sum() > 1) {
                                     this.animatedSprites.add(quad.getSprite());
                                 }
                             }
@@ -690,7 +689,7 @@ public class MenuWorldRenderer {
             RenderSystem.setShader(GameRenderer::getPositionShader);
             this.fogRenderer.setupFog(FogRenderer.FogMode.FOG_SKY);
             ShaderInstance skyShader = RenderSystem.getShader();
-            // RenderSystem.disableTexture();
+            RenderSystem.disableTexture();
 
             Vec3 skyColor = this.getSkyColor(position);
 
@@ -724,14 +723,14 @@ public class MenuWorldRenderer {
             } catch (Exception ignore) {}
 
             if (sunriseColor != null && (!OptifineHelper.isOptifineLoaded() || OptifineHelper.isSunMoonEnabled())) {
-                // RenderSystem.disableTexture();
+                RenderSystem.disableTexture();
                 RenderSystem.setShader(GameRenderer::getPositionColorShader);
                 RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
                 poseStack.pushPose();
 
-                poseStack.mulPose(Axis.XP.rotationDegrees(90.0f));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(Mth.sin(this.getSunAngle()) < 0.0f ? 180.0f : 0.0f));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(90.0f));
+                poseStack.mulPose(Vector3f.XP.rotationDegrees(90.0f));
+                poseStack.mulPose(Vector3f.ZP.rotationDegrees(Mth.sin(this.getSunAngle()) < 0.0f ? 180.0f : 0.0f));
+                poseStack.mulPose(Vector3f.ZP.rotationDegrees(90.0f));
 
                 Matrix4f modelView = poseStack.last().pose();
                 bufferBuilder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
@@ -754,7 +753,7 @@ public class MenuWorldRenderer {
                 poseStack.popPose();
             }
 
-            // RenderSystem.enableTexture();
+            RenderSystem.enableTexture();
 
             RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE,
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
@@ -762,7 +761,7 @@ public class MenuWorldRenderer {
 
             float f10 = 1.0F - getRainLevel();
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, f10);
-            poseStack.mulPose(Axis.YP.rotationDegrees(-90.0f));
+            poseStack.mulPose(Vector3f.YP.rotationDegrees(-90.0f));
             Matrix4f modelView = poseStack.last().pose();
 
             // if (OptifineHelper.isOptifineLoaded()) {
@@ -770,7 +769,7 @@ public class MenuWorldRenderer {
             // CustomSky.renderSky(this.world, poseStack, ClientUtils.getCurrentPartialTick());
             // }
 
-            poseStack.mulPose(Axis.XP.rotationDegrees(this.getTimeOfDay() * 360.0f));
+            poseStack.mulPose(Vector3f.XP.rotationDegrees(this.getTimeOfDay() * 360.0f));
 
             float size = 30.0F;
             if (!OptifineHelper.isOptifineLoaded() || OptifineHelper.isSunMoonEnabled()) {
@@ -802,7 +801,7 @@ public class MenuWorldRenderer {
                 BufferUploader.drawWithShader(bufferBuilder.end());
             }
 
-            // GlStateManager.disableTexture();
+            RenderSystem.disableTexture();
 
             float starBrightness = this.getStarBrightness() * f10;
 
@@ -823,7 +822,7 @@ public class MenuWorldRenderer {
             RenderSystem.defaultBlendFunc();
 
             poseStack.popPose();
-            // RenderSystem.disableTexture();
+            RenderSystem.disableTexture();
 
             double horizonDistance = position.y - this.blockAccess.getHorizon();
 
@@ -857,11 +856,11 @@ public class MenuWorldRenderer {
             for (int i = 0; i < 6; ++i) {
                 poseStack.pushPose();
                 switch (i) {
-                    case 1 -> poseStack.mulPose(Axis.XP.rotationDegrees(90.0f));
-                    case 2 -> poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f));
-                    case 3 -> poseStack.mulPose(Axis.XP.rotationDegrees(180.0f));
-                    case 4 -> poseStack.mulPose(Axis.ZP.rotationDegrees(90.0f));
-                    case 5 -> poseStack.mulPose(Axis.ZP.rotationDegrees(-90.0f));
+                    case 1 -> poseStack.mulPose(Vector3f.XP.rotationDegrees(90.0f));
+                    case 2 -> poseStack.mulPose(Vector3f.XP.rotationDegrees(-90.0f));
+                    case 3 -> poseStack.mulPose(Vector3f.XP.rotationDegrees(180.0f));
+                    case 4 -> poseStack.mulPose(Vector3f.ZP.rotationDegrees(90.0f));
+                    case 5 -> poseStack.mulPose(Vector3f.ZP.rotationDegrees(-90.0f));
                 }
 
                 Matrix4f modelView = poseStack.last().pose();
@@ -1192,7 +1191,7 @@ public class MenuWorldRenderer {
                 double s = (double) this.rainSizeZ[q] * 0.5;
                 mutableBlockPos.set(rainX, inY, rainZ);
                 Biome biome = this.blockAccess.getBiome(mutableBlockPos).value();
-                if (!biome.hasPrecipitation()) {
+                if (biome.getPrecipitation() == Biome.Precipitation.NONE) {
                     continue;
                 }
 
@@ -1209,10 +1208,6 @@ public class MenuWorldRenderer {
                 RandomSource randomSource = RandomSource.create(
                     rainX * rainX * 3121L + rainX * 45238971L ^ rainZ * rainZ * 418711L + rainZ * 13761L);
                 mutableBlockPos.setY(lower);
-                Biome.Precipitation precipitation = biome.getPrecipitationAt(mutableBlockPos);
-                if (precipitation == Biome.Precipitation.NONE) {
-                    continue;
-                }
 
                 mutableBlockPos.setY(rainY);
 
@@ -1226,7 +1221,7 @@ public class MenuWorldRenderer {
                 int skyLight = this.blockAccess.getBrightness(LightLayer.SKY, mutableBlockPos) << 4;
                 int blockLight = this.blockAccess.getBrightness(LightLayer.BLOCK, mutableBlockPos) << 4;
 
-                if (precipitation == Biome.Precipitation.RAIN) {
+                if (biome.warmEnoughToRain(mutableBlockPos)) {
                     if (count != 0) {
                         if (count >= 0) {
                             tesselator.end();
@@ -1242,7 +1237,7 @@ public class MenuWorldRenderer {
                             0x1F;
                     yOffset =
                         -((float) x + ClientUtils.getCurrentPartialTick()) / 32.0f * (3.0f + randomSource.nextFloat());
-                } else if (precipitation == Biome.Precipitation.SNOW) {
+                } else {
                     if (count != 1) {
                         if (count >= 0) {
                             tesselator.end();
@@ -1265,8 +1260,6 @@ public class MenuWorldRenderer {
                     // snow is brighter
                     skyLight = (skyLight * 3 + 240) / 4;
                     blockLight = (blockLight * 3 + 240) / 4;
-                } else {
-                    continue;
                 }
                 bufferBuilder
                     .vertex(localX - r, (double) upper - inY, localZ - s)
@@ -1574,7 +1567,8 @@ public class MenuWorldRenderer {
 			*/
             float nightVision = 0.0f;
 
-            Vector3f skylightColor = new Vector3f(skyLight, skyLight, 1.0f).lerp(new Vector3f(1.0f, 1.0f, 1.0f), 0.35f);
+            Vector3f skylightColor = new Vector3f(skyLight, skyLight, 1.0f);
+            skylightColor.lerp(new Vector3f(1.0f, 1.0f, 1.0f), 0.35f);
 
             Vector3f finalColor = new Vector3f();
             for (int i = 0; i < 16; ++i) {
@@ -1592,10 +1586,11 @@ public class MenuWorldRenderer {
 
                     if (this.dimensionInfo.forceBrightLightmap()) {
                         finalColor.lerp(new Vector3f(0.99f, 1.12f, 1.0f), 0.25f);
-                        finalColor.set(Mth.clamp(finalColor.x, 0.0f, 1.0f), Mth.clamp(finalColor.y, 0.0f, 1.0f),
-                            Mth.clamp(finalColor.z, 0.0f, 1.0f));
+                        finalColor.clamp(0.0f, 1.0f);
                     } else {
-                        finalColor.add(new Vector3f(skylightColor).mul(skyBrightness));
+                        Vector3f skylightColorCopy = skylightColor.copy();
+                        skylightColorCopy.mul(skyBrightness);
+                        finalColor.add(skylightColorCopy);
                         finalColor.lerp(new Vector3f(0.75f, 0.75f, 0.75f), 0.04f);
                         // no darkening from bosses
                         // if (getDarkenWorldAmount() > 0.0f) {
@@ -1617,17 +1612,15 @@ public class MenuWorldRenderer {
 							finalColor.add(-effectiveDarknessScale, -effectiveDarknessScale, -effectiveDarknessScale);
 						}
 						 */
-                        finalColor.set(Mth.clamp(finalColor.x, 0.0f, 1.0f), Mth.clamp(finalColor.y, 0.0f, 1.0f),
-                            Mth.clamp(finalColor.z, 0.0f, 1.0f));
+                        finalColor.clamp(0.0f, 1.0f);
                     }
 
                     float gamma = this.mc.options.gamma().get().floatValue();
-                    Vector3f vector3f5 = new Vector3f(this.notGamma(finalColor.x), this.notGamma(finalColor.y),
-                        this.notGamma(finalColor.z));
+                    Vector3f vector3f5 = finalColor.copy();
+                    vector3f5.map(this::notGamma);
                     finalColor.lerp(vector3f5, Math.max(0.0f, gamma /*- darknessGamma*/));
                     finalColor.lerp(new Vector3f(0.75f, 0.75f, 0.75f), 0.04f);
-                    finalColor.set(Mth.clamp(finalColor.x, 0.0f, 1.0f), Mth.clamp(finalColor.y, 0.0f, 1.0f),
-                        Mth.clamp(finalColor.z, 0.0f, 1.0f));
+                    finalColor.clamp(0.0f, 1.0f);
                     finalColor.mul(255.0f);
 
                     int r = (int) finalColor.x();
@@ -1668,7 +1661,7 @@ public class MenuWorldRenderer {
         }
 
         Vec3 pos = getEyePos();
-        BlockPos blockpos = BlockPos.containing(pos);
+        BlockPos blockpos = new BlockPos(pos);
         FluidState fluidstate = this.blockAccess.getFluidState(blockpos);
         return isFluidTagged(fluidstate, tagIn) &&
             pos.y < (double) ((float) blockpos.getY() + fluidstate.getAmount() + 0.11111111F);
@@ -1885,7 +1878,7 @@ public class MenuWorldRenderer {
 
         private void updateWaterFog(LevelReader levelIn) {
             long currentTime = Util.getMillis();
-            int waterFogColor = levelIn.getBiome(BlockPos.containing(this.menuWorldRenderer.getEyePos())).value()
+            int waterFogColor = levelIn.getBiome(new BlockPos(this.menuWorldRenderer.getEyePos())).value()
                 .getWaterFogColor();
 
             if (this.biomeChangedTime < 0L) {
@@ -1933,7 +1926,7 @@ public class MenuWorldRenderer {
                 fogEnd = 96.0f;
 
                 Holder<Biome> holder = this.menuWorldRenderer.blockAccess.getBiome(
-                    BlockPos.containing(this.menuWorldRenderer.getEyePos()));
+                    new BlockPos(this.menuWorldRenderer.getEyePos()));
                 if (holder.is(BiomeTags.HAS_CLOSER_WATER_FOG)) {
                     fogEnd *= 0.85f;
                 }
@@ -1966,7 +1959,7 @@ public class MenuWorldRenderer {
             } else if (this.menuWorldRenderer.areEyesInFluid(FluidTags.LAVA)) {
                 fogType = FogType.LAVA;
             } else if (this.menuWorldRenderer.blockAccess.getBlockState(
-                BlockPos.containing(this.menuWorldRenderer.getEyePos())).is(Blocks.POWDER_SNOW))
+                new BlockPos(this.menuWorldRenderer.getEyePos())).is(Blocks.POWDER_SNOW))
             {
                 fogType = FogType.POWDER_SNOW;
             }

@@ -37,25 +37,22 @@ public abstract class GuiVROptionsBase extends Screen {
     }
 
     protected void addDefaultButtons() {
-        this.addRenderableWidget(this.btnDone = new Button.Builder(Component.translatable("gui.back"), (p) -> {
-            if (!this.onDoneClicked()) {
-                this.dataHolder.vrSettings.saveOptions();
-                this.minecraft.setScreen(this.lastScreen);
-            }
-        })
-            .pos(this.width / 2 + 5, this.height - 30)
-            .size(150, 20)
-            .build());
+        this.addRenderableWidget(
+            this.btnDone = new Button(this.width / 2 + 5, this.height - 30, 150, 20,
+                Component.translatable("gui.back"), (p) -> {
+                if (!this.onDoneClicked()) {
+                    this.dataHolder.vrSettings.saveOptions();
+                    this.minecraft.setScreen(this.lastScreen);
+                }
+            }));
 
         this.addRenderableWidget(
-            this.btnDefaults = new Button.Builder(Component.translatable("vivecraft.gui.loaddefaults"), (p) -> {
+            this.btnDefaults = new Button(this.width / 2 - 155, this.height - 30, 150, 20,
+                Component.translatable("vivecraft.gui.loaddefaults"), (p) -> {
                 this.loadDefaults();
                 this.dataHolder.vrSettings.saveOptions();
                 this.reinit = true;
-            })
-                .pos(this.width / 2 - 155, this.height - 30)
-                .size(150, 20)
-                .build());
+            }));
     }
 
     protected boolean onDoneClicked() {
@@ -305,10 +302,6 @@ public abstract class GuiVROptionsBase extends Screen {
     private void renderTooltip(PoseStack poseStack, int mouseX, int mouseY) {
         GuiEventListener hover = null;
 
-        if (this.minecraft.getLastInputType().isKeyboard()) {
-            // only show focused tooltip when navigating with keyboard, so a click with the mouse removes it
-            hover = this.getFocused();
-        }
         // find active button
         if (hover == null) {
             for (GuiEventListener child : children()) {
@@ -368,7 +361,7 @@ public abstract class GuiVROptionsBase extends Screen {
     }
 
     private boolean isMouseOver(AbstractWidget widget, double mouseX, double mouseY) {
-        return widget.visible && mouseX >= widget.getX() && mouseY >= widget.getY() &&
-            mouseX < (widget.getX() + widget.getWidth()) && mouseY < (widget.getY() + widget.getHeight());
+        return widget.visible && mouseX >= widget.x && mouseY >= widget.y &&
+            mouseX < (widget.x + widget.getWidth()) && mouseY < (widget.y + widget.getHeight());
     }
 }

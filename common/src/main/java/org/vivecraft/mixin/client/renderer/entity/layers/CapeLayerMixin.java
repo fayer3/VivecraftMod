@@ -49,9 +49,9 @@ public abstract class CapeLayerMixin extends RenderLayer<AbstractClientPlayer, P
     }
     */
 
-    @WrapOperation(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/player/AbstractClientPlayer;FFFFFF)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V"))
+    @WrapOperation(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/player/AbstractClientPlayer;FFFFFF)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(DDD)V"))
     private void vivecraft$modifyOffset(
-        PoseStack poseStack, float x, float y, float z, Operation<Void> original,
+        PoseStack poseStack, double x, double y, double z, Operation<Void> original,
         @Local(argsOnly = true) AbstractClientPlayer player, @Local(argsOnly = true, ordinal = 2) float partialTick,
         @Share("xRot") LocalFloatRef xRotation, @Share("yRot") LocalFloatRef yRotation)
     {
@@ -85,7 +85,8 @@ public abstract class CapeLayerMixin extends RenderLayer<AbstractClientPlayer, P
 
             // no yaw, since we  need the vector to be player rotated anyway
             ModelUtils.modelToWorld(player, this.vivecraft$tempV, rotInfo, 0F, false, false, this.vivecraft$tempV);
-            original.call(poseStack, this.vivecraft$tempV.x, -this.vivecraft$tempV.y, -this.vivecraft$tempV.z);
+            original.call(poseStack, (double) this.vivecraft$tempV.x, (double) -this.vivecraft$tempV.y,
+                (double) -this.vivecraft$tempV.z);
         } else {
             original.call(poseStack, x, y, z);
         }
@@ -127,7 +128,7 @@ public abstract class CapeLayerMixin extends RenderLayer<AbstractClientPlayer, P
         return speedRot;
     }
 
-    @ModifyArg(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/player/AbstractClientPlayer;FFFFFF)V", at = @At(value = "INVOKE", target = "Lcom/mojang/math/Axis;rotationDegrees(F)Lorg/joml/Quaternionf;", ordinal = 2))
+    @ModifyArg(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/player/AbstractClientPlayer;FFFFFF)V", at = @At(value = "INVOKE", target = "Lcom/mojang/math/Vector3f;rotationDegrees(F)Lcom/mojang/math/Quaternion;", ordinal = 2))
     private float vivecraft$modifyYRotation(
         float yRot, @Local(argsOnly = true) AbstractClientPlayer player,
         @Share("yRot") LocalFloatRef yRotation)

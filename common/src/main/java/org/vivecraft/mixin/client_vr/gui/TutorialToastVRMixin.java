@@ -3,7 +3,6 @@ package org.vivecraft.mixin.client_vr.gui;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
@@ -27,7 +26,7 @@ public abstract class TutorialToastVRMixin implements Toast {
     @Final
     private Component message;
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiComponent;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V", shift = At.Shift.AFTER))
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/toasts/ToastComponent;blit(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIII)V", shift = At.Shift.AFTER))
     private void vivecraft$extendToast(
         PoseStack poseStack, ToastComponent toastComponent, long timeSinceLastVisible,
         CallbackInfoReturnable<Visibility> cir, @Share("offset") LocalRef<Integer> offset)
@@ -40,12 +39,12 @@ public abstract class TutorialToastVRMixin implements Toast {
             // draw a bigger toast from right to left, to override the left border
             for (int i = offset.get() - (this.width() - 8) * (offset.get() / (this.width() - 8));
                  i >= offset.get(); i -= this.width() - 8) {
-                GuiComponent.blit(poseStack, i, 0, 0, 96, this.width() - 4, this.height());
+                toastComponent.blit(poseStack, i, 0, 0, 96, this.width() - 4, this.height());
             }
         }
     }
 
-    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/toasts/TutorialToast$Icons;render(Lcom/mojang/blaze3d/vertex/PoseStack;II)V"), index = 1)
+    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/toasts/TutorialToast$Icons;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/gui/GuiComponent;II)V"), index = 2)
     private int vivecraft$offsetIcon(int x, @Share("offset") LocalRef<Integer> offset) {
         return x + offset.get();
     }

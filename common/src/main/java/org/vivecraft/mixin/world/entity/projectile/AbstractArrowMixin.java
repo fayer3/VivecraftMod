@@ -2,7 +2,6 @@ package org.vivecraft.mixin.world.entity.projectile;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -80,7 +79,7 @@ public abstract class AbstractArrowMixin extends Entity {
                         0.1);
                     // send sound effect
                     owner.connection.send(
-                        new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.ITEM_BREAK),
+                        new ClientboundSoundPacket(SoundEvents.ITEM_BREAK,
                             SoundSource.PLAYERS, owner.getX(), owner.getY(), owner.getZ(), 0.7f, 0.5f,
                             owner.level.random.nextLong()));
                 }

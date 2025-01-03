@@ -23,16 +23,12 @@ public class BlockedServerScreen extends Screen {
 
     protected void init() {
 
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.back"), (p) ->
-            Minecraft.getInstance().setScreen(this.lastScreen))
-            .pos(this.width / 2 + 5, this.height - 32)
-            .size(150, 20)
-            .build());
+        this.addRenderableWidget(new Button(this.width / 2 + 5, this.height - 32, 150, 20,
+            Component.translatable("gui.back"), (p) ->
+            Minecraft.getInstance().setScreen(this.lastScreen)));
         this.addRenderableWidget(
-            new Button.Builder(Component.translatable("vivecraft.gui.continueWithout"), p -> this.onContinue.run())
-                .pos(this.width / 2 - 155, this.height - 32)
-                .size(150, 20)
-                .build());
+            new Button(this.width / 2 - 155, this.height - 32, 150, 20,
+                Component.translatable("vivecraft.gui.continueWithout"), p -> this.onContinue.run()));
         this.message = MultiLineLabel.create(this.font,
             Component.translatable("vivecraft.messages.blocklist", this.server), 360);
     }

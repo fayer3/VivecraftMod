@@ -1,7 +1,7 @@
 package org.vivecraft.common.network.packet.s2c;
 
 import net.minecraft.ResourceLocationException;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -37,7 +37,7 @@ public record ClimbingPayloadS2C(boolean allowed, ClimbeyBlockmode blockmode,
         if (this.blocks != null) {
             for (String block : this.blocks) {
                 try {
-                    Block b = BuiltInRegistries.BLOCK.get(new ResourceLocation(block));
+                    Block b = Registry.BLOCK.get(new ResourceLocation(block));
                     // only send valid blocks
                     if (b != Blocks.AIR) {
                         buffer.writeUtf(block);

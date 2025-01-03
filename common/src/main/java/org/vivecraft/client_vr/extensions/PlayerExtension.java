@@ -55,4 +55,14 @@ public interface PlayerExtension {
      * @return if the players position got initialized from the server
      */
     boolean vivecraft$getInitFromServer();
+
+    /**
+     * @return the last message received by the player
+     */
+    String vivecraft$getLastMsg();
+
+    /**
+     * sets the last message received by the player
+     */
+    void vivecraft$setLastMsg(String string);
 }

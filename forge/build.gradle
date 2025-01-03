@@ -70,6 +70,8 @@ dependencies {
     compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
     implementation(include("io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"))
 
+    include(implementation("org.joml:joml:1.10.5"))
+
     include(implementation("com.illposed.osc:javaosc-core:0.9"))
 }
 

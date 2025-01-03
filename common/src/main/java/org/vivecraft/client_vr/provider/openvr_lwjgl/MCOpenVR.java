@@ -10,6 +10,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.ClientLanguage;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -663,12 +664,12 @@ public class MCOpenVR extends MCVR {
             Map<String, Object> localeMap = new HashMap<>();
 
             // Load the language
-            List<String> langs = new ArrayList<>();
-            langs.add("en_us");
+            List<LanguageInfo> langs = new ArrayList<>();
+            langs.add(this.mc.getLanguageManager().getLanguage("en_us"));
             if (!langCode.equals("en_US")) {
-                langs.add(langCode.toLowerCase());
+                langs.add(this.mc.getLanguageManager().getLanguage(langCode.toLowerCase()));
             }
-            Language lang = ClientLanguage.loadFrom(this.mc.getResourceManager(), langs, false);
+            Language lang = ClientLanguage.loadFrom(this.mc.getResourceManager(), langs);
 
             for (VRInputAction action : sortedActions) {
                 localeMap.put(action.name, lang.getOrDefault(action.keyBinding.getCategory()) + " - " +

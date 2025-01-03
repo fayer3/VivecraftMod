@@ -7,7 +7,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
@@ -26,7 +25,7 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
     private EditBox searchBox;
 
     @Shadow
-    private static CreativeModeTab selectedTab;
+    private static int selectedTab;
 
     public CreativeModeInventoryScreenVRMixin(
         CreativeModeInventoryScreen.ItemPickerMenu menu, Inventory playerInventory, Component title)
@@ -37,19 +36,19 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
     @Inject(method = "refreshSearchResults", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen;scrollOffs:F"))
     private void vivecraft$addVivecraftItemsSearch(CallbackInfo ci) {
         // only add to actual search
-        if (selectedTab == null || selectedTab.getType() == CreativeModeTab.Type.SEARCH) {
+        if (selectedTab == CreativeModeTab.TAB_SEARCH.getId()) {
             vivecraft$addCreativeSearch(this.searchBox.getValue(), this.menu.items);
         }
     }
 
-    @Inject(method = "selectTab", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/NonNullList;addAll(Ljava/util/Collection;)Z", ordinal = 1, shift = At.Shift.AFTER))
+    @Inject(method = "selectTab", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;fillItemList(Lnet/minecraft/core/NonNullList;)V", shift = At.Shift.AFTER))
     private void vivecraft$addVivecraftItemsCategory(CreativeModeTab tab, CallbackInfo ci) {
         vivecraft$addCreativeItems(tab, this.menu.items);
     }
 
     @Unique
     private void vivecraft$addCreativeItems(CreativeModeTab tab, NonNullList<ItemStack> items) {
-        if (tab == CreativeModeTabs.FOOD_AND_DRINKS || tab == null) {
+        if (tab == CreativeModeTab.TAB_FOOD || tab == null) {
             ItemStack eatMeCake = new ItemStack(Items.PUMPKIN_PIE);
             eatMeCake.setHoverName(Component.literal("EAT ME"));
 
@@ -61,15 +60,15 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
             items.add(drinkMePotion);
         }
 
-        if (tab == CreativeModeTabs.TOOLS_AND_UTILITIES || tab == null) {
+        if (tab == CreativeModeTab.TAB_TOOLS || tab == null) {
             ItemStack boots = new ItemStack(Items.LEATHER_BOOTS);
-            boots.setHoverName(Component.translatableWithFallback("vivecraft.item.jumpboots", "Jump Boots"));
+            boots.setHoverName(Component.translatable("vivecraft.item.jumpboots"));
             boots.getOrCreateTag().putBoolean("Unbreakable", true);
             boots.getOrCreateTag().putInt("HideFlags", 4);
             boots.getOrCreateTagElement(ItemStack.TAG_DISPLAY).putInt(ItemStack.TAG_COLOR, 0x8CE56F);
 
             ItemStack claws = new ItemStack(Items.SHEARS);
-            claws.setHoverName(Component.translatableWithFallback("vivecraft.item.climbclaws", "Climb Claws"));
+            claws.setHoverName(Component.translatable("vivecraft.item.climbclaws"));
             claws.getOrCreateTag().putBoolean("Unbreakable", true);
             claws.getOrCreateTag().putInt("HideFlags", 4);
 

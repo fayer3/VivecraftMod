@@ -1,12 +1,11 @@
 package org.vivecraft.client_vr.render;
 
+import com.mojang.math.Vector3f;
 import net.minecraft.client.Camera;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.material.FogType;
-import org.joml.Vector3f;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRData;
 import org.vivecraft.client_vr.render.helpers.RenderHelper;
@@ -48,15 +47,16 @@ public class XRCamera extends Camera {
         }
         this.xRot = -eye.getPitch();
         this.yRot = eye.getYaw();
-        this.getLookVector().set(eye.getDirection());
-        Vector3f up = eye.getCustomVector(MathUtils.UP);
-        this.getUpVector().set(up);
-        Vector3f left = eye.getCustomVector(MathUtils.LEFT);
-        this.getLeftVector().set(left);
+        org.joml.Vector3f forward = eye.getDirection();
+        this.getLookVector().set(forward.x, forward.y, forward.z);
+        org.joml.Vector3f up = eye.getCustomVector(MathUtils.UP);
+        this.getUpVector().set(up.x, up.y, up.z);
+        org.joml.Vector3f left = eye.getCustomVector(MathUtils.LEFT);
+        this.getLeftVector().set(left.x, left.y, left.z);
 
         this.rotation().set(0.0F, 0.0F, 0.0F, 1.0F);
-        this.rotation().rotateY(Mth.DEG_TO_RAD * -this.yRot);
-        this.rotation().rotateX(Mth.DEG_TO_RAD * this.xRot);
+        this.rotation().mul(Vector3f.YP.rotationDegrees(-this.yRot));
+        this.rotation().mul(Vector3f.XP.rotationDegrees(this.xRot));
     }
 
     /**

@@ -36,6 +36,7 @@ import org.vivecraft.client_vr.render.VRShaders;
 import org.vivecraft.client_vr.render.helpers.RenderHelper;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_xr.render_pass.WorldRenderPass;
+import org.vivecraft.common.utils.MathUtils;
 import org.vivecraft.mod_compat_vr.resolutioncontrol.ResolutionControlHelper;
 import org.vivecraft.mod_compat_vr.shaders.ShadersHelper;
 import oshi.SystemInfo;
@@ -48,7 +49,7 @@ import java.util.stream.Collectors;
 
 public abstract class VRRenderer {
     // projection matrices
-    public Matrix4f[] eyeProj = new Matrix4f[2];
+    public com.mojang.math.Matrix4f[] eyeProj = new com.mojang.math.Matrix4f[2];
     private float lastFarClip = 0F;
 
     // render buffers
@@ -109,12 +110,12 @@ public abstract class VRRenderer {
      * @param farClip  far clip plane of the projection matrix
      * @return the projection matrix
      */
-    public Matrix4f getCachedProjectionMatrix(int eyeType, float nearClip, float farClip) {
+    public com.mojang.math.Matrix4f getCachedProjectionMatrix(int eyeType, float nearClip, float farClip) {
         if (farClip != this.lastFarClip) {
             this.lastFarClip = farClip;
             // fetch both at the same time to make sure they use the same clip planes
-            this.eyeProj[0] = this.getProjectionMatrix(0, nearClip, farClip);
-            this.eyeProj[1] = this.getProjectionMatrix(1, nearClip, farClip);
+            this.eyeProj[0] = MathUtils.toMcMat4(this.getProjectionMatrix(0, nearClip, farClip));
+            this.eyeProj[1] = MathUtils.toMcMat4(this.getProjectionMatrix(1, nearClip, farClip));
         }
 
         return this.eyeProj[eyeType];
@@ -201,13 +202,15 @@ public abstract class VRRenderer {
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
         RenderSystem.depthFunc(GL11.GL_ALWAYS);
+        RenderSystem.disableTexture();
         RenderSystem.disableCull();
 
         RenderSystem.setShaderColor(0F, 0F, 0F, 1.0F);
 
         RenderTarget fb = minecraft.getMainRenderTarget();
         RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, fb.viewWidth, 0.0F, fb.viewHeight, 0.0F, 20.0F));
+        RenderSystem.setProjectionMatrix(
+            com.mojang.math.Matrix4f.orthographic(0.0F, fb.viewWidth, fb.viewHeight, 0.0F, 0.0F, 20.0F));
         RenderSystem.getModelViewStack().pushPose();
         RenderSystem.getModelViewStack().setIdentity();
         if (inverse) {
@@ -233,6 +236,7 @@ public abstract class VRRenderer {
         RenderSystem.enableDepthTest();
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.enableTexture();
         RenderSystem.enableCull();
         ProgramManager.glUseProgram(program);
         if (StencilHelper.stencilBufferSupported()) {
