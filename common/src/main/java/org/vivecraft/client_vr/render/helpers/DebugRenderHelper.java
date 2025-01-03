@@ -7,6 +7,8 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -113,7 +115,8 @@ public class DebugRenderHelper {
                 }
             }
             if (bufferbuilder != null) {
-                BufferUploader.drawWithShader(bufferbuilder.end());
+                bufferbuilder.end();
+                BufferUploader.end(bufferbuilder);
             }
         }
     }
@@ -172,7 +175,8 @@ public class DebugRenderHelper {
 
         list.forEach(p -> addAxes(poseStack, bufferbuilder, data, p));
 
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
     }
 
     /**
@@ -189,16 +193,16 @@ public class DebugRenderHelper {
             .rotateY(Mth.PI);
 
         Component[] labels = new Component[]{
-            Component.translatable("vivecraft.toasts.point_controller.right"),
-            Component.translatable("vivecraft.toasts.point_controller.left"),
-            Component.translatable("vivecraft.messages.tracker.camera"),
-            Component.translatable("vivecraft.messages.tracker.waist"),
-            Component.translatable("vivecraft.messages.tracker.rightFoot"),
-            Component.translatable("vivecraft.messages.tracker.leftFoot"),
-            Component.translatable("vivecraft.messages.tracker.rightElbow"),
-            Component.translatable("vivecraft.messages.tracker.leftElbow"),
-            Component.translatable("vivecraft.messages.tracker.rightKnee"),
-            Component.translatable("vivecraft.messages.tracker.leftKnee")
+            new TranslatableComponent("vivecraft.toasts.point_controller.right"),
+            new TranslatableComponent("vivecraft.toasts.point_controller.left"),
+            new TranslatableComponent("vivecraft.messages.tracker.camera"),
+            new TranslatableComponent("vivecraft.messages.tracker.waist"),
+            new TranslatableComponent("vivecraft.messages.tracker.rightFoot"),
+            new TranslatableComponent("vivecraft.messages.tracker.leftFoot"),
+            new TranslatableComponent("vivecraft.messages.tracker.rightElbow"),
+            new TranslatableComponent("vivecraft.messages.tracker.leftElbow"),
+            new TranslatableComponent("vivecraft.messages.tracker.rightKnee"),
+            new TranslatableComponent("vivecraft.messages.tracker.leftKnee")
         };
 
         // show all trackers
@@ -209,13 +213,15 @@ public class DebugRenderHelper {
 
             if (showNames) {
                 if (tracker.getMiddle() >= 0) {
-                    addNamedCube(poseStack, pos, orientation, Component.translatable("vivecraft.formatting.name_value",
-                            Component.literal(tracker.getLeft().source.toString()), labels[tracker.getMiddle()]), 0.05F,
+                    addNamedCube(poseStack, pos, orientation,
+                        new TranslatableComponent("vivecraft.formatting.name_value",
+                            new TextComponent(tracker.getLeft().source.toString()), labels[tracker.getMiddle()]), 0.05F,
                         DARK_GRAY);
                 } else {
-                    addNamedCube(poseStack, pos, orientation, Component.translatable("vivecraft.formatting.name_value",
-                        Component.literal(tracker.getLeft().source.toString() + tracker.getLeft().deviceIndex),
-                        Component.translatable("vivecraft.messages.tracker.unknown")), 0.05F, DARK_GRAY);
+                    addNamedCube(poseStack, pos, orientation,
+                        new TranslatableComponent("vivecraft.formatting.name_value",
+                            new TextComponent(tracker.getLeft().source.toString() + tracker.getLeft().deviceIndex),
+                            new TranslatableComponent("vivecraft.messages.tracker.unknown")), 0.05F, DARK_GRAY);
                 }
             } else {
                 addCube(poseStack, pos, 0.05F, DARK_GRAY);
@@ -241,7 +247,8 @@ public class DebugRenderHelper {
         addLine(poseStack, bufferbuilder, position, MathUtils.UP, GREEN);
         addLine(poseStack, bufferbuilder, position, MathUtils.RIGHT, RED);
 
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
     }
 
     /**
@@ -397,7 +404,7 @@ public class DebugRenderHelper {
     public static void renderTextAtRelativePosition(
         PoseStack poseStack, float x, float y, float z, Quaternionf rot, String text)
     {
-        renderTextAtRelativePosition(poseStack, x, y, z, rot, Component.literal(text));
+        renderTextAtRelativePosition(poseStack, x, y, z, rot, new TextComponent(text));
     }
 
     /**
@@ -444,6 +451,7 @@ public class DebugRenderHelper {
         Vec3 end = new Vec3(position.x(), position.y(), position.z()).add(MathUtils.BACK_D.scale(size * 0.5F));
         RenderHelper.renderBox(bufferbuilder, start, end, size, size, iColor, (byte) 255, poseStack);
 
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
     }
 }

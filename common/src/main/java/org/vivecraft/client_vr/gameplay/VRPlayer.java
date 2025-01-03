@@ -8,7 +8,8 @@ import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -228,13 +229,13 @@ public class VRPlayer {
                         queriedIPD, measuredIPD, runtimeWorldScale);
                     this.mc.level.disconnect();
                     this.mc.clearLevel(new DisconnectedScreen(new JoinMultiplayerScreen(new TitleScreen()),
-                        Component.translatable("vivecraft.message.worldscaleOutOfRange.title"),
-                        Component.translatable("vivecraft.message.worldscaleOutOfRange",
-                            Component.literal("%.2fx".formatted(worldScaleOverride.getValueMin()))
+                        new TranslatableComponent("vivecraft.message.worldscaleOutOfRange.title"),
+                        new TranslatableComponent("vivecraft.message.worldscaleOutOfRange",
+                            new TextComponent("%.2fx".formatted(worldScaleOverride.getValueMin()))
                                 .withStyle(style -> style.withColor(ChatFormatting.GREEN)),
-                            Component.literal("%.2fx".formatted(worldScaleOverride.getValueMax()))
+                            new TextComponent("%.2fx".formatted(worldScaleOverride.getValueMax()))
                                 .withStyle(style -> style.withColor(ChatFormatting.GREEN)),
-                            Component.literal(this.dh.vr.getRuntimeName())
+                            new TextComponent(this.dh.vr.getRuntimeName())
                                 .withStyle(style -> style.withColor(ChatFormatting.GOLD)))));
                 }
             }

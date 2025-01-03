@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
 public class GuiQuickCommandsInGame extends Screen {
@@ -12,7 +12,7 @@ public class GuiQuickCommandsInGame extends Screen {
     protected final Screen parentScreen;
 
     public GuiQuickCommandsInGame(Screen lastScreen) {
-        super(Component.translatable("vivecraft.options.screen.quickcommands"));
+        super(new TranslatableComponent("vivecraft.options.screen.quickcommands"));
         this.parentScreen = lastScreen;
     }
 
@@ -27,21 +27,16 @@ public class GuiQuickCommandsInGame extends Screen {
             String command = chatCommands[i];
             this.addRenderableWidget(
                 new Button(this.width / 2 - 125 + 127 * rightColumn, 36 + (i - 6 * rightColumn) * 24, 125, 20,
-                    Component.translatable(command),
+                    new TranslatableComponent(command),
                     (p) -> {
                         this.minecraft.setScreen(null);
-                        if (p.getMessage().getString().startsWith("/")) {
-                            this.minecraft.player.commandSigned(p.getMessage().getString().substring(1),
-                                Component.empty());
-                        } else {
-                            this.minecraft.player.chatSigned(p.getMessage().getString(), Component.empty());
-                        }
+                        this.minecraft.player.chat(p.getMessage().getString());
                     }
                 ));
         }
 
         this.addRenderableWidget(new Button(this.width / 2 - 50, this.height - 46, 100, 20,
-            Component.translatable("gui.cancel"),
+            new TranslatableComponent("gui.cancel"),
             (p) -> this.minecraft.setScreen(this.parentScreen)));
     }
 

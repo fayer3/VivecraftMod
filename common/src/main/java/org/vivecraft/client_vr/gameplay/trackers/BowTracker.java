@@ -212,7 +212,7 @@ public class BowTracker extends Tracker {
                 // draw
                 this.isDrawing = true;
                 // Minecraft.getInstance().physicalGuiManager.preClickAction();
-                this.mc.gameMode.useItem(player, hand); // server
+                this.mc.gameMode.useItem(player, player.level, hand); // server
             }
 
             if (this.isDrawing && !this.pressed && lastPressed && this.getDrawPercent() > 0.0F) {

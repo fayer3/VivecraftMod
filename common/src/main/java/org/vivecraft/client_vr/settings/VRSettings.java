@@ -1827,17 +1827,17 @@ public class VRSettings {
 
             @Override
             String getDisplayString(String prefix, Object value) {
-                return prefix + String.format("%.0f" + DEGREE, (float) Minecraft.getInstance().options.fov().get());
+                return prefix + String.format("%.0f" + DEGREE, Minecraft.getInstance().options.fov);
             }
 
             @Override
             Float getOptionFloatValue(float value) {
-                return (float) Minecraft.getInstance().options.fov().get();
+                return (float) Minecraft.getInstance().options.fov;
             }
 
             @Override
             Float setOptionFloatValue(float value) {
-                Minecraft.getInstance().options.fov().set((int) value);
+                Minecraft.getInstance().options.fov = value;
                 return 0f;
             }
         },
@@ -2028,10 +2028,32 @@ public class VRSettings {
             "vivecraft.options.menuworldfallback.dirtbox"), // fallback for when menurwold is not shown
         HRTF_SELECTION(false, false) { // HRTF
 
-            // this is now handled by vanilla
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                int hrtfSelection = (int) value;
+                if (hrtfSelection == -1) {
+                    return prefix + I18n.get("options.off");
+                } else if (hrtfSelection == 0) {
+                    return prefix + I18n.get("vivecraft.options.default");
+                } else if (hrtfSelection <= ClientDataHolderVR.HRTF_LIST.size()) {
+                    return prefix + ClientDataHolderVR.HRTF_LIST.get(hrtfSelection - 1);
+                }
+                return prefix;
+            }
+
             @Override
             Object setOptionValue(Object value) {
-                return value;
+                int hrtfSelection = (int) value;
+                if (++hrtfSelection > ClientDataHolderVR.HRTF_LIST.size()) {
+                    hrtfSelection = -1;
+                }
+                return hrtfSelection;
+            }
+
+            @Override
+            void onOptionChange() {
+                // Reload the sound engine to get the new HRTF
+                Minecraft.getInstance().getSoundManager().reload();
             }
         },
         RELOAD_EXTERNAL_CAMERA(false, false) { // Reload External Camera

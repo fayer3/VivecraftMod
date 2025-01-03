@@ -2,9 +2,8 @@ package org.vivecraft.forge.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.NamedGuiOverlay;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.client.gui.ForgeIngameGui;
+import net.minecraftforge.client.gui.IIngameOverlay;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -12,18 +11,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.vivecraft.client_vr.extensions.GuiExtension;
 import org.vivecraft.client_xr.render_pass.RenderPassType;
 
-@Mixin(ForgeGui.class)
+@Mixin(ForgeIngameGui.class)
 public abstract class ForgeIngameGuiVRMixin {
-    @Inject(method = "pre", at = @At("HEAD"), remap = false, cancellable = true)
+    @Inject(method = "pre(Lnet/minecraftforge/client/gui/IIngameOverlay;Lcom/mojang/blaze3d/vertex/PoseStack;)Z", at = @At("HEAD"), remap = false, cancellable = true)
     private void vivecraft$noOverlaysOnGui(
-        NamedGuiOverlay overlay, PoseStack poseStack, CallbackInfoReturnable<Boolean> cir)
+        IIngameOverlay overlay, PoseStack poseStack, CallbackInfoReturnable<Boolean> cir)
     {
         if (RenderPassType.isGuiOnly() &&
-            (overlay == VanillaGuiOverlay.VIGNETTE.type() ||
-                overlay == VanillaGuiOverlay.SPYGLASS.type() ||
-                overlay == VanillaGuiOverlay.HELMET.type() ||
-                overlay == VanillaGuiOverlay.FROSTBITE.type() ||
-                overlay == VanillaGuiOverlay.PORTAL.type()
+            (overlay == ForgeIngameGui.VIGNETTE_ELEMENT ||
+                overlay == ForgeIngameGui.SPYGLASS_ELEMENT ||
+                overlay == ForgeIngameGui.HELMET_ELEMENT ||
+                overlay == ForgeIngameGui.FROSTBITE_ELEMENT ||
+                overlay == ForgeIngameGui.PORTAL_ELEMENT
             ))
         {
             cir.setReturnValue(true);

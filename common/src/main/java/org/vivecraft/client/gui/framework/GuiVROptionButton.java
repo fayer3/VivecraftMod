@@ -1,7 +1,7 @@
 package org.vivecraft.client.gui.framework;
 
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.settings.VRSettings;
 
@@ -24,7 +24,7 @@ public class GuiVROptionButton extends Button implements GuiVROption {
         int id, int x, int y, int width, int height, @Nullable VRSettings.VrOptions option, String text,
         OnPress onPress)
     {
-        super(x, y, width, height, Component.translatable(text), onPress);
+        super(x, y, width, height, new TranslatableComponent(text), onPress);
         this.id = id;
         this.enumOptions = option;
         ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();

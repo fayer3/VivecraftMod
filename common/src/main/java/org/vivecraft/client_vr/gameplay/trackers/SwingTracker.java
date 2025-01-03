@@ -1,6 +1,7 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -285,7 +286,7 @@ public class SwingTracker extends Tracker {
                         // roomscale door punching
                         if (this.dh.vrSettings.doorHitting &&
                             isOpenable(blockstate, this.tipHistory[i].netMovement(0.3)) &&
-                            this.mc.gameMode.useItemOn(player,
+                            this.mc.gameMode.useItemOn(player, (ClientLevel) player.level,
                                 c == 1 ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND, blockHit) !=
                                 InteractionResult.PASS)
                         {
@@ -307,11 +308,11 @@ public class SwingTracker extends Tracker {
                         {
                             // don't try to break crops with hoes
                             // actually use the item on the block
-                            boolean useSuccessful = this.mc.gameMode.useItemOn(player,
+                            boolean useSuccessful = this.mc.gameMode.useItemOn(player, (ClientLevel) player.level,
                                 i == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND, blockHit).shouldSwing();
                             if (itemstack.is(ItemTags.VIVECRAFT_SCYTHES) && !useSuccessful) {
                                 // some scythes just need to be used
-                                this.mc.gameMode.useItem(player,
+                                this.mc.gameMode.useItem(player, player.level,
                                     c == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND);
                             }
                         }

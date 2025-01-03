@@ -6,8 +6,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.jetbrains.annotations.NotNull;
 import org.vivecraft.client.gui.widgets.TextScrollWidget;
 import org.vivecraft.client.utils.UpdateChecker;
@@ -19,7 +20,7 @@ public class UpdateScreen extends Screen {
     private TextScrollWidget text;
 
     public UpdateScreen() {
-        super(Component.translatable("vivecraft.messages.updateTitle"));
+        super(new TranslatableComponent("vivecraft.messages.updateTitle"));
         this.lastScreen = Minecraft.getInstance().screen;
     }
 
@@ -31,7 +32,7 @@ public class UpdateScreen extends Screen {
 
         this.addRenderableWidget(
             new Button(this.width / 2 - 155, this.height - 56, 150, 20,
-                Component.translatable("vivecraft.gui.downloadfrom", Component.literal("Modrinth")),
+                new TranslatableComponent("vivecraft.gui.downloadfrom", new TextComponent("Modrinth")),
                 button ->
                     this.minecraft.setScreen(new ConfirmLinkScreen(bl -> {
                         if (bl) {
@@ -43,7 +44,7 @@ public class UpdateScreen extends Screen {
 
         this.addRenderableWidget(
             new Button(this.width / 2 + 5, this.height - 56, 150, 20,
-                Component.translatable("vivecraft.gui.downloadfrom", Component.literal("CurseForge")),
+                new TranslatableComponent("vivecraft.gui.downloadfrom", new TextComponent("CurseForge")),
                 button ->
                     this.minecraft.setScreen(new ConfirmLinkScreen(bl -> {
                         if (bl) {
@@ -55,7 +56,7 @@ public class UpdateScreen extends Screen {
 
         this.addRenderableWidget(
             new Button(this.width / 2 - 75, this.height - 32, 150, 20,
-                Component.translatable("gui.back"), (p) ->
+                new TranslatableComponent("gui.back"), (p) ->
                 Minecraft.getInstance().setScreen(this.lastScreen)));
     }
 

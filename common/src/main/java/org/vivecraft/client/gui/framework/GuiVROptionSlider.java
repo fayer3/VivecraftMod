@@ -1,7 +1,7 @@
 package org.vivecraft.client.gui.framework;
 
 import net.minecraft.client.gui.components.AbstractSliderButton;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.settings.VRSettings;
 
@@ -17,7 +17,8 @@ public class GuiVROptionSlider extends AbstractSliderButton implements GuiVROpti
         int id, int x, int y, int width, int height, VRSettings.VrOptions option, boolean valueOnly)
     {
         super(x, y, width, height,
-            Component.literal(ClientDataHolderVR.getInstance().vrSettings.getButtonDisplayString(option, valueOnly)),
+            new TextComponent(
+                ClientDataHolderVR.getInstance().vrSettings.getButtonDisplayString(option, valueOnly)),
             option.normalizeValue(ClientDataHolderVR.getInstance().vrSettings.getOptionFloatValue(option)));
 
         this.id = id;
@@ -38,7 +39,7 @@ public class GuiVROptionSlider extends AbstractSliderButton implements GuiVROpti
 
     @Override
     protected void updateMessage() {
-        this.setMessage(Component.literal(
+        this.setMessage(new TextComponent(
             ClientDataHolderVR.getInstance().vrSettings.getButtonDisplayString(this.enumOptions, this.valueOnly)));
     }
 

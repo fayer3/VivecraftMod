@@ -143,15 +143,6 @@ public interface Xplat {
     }
 
     /**
-     * @param biome Biome to get the ClimateSettings from
-     * @return ClimateSettings of the given Biome
-     */
-    @ExpectPlatform
-    static Biome.ClimateSettings getBiomeClimateSettings(Biome biome) {
-        throw new AssertionError();
-    }
-
-    /**
      * @param biome Biome to get the BiomeSpecialEffects from
      * @return BiomeSpecialEffects of the given Biome
      */

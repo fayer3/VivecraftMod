@@ -10,6 +10,8 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.vivecraft.client.gui.widgets.SettingsList;
 import org.vivecraft.server.config.ConfigBuilder;
 
@@ -78,18 +80,18 @@ public class GuiListValueEditScreen extends GuiListScreen {
         int i = 0;
         for (String item : this.elements) {
             EditBox box = new EditBox(Minecraft.getInstance().font, 0, 0, ListValueEntry.VALUE_BUTTON_WIDTH - 1, 20,
-                Component.literal(item));
+                new TextComponent(item));
             box.setMaxLength(1000);
             box.setValue(item);
             int index = i++;
-            entries.add(new ListValueEntry(Component.empty(), box, button -> {
+            entries.add(new ListValueEntry(TextComponent.EMPTY, box, button -> {
                 this.elements.remove(index);
                 this.reinit = true;
             }));
         }
-        entries.add(new SettingsList.WidgetEntry(Component.translatable("vivecraft.options.addnew"),
+        entries.add(new SettingsList.WidgetEntry(new TranslatableComponent("vivecraft.options.addnew"),
             new Button(0, 0, 20, 20,
-                Component.literal("+"), button -> {
+                new TextComponent("+"), button -> {
                 this.elements = getCurrentValues();
                 this.elements.add("");
                 this.reinit = true;
@@ -106,10 +108,10 @@ public class GuiListValueEditScreen extends GuiListScreen {
             super(name, valueWidget);
 
             this.deleteButton = new Button(0, 0, 20, 20,
-                Component.literal("-"), deleteAction,
+                new TextComponent("-"), deleteAction,
                 (button, poseStack, x, y) ->
                     Minecraft.getInstance().screen.renderTooltip(poseStack,
-                        Component.translatable("selectWorld.delete"), x, y));
+                        new TranslatableComponent("selectWorld.delete"), x, y));
         }
 
         @Override

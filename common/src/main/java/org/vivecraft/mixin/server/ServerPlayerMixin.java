@@ -2,8 +2,10 @@ package org.vivecraft.mixin.server;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.Util;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -59,10 +61,10 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
             ItemStack easterEggItem;
             if (this.random.nextInt(2) == 1) {
                 easterEggItem = new ItemStack(Items.PUMPKIN_PIE);
-                easterEggItem.setHoverName(Component.literal("EAT ME"));
+                easterEggItem.setHoverName(new TextComponent("EAT ME"));
             } else {
                 easterEggItem = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);
-                easterEggItem.setHoverName(Component.literal("DRINK ME"));
+                easterEggItem.setHoverName(new TextComponent("DRINK ME"));
             }
 
             easterEggItem.getOrCreateTag().putInt("HideFlags", 32);
@@ -195,7 +197,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
             }
             if (blockedDamage) {
                 if (ServerConfig.PVP_NOTIFY_BLOCKED_DAMAGE.get()) {
-                    other.sendSystemMessage(Component.literal(blockedDamageCase));
+                    other.sendMessage(new TextComponent(blockedDamageCase), ChatType.SYSTEM, Util.NIL_UUID);
                 }
                 cir.setReturnValue(false);
             }
@@ -242,8 +244,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
             if (!message.isEmpty()) {
                 try {
                     this.server.getPlayerList()
-                        .broadcastSystemMessage(Component.literal(message.formatted(getName().getString(), entity)),
-                            false);
+                        .broadcastMessage(new TextComponent(message.formatted(getName().getString(), entity)),
+                            ChatType.SYSTEM, Util.NIL_UUID);
                 } catch (IllegalFormatException e) {
                     // catch errors users might put into the messages, to not crash other stuff
                     ServerNetworking.LOGGER.error("Vivecraft: Death message '{}' has errors:", message, e);

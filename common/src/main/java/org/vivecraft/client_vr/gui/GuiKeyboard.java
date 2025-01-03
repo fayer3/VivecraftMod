@@ -2,7 +2,7 @@ package org.vivecraft.client_vr.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.gui.framework.TwoHandedScreen;
 import org.vivecraft.client_vr.provider.InputSimulator;
@@ -47,7 +47,7 @@ public class GuiKeyboard extends TwoHandedScreen {
                     this.dh.vrSettings.keyboardCodes[index] : GLFW.GLFW_KEY_UNKNOWN;
                 this.addRenderableWidget(new Button(
                     margin + column * (buttonWidth + spacing), margin + row * (20 + spacing), buttonWidth, 20,
-                    Component.literal(label),
+                    new TextComponent(label),
                     (p) -> {
                         InputSimulator.pressKeyForBind(code);
                         InputSimulator.releaseKeyForBind(code);
@@ -57,12 +57,12 @@ public class GuiKeyboard extends TwoHandedScreen {
         }
 
         this.addRenderableWidget(new Button(0, margin + 3 * (20 + spacing), 30, 20,
-            Component.literal("Shift"),
+            new TextComponent("Shift"),
             (p) -> this.setShift(!this.isShift)));
 
         this.addRenderableWidget(new Button(
             margin + 4 * (buttonWidth + spacing), margin + rows * (20 + spacing), 5 * (buttonWidth + spacing), 20,
-            Component.literal(" "),
+            new TextComponent(" "),
             (p) -> {
                 InputSimulator.pressKeyForBind(GLFW.GLFW_KEY_SPACE);
                 InputSimulator.releaseKeyForBind(GLFW.GLFW_KEY_SPACE);
@@ -71,7 +71,7 @@ public class GuiKeyboard extends TwoHandedScreen {
 
         this.addRenderableWidget(new Button(
             columns * (buttonWidth + spacing) + margin, margin, 35, 20,
-            Component.literal("BKSP"),
+            new TextComponent("BKSP"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_BACKSPACE);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_BACKSPACE);
@@ -79,21 +79,21 @@ public class GuiKeyboard extends TwoHandedScreen {
 
         this.addRenderableWidget(new Button(
             columns * (buttonWidth + spacing) + margin, margin + 2 * (20 + spacing), 35, 20,
-            Component.literal("ENTER"),
+            new TextComponent("ENTER"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_ENTER);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_ENTER);
             }));
 
         this.addRenderableWidget(new Button(0, margin + 20 + spacing, 30, 20,
-            Component.literal("TAB"),
+            new TextComponent("TAB"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_TAB);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_TAB);
             }));
 
         this.addRenderableWidget(new Button(0, margin, 30, 20,
-            Component.literal("ESC"),
+            new TextComponent("ESC"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_ESCAPE);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_ESCAPE);
@@ -101,7 +101,7 @@ public class GuiKeyboard extends TwoHandedScreen {
 
         this.addRenderableWidget(new Button(
             (columns - 1) * (buttonWidth + spacing) + margin, margin + rows * (20 + spacing), buttonWidth, 20,
-            Component.literal("\u2191"),
+            new TextComponent("\u2191"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_UP);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_UP);
@@ -109,7 +109,7 @@ public class GuiKeyboard extends TwoHandedScreen {
 
         this.addRenderableWidget(new Button(
             (columns - 1) * (buttonWidth + spacing) + margin, margin + (rows + 1) * (20 + spacing), buttonWidth, 20,
-            Component.literal("\u2193"),
+            new TextComponent("\u2193"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_DOWN);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_DOWN);
@@ -117,7 +117,7 @@ public class GuiKeyboard extends TwoHandedScreen {
 
         this.addRenderableWidget(new Button(
             (columns - 2) * (buttonWidth + spacing) + margin, margin + (rows + 1) * (20 + spacing), buttonWidth, 20,
-            Component.literal("\u2190"),
+            new TextComponent("\u2190"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_LEFT);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_LEFT);
@@ -125,7 +125,7 @@ public class GuiKeyboard extends TwoHandedScreen {
 
         this.addRenderableWidget(new Button(
             columns * (buttonWidth + spacing) + margin, margin + (rows + 1) * (20 + spacing), buttonWidth, 20,
-            Component.literal("\u2192"),
+            new TextComponent("\u2192"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_RIGHT);
                 InputSimulator.releaseKey(GLFW.GLFW_KEY_RIGHT);
@@ -133,7 +133,7 @@ public class GuiKeyboard extends TwoHandedScreen {
 
         this.addRenderableWidget(new Button(
             margin, margin + -1 * (20 + spacing), 35, 20,
-            Component.literal("CUT"),
+            new TextComponent("CUT"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_LEFT_CONTROL);
                 InputSimulator.pressKey(GLFW.GLFW_KEY_X);
@@ -143,7 +143,7 @@ public class GuiKeyboard extends TwoHandedScreen {
 
         this.addRenderableWidget(new Button(
             35 + spacing + margin, margin + -1 * (20 + spacing), 35, 20,
-            Component.literal("COPY"),
+            new TextComponent("COPY"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_LEFT_CONTROL);
                 InputSimulator.pressKey(GLFW.GLFW_KEY_C);
@@ -153,7 +153,7 @@ public class GuiKeyboard extends TwoHandedScreen {
 
         this.addRenderableWidget(new Button(
             2 * (35 + spacing) + margin, margin + -1 * (20 + spacing), 35, 20,
-            Component.literal("PASTE"),
+            new TextComponent("PASTE"),
             (p) -> {
                 InputSimulator.pressKey(GLFW.GLFW_KEY_LEFT_CONTROL);
                 InputSimulator.pressKey(GLFW.GLFW_KEY_V);

@@ -10,9 +10,9 @@ import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraft.client.gui.screens.inventory.SignEditScreen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.vehicle.ContainerEntity;
+import net.minecraft.world.Container;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -436,7 +436,7 @@ public class GuiHandler {
             // and if the pointed at entity is the same that was last interacted with
             boolean isEntityScreen = newScreen instanceof AbstractContainerScreen &&
                 MC.hitResult instanceof EntityHitResult &&
-                ((EntityHitResult) MC.hitResult).getEntity() instanceof ContainerEntity;
+                ((EntityHitResult) MC.hitResult).getEntity() instanceof Container;
 
             VRData.VRDevicePose facingDevice =
                 infrontOfHand ? DH.vrPlayer.vrdata_room_pre.getController(0) : DH.vrPlayer.vrdata_room_pre.hmd;
@@ -512,7 +512,7 @@ public class GuiHandler {
         } else if (MC.screen == null && !MC.mouseHandler.isMouseGrabbed()) {
             // some mod want's to do a mouse selection overlay
             if (GUI_POS_ROOM == null) {
-                onScreenChanged(null, new Screen(Component.empty()) {
+                onScreenChanged(null, new Screen(TextComponent.EMPTY) {
                 }, false, true);
             }
         } else if (MC.screen == null && GUI_POS_ROOM != null) {

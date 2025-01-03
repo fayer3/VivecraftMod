@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.*;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.blocks.BlockInput;
@@ -12,7 +12,8 @@ import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
@@ -71,7 +72,7 @@ public class ServerUtil {
                             ServerNetworking.LOGGER.error("Vivecraft: KickVROnly message '{}' has errors: ",
                                 kickMessage, e);
                         }
-                        serverPlayer.connection.disconnect(Component.literal(kickMessage));
+                        serverPlayer.connection.disconnect(new TextComponent(kickMessage));
                         return;
                     }
 
@@ -85,7 +86,7 @@ public class ServerUtil {
                             ServerNetworking.LOGGER.error("Vivecraft: KickViveOnly message '{}' has errors: ",
                                 kickMessage, e);
                         }
-                        serverPlayer.connection.disconnect(Component.literal(kickMessage));
+                        serverPlayer.connection.disconnect(new TextComponent(kickMessage));
                         return;
                     }
 
@@ -105,8 +106,9 @@ public class ServerUtil {
                         // actually send the message, if there is one set
                         if (!message.isEmpty()) {
                             try {
-                                serverPlayer.server.getPlayerList().broadcastSystemMessage(
-                                    Component.literal(message.formatted(serverPlayer.getName().getString())), false);
+                                serverPlayer.server.getPlayerList().broadcastMessage(
+                                    new TextComponent(message.formatted(serverPlayer.getName().getString())),
+                                    ChatType.SYSTEM, Util.NIL_UUID);
                             } catch (IllegalFormatException e) {
                                 // catch errors users might put into the messages, to not crash other stuff
                                 ServerNetworking.LOGGER.error("Vivecraft: Welcome message '{}' has errors: ", message,
@@ -133,8 +135,9 @@ public class ServerUtil {
                 // check for update on not the main thread
                 SCHEDULER.schedule(() -> {
                     if (UpdateChecker.checkForUpdates()) {
-                        serverPlayer.sendSystemMessage(
-                            Component.literal("Vivecraft update available: §a" + UpdateChecker.NEWEST_VERSION));
+                        serverPlayer.sendMessage(
+                            new TextComponent("Vivecraft update available: §a" + UpdateChecker.NEWEST_VERSION),
+                            Util.NIL_UUID);
                     }
                 }, 0, TimeUnit.MILLISECONDS);
             }
@@ -147,7 +150,7 @@ public class ServerUtil {
      * @param dispatcher dispatcher to use for registering
      */
     public static void registerCommands(
-        CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher, CommandBuildContext buildContext)
+        CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher)
     {
         // reload command
         dispatcher.register(Commands.literal("vivecraft-server-config")
@@ -155,12 +158,12 @@ public class ServerUtil {
             .then(Commands.literal("reload")
                 .executes(context -> {
                     ServerConfig.init((action, path, incorrectValue, correctedValue) -> context.getSource()
-                        .sendSystemMessage(Component.literal(
+                        .sendSuccess(new TextComponent(
                             "Corrected §a[%s]§r: was '(%s)%s', is now '(%s)%s'".formatted(
                                 String.join("§r.§a", path),
                                 incorrectValue.getClass().getSimpleName(), incorrectValue,
                                 correctedValue.getClass().getSimpleName(), correctedValue
-                            ))));
+                            )), true));
                     return 1;
                 })
             )
@@ -203,14 +206,14 @@ public class ServerUtil {
                             Object newValue = context.getArgument(argumentName, clazz);
                             if (inListValue.getValidValues().contains(newValue)) {
                                 setting.set(newValue);
-                                context.getSource().sendSystemMessage(
-                                    Component.literal(
-                                        "set §a[%s]§r to '%s'".formatted(setting.getPath(), newValue)));
+                                context.getSource().sendSuccess(
+                                    new TextComponent(
+                                        "set §a[%s]§r to '%s'".formatted(setting.getPath(), newValue)), true);
                                 return 1;
                             } else {
                                 throw new CommandSyntaxException(
                                     CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument(),
-                                    Component.literal("Unsupported value: " + newValue.toString()));
+                                    new TextComponent("Unsupported value: " + newValue.toString()));
                             }
                         })
                     )
@@ -231,14 +234,14 @@ public class ServerUtil {
                             Object newEnumValue = enumValue.getEnumValue(newValue);
                             if (newEnumValue != null) {
                                 setting.set(newEnumValue);
-                                context.getSource().sendSystemMessage(
-                                    Component.literal(
-                                        "set §a[%s]§r to '%s'".formatted(setting.getPath(), newEnumValue)));
+                                context.getSource().sendSuccess(
+                                    new TextComponent(
+                                        "set §a[%s]§r to '%s'".formatted(setting.getPath(), newEnumValue)), true);
                                 return 1;
                             } else {
                                 throw new CommandSyntaxException(
                                     CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument(),
-                                    Component.literal("Unsupported value: " + newValue.toString()));
+                                    new TextComponent("Unsupported value: " + newValue.toString()));
                             }
                         })
                     )
@@ -249,9 +252,9 @@ public class ServerUtil {
                         .executes(context -> {
                             Object newValue = context.getArgument(argumentName, clazz);
                             setting.set(newValue);
-                            context.getSource().sendSystemMessage(
-                                Component.literal(
-                                    "set §a[%s]§r to '%s'".formatted(setting.getPath(), newValue)));
+                            context.getSource().sendSuccess(
+                                new TextComponent(
+                                    "set §a[%s]§r to '%s'".formatted(setting.getPath(), newValue)), true);
                             return 1;
                         })
                     )
@@ -259,7 +262,7 @@ public class ServerUtil {
             } else {
                 ConfigBuilder.ConfigValue<List<? extends String>> listConfig = setting;
                 baseCommand.then(Commands.literal("add")
-                    .then(Commands.argument("block", BlockStateArgument.block(buildContext))
+                    .then(Commands.argument("block", BlockStateArgument.block())
                         .executes(context -> {
                             try {
                                 String newValue = Registry.BLOCK.getKey(
@@ -267,11 +270,11 @@ public class ServerUtil {
                                 List list = listConfig.get();
                                 list.add(newValue);
                                 listConfig.set(list);
-                                context.getSource().sendSystemMessage(
-                                    Component.literal(
-                                        "added '%s' to §a[%s]§r".formatted(newValue, setting.getPath())));
-                                context.getSource().sendSystemMessage(
-                                    Component.literal("is now '%s'".formatted(setting.get())));
+                                context.getSource().sendSuccess(
+                                    new TextComponent(
+                                        "added '%s' to §a[%s]§r".formatted(newValue, setting.getPath())), true);
+                                context.getSource().sendSuccess(
+                                    new TextComponent("is now '%s'".formatted(setting.get())), true);
                                 return 1;
                             } catch (Exception e) {
                                 ServerNetworking.LOGGER.error("Vivecraft: error adding block to list:", e);
@@ -295,11 +298,11 @@ public class ServerUtil {
                             List<? extends String> list = listConfig.get();
                             list.remove(newValue);
                             listConfig.set(list);
-                            context.getSource().sendSystemMessage(
-                                Component.literal("removed '%s' from §a[%s]§r".formatted(
-                                    newValue, setting.getPath())));
-                            context.getSource().sendSystemMessage(
-                                Component.literal("is now '%s'".formatted(setting.get())));
+                            context.getSource().sendSuccess(
+                                new TextComponent("removed '%s' from §a[%s]§r".formatted(
+                                    newValue, setting.getPath())), true);
+                            context.getSource().sendSuccess(
+                                new TextComponent("is now '%s'".formatted(setting.get())), true);
                             return 1;
                         })
                     )
@@ -310,16 +313,16 @@ public class ServerUtil {
             baseCommand.then(Commands.literal("reset")
                 .executes(context -> {
                     Object newValue = setting.reset();
-                    context.getSource().sendSystemMessage(
-                        Component.literal("reset §a[%s]§r to '%s'".formatted(setting.getPath(), newValue)));
+                    context.getSource().sendSuccess(
+                        new TextComponent("reset §a[%s]§r to '%s'".formatted(setting.getPath(), newValue)), true);
                     return 1;
                 })
             );
 
             // query command
             baseCommand.executes(context -> {
-                    context.getSource().sendSystemMessage(
-                        Component.literal("§a[%s]§r is set to '%s'".formatted(setting.getPath(), setting.get())));
+                    context.getSource().sendSuccess(
+                        new TextComponent("§a[%s]§r is set to '%s'".formatted(setting.getPath(), setting.get())), true);
                     return 1;
                 }
             );

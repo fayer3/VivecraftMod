@@ -19,7 +19,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,14 +35,12 @@ public class FileUtils {
      */
     public static void unpackAsset(String sourcePath, String targetFile, boolean required) {
         try {
-            Optional<Resource> resource = Minecraft.getInstance().getResourceManager()
+            Resource resource = Minecraft.getInstance().getResourceManager()
                 .getResource(new ResourceLocation("vivecraft", sourcePath));
 
-            if (resource.isPresent()) {
-                try (InputStream is = resource.get().open(); OutputStream os = new FileOutputStream(targetFile)) {
-                    IOUtils.copy(is, os);
-                }
-            } else {
+            try (InputStream is = resource.getInputStream(); OutputStream os = new FileOutputStream(targetFile)) {
+                IOUtils.copy(is, os);
+            } catch (IOException e) {
                 // couldn't get asset from ResourceManager, unpack directly from jar
                 unpackFile("assets/vivecraft/" + sourcePath, targetFile, required);
             }

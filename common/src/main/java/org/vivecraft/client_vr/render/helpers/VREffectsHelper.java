@@ -15,8 +15,8 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
@@ -153,27 +153,27 @@ public class VREffectsHelper {
                     DATA_HOLDER.vrSettings.showChatMessageStencil)
                 {
                     DATA_HOLDER.showedStencilMessage = true;
-                    MC.gui.getChat().addMessage(Component.translatable("vivecraft.messages.stencil",
-                        Component.translatable("vivecraft.messages.3options",
-                                Component.translatable("options.title"),
-                                Component.translatable("vivecraft.options.screen.main"),
-                                Component.translatable("vivecraft.options.screen.stereorendering"))
+                    MC.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.stencil",
+                        new TranslatableComponent("vivecraft.messages.3options",
+                            new TranslatableComponent("options.title"),
+                            new TranslatableComponent("vivecraft.options.screen.main"),
+                            new TranslatableComponent("vivecraft.options.screen.stereorendering"))
                             .withStyle(style -> style.withClickEvent(
                                     new VivecraftClickEvent(VivecraftClickEvent.VivecraftAction.OPEN_SCREEN,
                                         new GuiRenderOpticsSettings(null)))
                                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                    Component.translatable("vivecraft.messages.openSettings")))
+                                    new TranslatableComponent("vivecraft.messages.openSettings")))
                                 .withColor(ChatFormatting.GREEN)
                                 .withItalic(true)),
-                        Component.translatable("vivecraft.messages.3options",
-                                Component.translatable("options.title"),
-                                Component.translatable("vivecraft.options.screen.main"),
-                                Component.translatable("vivecraft.options.screen.guiother"))
+                        new TranslatableComponent("vivecraft.messages.3options",
+                            new TranslatableComponent("options.title"),
+                            new TranslatableComponent("vivecraft.options.screen.main"),
+                            new TranslatableComponent("vivecraft.options.screen.guiother"))
                             .withStyle(style -> style.withClickEvent(
                                     new VivecraftClickEvent(VivecraftClickEvent.VivecraftAction.OPEN_SCREEN,
                                         new GuiOtherHUDSettings(null)))
                                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                    Component.translatable("vivecraft.messages.openSettings")))
+                                    new TranslatableComponent("vivecraft.messages.openSettings")))
                                 .withColor(ChatFormatting.GREEN)
                                 .withItalic(true))
                     ));
@@ -249,7 +249,8 @@ public class VREffectsHelper {
             .uv(1, 1).color(255, 255, 255, 255).endVertex();
         bufferbuilder.vertex(matrix, 100, 0, 0)
             .uv(1, 0).color(255, 255, 255, 255).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
 
         // up
         RenderSystem.setShaderTexture(0, CUBE_UP);
@@ -262,7 +263,8 @@ public class VREffectsHelper {
             .uv(1, 1).color(255, 255, 255, 255).endVertex();
         bufferbuilder.vertex(matrix, 100, 100, 100)
             .uv(1, 0).color(255, 255, 255, 255).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
 
         // left
         RenderSystem.setShaderTexture(0, CUBE_LEFT);
@@ -275,7 +277,8 @@ public class VREffectsHelper {
             .uv(0, 0).color(255, 255, 255, 255).endVertex();
         bufferbuilder.vertex(matrix, 0, 0, 100)
             .uv(0, 1).color(255, 255, 255, 255).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
 
         // right
         RenderSystem.setShaderTexture(0, CUBE_RIGHT);
@@ -288,7 +291,8 @@ public class VREffectsHelper {
             .uv(1, 0).color(255, 255, 255, 255).endVertex();
         bufferbuilder.vertex(matrix, 100, 100, 0)
             .uv(0, 0).color(255, 255, 255, 255).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
 
         // front
         RenderSystem.setShaderTexture(0, CUBE_FRONT);
@@ -301,7 +305,8 @@ public class VREffectsHelper {
             .uv(1, 0).color(255, 255, 255, 255).endVertex();
         bufferbuilder.vertex(matrix, 0, 100, 0)
             .uv(0, 0).color(255, 255, 255, 255).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
 
         // back
         RenderSystem.setShaderTexture(0, CUBE_BACK);
@@ -314,7 +319,8 @@ public class VREffectsHelper {
             .uv(0, 0).color(255, 255, 255, 255).endVertex();
         bufferbuilder.vertex(matrix, 100, 0, 100)
             .uv(0, 1).color(255, 255, 255, 255).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
 
         poseStack.popPose();
 
@@ -372,7 +378,8 @@ public class VREffectsHelper {
                 .color(r, g, b, 255)
                 .endVertex();
 
-            BufferUploader.drawWithShader(bufferbuilder.end());
+            bufferbuilder.end();
+            BufferUploader.end(bufferbuilder);
             poseStack.popPose();
         }
     }
@@ -478,7 +485,8 @@ public class VREffectsHelper {
         bufferbuilder.vertex(matrix, width, 0, length)
             .uv(repeat * width, 0).color(r, g, b, a).endVertex();
 
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
         poseStack.popPose();
     }
 
@@ -557,7 +565,8 @@ public class VREffectsHelper {
             .color(1f, 1f, 1f, 1f)
             .endVertex();
 
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
 
         poseStack.popPose();
 
@@ -863,7 +872,8 @@ public class VREffectsHelper {
                 .uv(u0, v0).color(1.0F, 1.0F, 1.0F, 0.9F).endVertex();
             bufferbuilder.vertex(matrix, -width, headHeight, -width)
                 .uv(u1, v0).color(1.0F, 1.0F, 1.0F, 0.9F).endVertex();
-            BufferUploader.drawWithShader(bufferbuilder.end());
+            bufferbuilder.end();
+            BufferUploader.end(bufferbuilder);
 
             posestack.popPose();
         }
@@ -1355,7 +1365,8 @@ public class VREffectsHelper {
             .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light)
             .normal(0.0F, 0.0F, 1.0F).endVertex();
 
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
 
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();

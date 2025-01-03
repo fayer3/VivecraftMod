@@ -27,8 +27,9 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -227,7 +228,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
         }
     }
 
-    @Inject(method = "lambda$new$2", at = @At("TAIL"), remap = false, require = 0, expect = 0)
+    @Inject(method = "lambda$new$1", at = @At("TAIL"), remap = false, require = 0, expect = 0)
     private void vivecraft$showGarbageCollectorScreenForge(CallbackInfo ci) {
         if (Xplat.getModloader() == Xplat.ModLoader.FORGE) {
             vivecraft$showGarbageCollectorScreen();
@@ -350,7 +351,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
                 if (e instanceof RenderConfigException renderConfigException) {
                     setScreen(new ErrorScreen(renderConfigException.title, renderConfigException.error));
                 } else {
-                    setScreen(new ErrorScreen(Component.translatable("vivecraft.messages.vrrendererror"),
+                    setScreen(new ErrorScreen(new TranslatableComponent("vivecraft.messages.vrrendererror"),
                         TextUtils.throwableToComponent(e)));
                 }
                 return renderLevel;
@@ -411,7 +412,10 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
     }
 
     // the VR runtime handles the frame limit, no need to manually limit it 60fps
-    @ModifyExpressionValue(method = "doWorldLoad", at = @At(value = "CONSTANT", args = "longValue=16"))
+    @ModifyExpressionValue(method = {
+        "doLoadLevel", // fabric
+        "doLoadLevel(Ljava/lang/String;Ljava/util/function/Function;Ljava/util/function/Function;ZLnet/minecraft/client/Minecraft$ExperimentalDialogType;Z)V" // forge
+    }, at = @At(value = "CONSTANT", args = "longValue=16"))
     private long vivecraft$noWaitOnLevelLoad(long original) {
         return VRState.VR_RUNNING ? 0L : original;
     }
@@ -512,13 +516,13 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
                 ClientDataHolderVR.getInstance().vrSettings.lastUpdate = UpdateChecker.NEWEST_VERSION;
                 ClientDataHolderVR.getInstance().vrSettings.saveOptions();
                 ClientDataHolderVR.getInstance().showedUpdateNotification = true;
-                this.gui.getChat().addMessage(Component.translatable("vivecraft.messages.updateAvailable",
-                    Component.literal(UpdateChecker.NEWEST_VERSION)
+                this.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.updateAvailable",
+                    new TextComponent(UpdateChecker.NEWEST_VERSION)
                         .withStyle(ChatFormatting.ITALIC, ChatFormatting.GREEN)).withStyle(
                     style -> style.withClickEvent(
                             new VivecraftClickEvent(VivecraftClickEvent.VivecraftAction.OPEN_SCREEN, new UpdateScreen()))
                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                            Component.translatable("vivecraft.messages.click")))));
+                            new TranslatableComponent("vivecraft.messages.click")))));
             }
         }
 
@@ -543,7 +547,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
                 // no server mod
                 if (ClientDataHolderVR.getInstance().vrPlayer.teleportWarning) {
                     if (showMessage) {
-                        this.gui.getChat().addMessage(Component.translatable("vivecraft.messages.noserverplugin"));
+                        this.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.noserverplugin"));
                     }
                     ClientDataHolderVR.getInstance().vrPlayer.teleportWarning = false;
 
@@ -554,7 +558,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
                 if (ClientDataHolderVR.getInstance().vrPlayer.vrSwitchWarning) {
                     if (showMessage) {
                         this.gui.getChat()
-                            .addMessage(Component.translatable("vivecraft.messages.novrhotswitchinglegacy"));
+                            .addMessage(new TranslatableComponent("vivecraft.messages.novrhotswitchinglegacy"));
                     }
                     ClientDataHolderVR.getInstance().vrPlayer.vrSwitchWarning = false;
                 }
@@ -566,7 +570,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
                 ))
             {
                 ClientDataHolderVR.getInstance().showedFbtCalibrationNotification = true;
-                this.gui.getChat().addMessage(Component.translatable("vivecraft.messages.calibratefbtchat"));
+                this.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.calibratefbtchat"));
             }
         }
 
@@ -644,14 +648,15 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
                     MenuWorldExporter.saveAreaToFile(this.level, blockpos.getX() - offset, blockpos.getZ() - offset,
                         size, size, blockpos.getY(), foundFile);
                     this.gui.getChat()
-                        .addMessage(Component.translatable("vivecraft.messages.menuworldexportclientwarning"));
+                        .addMessage(new TranslatableComponent("vivecraft.messages.menuworldexportclientwarning"));
                 }
 
                 if (error == null) {
                     this.gui.getChat()
-                        .addMessage(Component.translatable("vivecraft.messages.menuworldexportcomplete.1", size));
-                    this.gui.getChat().addMessage(Component.translatable("vivecraft.messages.menuworldexportcomplete.2",
-                        foundFile.getAbsolutePath()));
+                        .addMessage(new TranslatableComponent("vivecraft.messages.menuworldexportcomplete.1", size));
+                    this.gui.getChat()
+                        .addMessage(new TranslatableComponent("vivecraft.messages.menuworldexportcomplete.2",
+                            foundFile.getAbsolutePath()));
                 }
             } catch (Throwable throwable) {
                 VRSettings.LOGGER.error("Vivecraft: Error exporting Menuworld:", throwable);
@@ -659,7 +664,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
             } finally {
                 if (error != null) {
                     this.gui.getChat().addMessage(
-                        Component.translatable("vivecraft.messages.menuworldexporterror", error.getMessage()));
+                        new TranslatableComponent("vivecraft.messages.menuworldexporterror", error.getMessage()));
                 }
             }
         }
@@ -668,11 +673,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
         for (int i = 0; i < VivecraftVRMod.INSTANCE.keyQuickCommands.length; i++) {
             if (VivecraftVRMod.INSTANCE.keyQuickCommands[i].consumeClick()) {
                 String command = ClientDataHolderVR.getInstance().vrSettings.vrQuickCommands[i];
-                if (command.startsWith("/")) {
-                    this.player.commandSigned(command.substring(1), Component.empty());
-                } else {
-                    this.player.chatSigned(command, Component.empty());
-                }
+                this.player.chat(command.substring(1));
             }
         }
     }
@@ -761,7 +762,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
             GuiHandler.GUI_APPEAR_OVER_BLOCK_ACTIVE = false;
         }
         // cache gui scale so it can be checked after screen apply
-        guiScaleRef.set(this.options.guiScale().get());
+        guiScaleRef.set(this.options.guiScale);
     }
 
     @Inject(method = "setScreen", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", ordinal = 0))
@@ -771,32 +772,32 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
 
     @Inject(method = "setScreen", at = @At("RETURN"))
     private void vivecraft$checkGuiScaleChangePost(CallbackInfo ci, @Share("guiScale") LocalIntRef guiScaleRef) {
-        if (guiScaleRef.get() != this.options.guiScale().get()) {
+        if (guiScaleRef.get() != this.options.guiScale) {
             // checks if something changed the GuiScale during screen change
             // and tries to adjust the VR GuiScale accordingly
             int maxScale = VRState.VR_RUNNING ? GuiHandler.GUI_SCALE_FACTOR_MAX :
-                this.window.calculateScale(0, this.options.forceUnicodeFont().get());
+                this.window.calculateScale(0, this.options.forceUnicodeFont);
 
             // auto uses max scale
             if (guiScaleRef.get() == 0) {
                 guiScaleRef.set(maxScale);
             }
 
-            int newScale = this.options.guiScale().get() == 0 ? maxScale : this.options.guiScale().get();
+            int newScale = this.options.guiScale == 0 ? maxScale : this.options.guiScale;
 
             if (newScale < guiScaleRef.get()) {
                 // if someone reduced the gui scale, try to reduce the VR gui scale by the same steps
                 int newVRScale = VRState.VR_RUNNING ? newScale :
                     Math.max(1, GuiHandler.GUI_SCALE_FACTOR_MAX - (guiScaleRef.get() - newScale));
                 GuiHandler.GUI_SCALE_FACTOR = GuiHandler.calculateScale(newVRScale,
-                    this.options.forceUnicodeFont().get(),
+                    this.options.forceUnicodeFont,
                     GuiHandler.GUI_WIDTH, GuiHandler.GUI_HEIGHT);
             } else {
                 // new gui scale is bigger than before, so just reset to the default
                 VRSettings vrSettings = ClientDataHolderVR.getInstance().vrSettings;
                 GuiHandler.GUI_SCALE_FACTOR = GuiHandler.calculateScale(
                     vrSettings.doubleGUIResolution ? vrSettings.guiScale : (int) Math.ceil(vrSettings.guiScale * 0.5f),
-                    this.options.forceUnicodeFont().get(), GuiHandler.GUI_WIDTH, GuiHandler.GUI_HEIGHT);
+                    this.options.forceUnicodeFont, GuiHandler.GUI_WIDTH, GuiHandler.GUI_HEIGHT);
             }
 
             // resize the screen for the new gui scale
@@ -864,7 +865,7 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
             getSoundManager().reload();
         }
         resizeDisplay();
-        this.window.updateVsync(this.options.enableVsync().get());
+        this.window.updateVsync(this.options.enableVsync);
     }
 
     /**

@@ -19,6 +19,7 @@ import net.minecraft.world.entity.LivingEntity;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 import org.vivecraft.client.ClientVRPlayers;
+import org.vivecraft.client.extensions.ModelPartExtension;
 import org.vivecraft.client.utils.ClientUtils;
 import org.vivecraft.client.utils.ModelUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -441,10 +442,13 @@ public class VRPlayerModel<T extends LivingEntity> extends PlayerModel<T> {
                     model.leftLeg, model.rightLeg);
             }
         }
+        ((ModelPartExtension) (Object) model.leftArm).vivecraft$setScale(armScale, 1F, armScale);
+        ((ModelPartExtension) (Object) model.rightArm).vivecraft$setScale(armScale, 1F, armScale);
 
-        model.leftArm.xScale = model.leftArm.zScale = model.rightArm.xScale = model.rightArm.zScale = armScale;
-        model.body.xScale = model.body.zScale = bodyScale;
-        model.leftLeg.xScale = model.leftLeg.zScale = model.rightLeg.xScale = model.rightLeg.zScale = legScale;
+        ((ModelPartExtension) (Object) model.body).vivecraft$setScale(bodyScale, 1F, bodyScale);
+
+        ((ModelPartExtension) (Object) model.leftLeg).vivecraft$setScale(legScale, 1F, legScale);
+        ((ModelPartExtension) (Object) model.rightLeg).vivecraft$setScale(legScale, 1F, legScale);
 
         // spin attack moves the model one block up
         if (player.isAutoSpinAttack()) {

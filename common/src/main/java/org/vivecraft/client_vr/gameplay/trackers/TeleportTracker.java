@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -189,8 +188,8 @@ public class TeleportTracker extends Tracker {
 
             // execute teleport
             if (!this.dh.vrPlayer.isTeleportSupported()) {
-                String command = "tp " + destination.x + " " + destination.y + " " + destination.z;
-                player.commandSigned(command, Component.empty());
+                String command = "/tp " + destination.x + " " + destination.y + " " + destination.z;
+                player.chat(command);
             } else {
                 if (ClientNetworking.SERVER_SUPPORTS_DIRECT_TELEPORT) {
                     ((PlayerExtension) player).vivecraft$setTeleported(true);

@@ -18,14 +18,12 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.CubicSampler;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
@@ -33,7 +31,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -46,6 +44,7 @@ import org.vivecraft.client.extensions.BufferBuilderExtension;
 import org.vivecraft.client.utils.ClientUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.mixin.client.blaze3d.BufferBuilderAccessor;
 import org.vivecraft.mixin.client.renderer.RenderStateShardAccessor;
 import org.vivecraft.mod_compat_vr.iris.IrisHelper;
 import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
@@ -185,9 +184,9 @@ public class MenuWorldRenderer {
     public void render(PoseStack poseStack) {
 
         // temporarily disable fabulous to render the menu world
-        GraphicsStatus current = this.mc.options.graphicsMode().get();
+        GraphicsStatus current = this.mc.options.graphicsMode;
         if (current == GraphicsStatus.FABULOUS) {
-            this.mc.options.graphicsMode().set(GraphicsStatus.FANCY);
+            this.mc.options.graphicsMode = GraphicsStatus.FANCY;
         }
 
         turnOnLightLayer();
@@ -251,7 +250,7 @@ public class MenuWorldRenderer {
 
         poseStack.popPose();
         turnOffLightLayer();
-        this.mc.options.graphicsMode().set(current);
+        this.mc.options.graphicsMode = current;
     }
 
     private void renderChunkLayer(RenderType layer, Matrix4f modelView, Matrix4f Projection) {
@@ -287,7 +286,8 @@ public class MenuWorldRenderer {
             if (IrisHelper.isLoaded() && IrisHelper.isShaderActive() && IrisHelper.hasIssuesWithMenuWorld()) {
                 VRSettings.LOGGER.info("Vivecraft: Temporarily disabling shaders to build Menuworld.");
                 this.reenableShaders = true;
-                this.mc.gui.getChat().addMessage(Component.translatable("vivecraft.messages.menuworldshaderdisable"));
+                this.mc.gui.getChat()
+                    .addMessage(new TranslatableComponent("vivecraft.messages.menuworldshaderdisable"));
                 IrisHelper.setShadersActive(false);
             }
 
@@ -390,7 +390,7 @@ public class MenuWorldRenderer {
             BlockRenderDispatcher blockRenderer = this.mc.getBlockRenderer();
             BufferBuilder vertBuffer = this.bufferBuilders.get(pair);
             BlockPos.MutableBlockPos pos = this.currentPositions.get(pair);
-            RandomSource randomSource = RandomSource.create();
+            Random randomSource = new Random();
 
             int count = 0;
             while (
@@ -489,10 +489,14 @@ public class MenuWorldRenderer {
             if (layer == RenderType.translucent()) {
                 vertBuffer.setQuadSortOrigin(0, Mth.frac(this.blockAccess.getGround()), 0);
             }
-            BufferBuilder.RenderedBuffer renderedBuffer = vertBuffer.end();
-            if (!renderedBuffer.isEmpty()) {
-                uploadGeometry(layer, renderedBuffer);
+            if (((BufferBuilderAccessor) vertBuffer).getVertices() > 0) {
+                vertBuffer.end();
+                uploadGeometry(layer, vertBuffer);
                 count++;
+            } else {
+                // discard empty buffers
+                vertBuffer.end();
+                vertBuffer.discard();
             }
             totalMemory += ((BufferBuilderExtension) vertBuffer).vivecraft$getBufferSize();
             ((BufferBuilderExtension) vertBuffer).vivecraft$freeBuffer();
@@ -538,10 +542,10 @@ public class MenuWorldRenderer {
         this.builderError = null;
     }
 
-    private void uploadGeometry(RenderType layer, BufferBuilder.RenderedBuffer renderedBuffer) {
+    private void uploadGeometry(RenderType layer, BufferBuilder bufferBuilder) {
         VertexBuffer buffer = new VertexBuffer();
         buffer.bind();
-        buffer.upload(renderedBuffer);
+        buffer.upload(bufferBuilder);
         VertexBuffer.unbind();
         this.vertexBuffers.get(layer).add(buffer);
     }
@@ -749,7 +753,8 @@ public class MenuWorldRenderer {
                         .endVertex();
                 }
 
-                BufferUploader.drawWithShader(bufferBuilder.end());
+                bufferBuilder.end();
+                BufferUploader.end(bufferBuilder);
                 poseStack.popPose();
             }
 
@@ -780,7 +785,8 @@ public class MenuWorldRenderer {
                 bufferBuilder.vertex(modelView, size, 100.0F, -size).uv(1.0F, 0.0F).endVertex();
                 bufferBuilder.vertex(modelView, size, 100.0F, size).uv(1.0F, 1.0F).endVertex();
                 bufferBuilder.vertex(modelView, -size, 100.0F, size).uv(0.0F, 1.0F).endVertex();
-                BufferUploader.drawWithShader(bufferBuilder.end());
+                bufferBuilder.end();
+                BufferUploader.end(bufferBuilder);
             }
 
             size = 20.0F;
@@ -798,7 +804,8 @@ public class MenuWorldRenderer {
                 bufferBuilder.vertex(modelView, size, -100.0f, size).uv(u1, v1).endVertex();
                 bufferBuilder.vertex(modelView, size, -100.0f, -size).uv(u1, v0).endVertex();
                 bufferBuilder.vertex(modelView, -size, -100.0f, -size).uv(u0, v0).endVertex();
-                BufferUploader.drawWithShader(bufferBuilder.end());
+                bufferBuilder.end();
+                BufferUploader.end(bufferBuilder);
             }
 
             RenderSystem.disableTexture();
@@ -948,10 +955,9 @@ public class MenuWorldRenderer {
                     this.cloudVBO.close();
                 }
                 this.cloudVBO = new VertexBuffer();
-                BufferBuilder.RenderedBuffer renderedBuffer = this.buildClouds(bufferBuilder, cloudX, cloudY, cloudZ,
-                    cloudColor);
+                this.buildClouds(bufferBuilder, cloudX, cloudY, cloudZ, cloudColor);
                 this.cloudVBO.bind();
-                this.cloudVBO.upload(renderedBuffer);
+                this.cloudVBO.upload(bufferBuilder);
                 VertexBuffer.unbind();
             }
 
@@ -983,7 +989,7 @@ public class MenuWorldRenderer {
         }
     }
 
-    private BufferBuilder.RenderedBuffer buildClouds(
+    private void buildClouds(
         BufferBuilder bufferBuilder, double cloudX, double cloudY, double cloudZ, Vec3 cloudColor)
     {
         final float texRes = 1.0F / 256.0F;
@@ -1154,7 +1160,7 @@ public class MenuWorldRenderer {
                 }
             }
         }
-        return bufferBuilder.end();
+        bufferBuilder.end();
     }
 
     private void renderSnowAndRain(PoseStack poseStack, double inX, double inY, double inZ) {
@@ -1205,7 +1211,7 @@ public class MenuWorldRenderer {
                 }
                 int rainY = Math.max(blockingHeight, yFloor);
 
-                RandomSource randomSource = RandomSource.create(
+                Random randomSource = new Random(
                     rainX * rainX * 3121L + rainX * 45238971L ^ rainZ * rainZ * 418711L + rainZ * 13761L);
                 mutableBlockPos.setY(lower);
 
@@ -1363,7 +1369,7 @@ public class MenuWorldRenderer {
             skyColorG = skyColorG * darkening + luminance * (1.0f - darkening);
             skyColorB = skyColorB * darkening + luminance * (1.0f - darkening);
         }
-        if (!this.mc.options.hideLightningFlash().get() && this.skyFlashTime > 0) {
+        if (!this.mc.options.hideLightningFlashes && this.skyFlashTime > 0) {
             float flash = (float) this.skyFlashTime - ClientUtils.getCurrentPartialTick();
             if (flash > 1.0f) {
                 flash = 1.0f;
@@ -1424,9 +1430,9 @@ public class MenuWorldRenderer {
             this.skyVBO.close();
         }
         this.skyVBO = new VertexBuffer();
-        BufferBuilder.RenderedBuffer renderedBuffer = buildSkyDisc(bufferBuilder, 16.0f);
+        buildSkyDisc(bufferBuilder, 16.0f);
         this.skyVBO.bind();
-        this.skyVBO.upload(renderedBuffer);
+        this.skyVBO.upload(bufferBuilder);
         VertexBuffer.unbind();
     }
 
@@ -1437,13 +1443,13 @@ public class MenuWorldRenderer {
             this.sky2VBO.close();
         }
         this.sky2VBO = new VertexBuffer();
-        BufferBuilder.RenderedBuffer renderedBuffer = buildSkyDisc(bufferBuilder, -16.0f);
+        buildSkyDisc(bufferBuilder, -16.0f);
         this.sky2VBO.bind();
-        this.sky2VBO.upload(renderedBuffer);
+        this.sky2VBO.upload(bufferBuilder);
         VertexBuffer.unbind();
     }
 
-    private static BufferBuilder.RenderedBuffer buildSkyDisc(BufferBuilder bufferBuilder, float posY) {
+    private static void buildSkyDisc(BufferBuilder bufferBuilder, float posY) {
         float g = Math.signum(posY) * 512.0f;
         float h = 512.0f;
         RenderSystem.setShader(GameRenderer::getPositionShader);
@@ -1453,7 +1459,7 @@ public class MenuWorldRenderer {
             bufferBuilder.vertex(g * Mth.cos((float) i * Mth.DEG_TO_RAD), posY,
                 512.0f * Mth.sin((float) i * Mth.DEG_TO_RAD)).endVertex();
         }
-        return bufferBuilder.end();
+        bufferBuilder.end();
     }
 
     private void generateStars() {
@@ -1464,13 +1470,13 @@ public class MenuWorldRenderer {
             this.starVBO.close();
         }
         this.starVBO = new VertexBuffer();
-        BufferBuilder.RenderedBuffer renderedBuffer = this.buildStars(bufferBuilder);
+        this.buildStars(bufferBuilder);
         this.starVBO.bind();
-        this.starVBO.upload(renderedBuffer);
+        this.starVBO.upload(bufferBuilder);
         VertexBuffer.unbind();
     }
 
-    private BufferBuilder.RenderedBuffer buildStars(BufferBuilder bufferBuilderIn) {
+    private void buildStars(BufferBuilder bufferBuilderIn) {
         Random random = new Random(10842L);
         bufferBuilderIn.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
@@ -1514,7 +1520,7 @@ public class MenuWorldRenderer {
                 }
             }
         }
-        return bufferBuilderIn.end();
+        bufferBuilderIn.end();
     }
 
     public void turnOffLightLayer() {
@@ -1574,8 +1580,8 @@ public class MenuWorldRenderer {
             for (int i = 0; i < 16; ++i) {
                 for (int j = 0; j < 16; ++j) {
                     float skyBrightness =
-                        LightTexture.getBrightness(this.blockAccess.dimensionType(), i) * effectiveSkyLight;
-                    float blockBrightnessRed = LightTexture.getBrightness(this.blockAccess.dimensionType(), j) *
+                        this.blockAccess.dimensionType().brightness(i) * effectiveSkyLight;
+                    float blockBrightnessRed = this.blockAccess.dimensionType().brightness(j) *
                         (this.blockLightRedFlicker + 1.5f);
                     float blockBrightnessGreen =
                         blockBrightnessRed * ((blockBrightnessRed * 0.6f + 0.4f) * 0.6f + 0.4f);
@@ -1615,7 +1621,7 @@ public class MenuWorldRenderer {
                         finalColor.clamp(0.0f, 1.0f);
                     }
 
-                    float gamma = this.mc.options.gamma().get().floatValue();
+                    float gamma = (float) this.mc.options.gamma;
                     Vector3f vector3f5 = finalColor.copy();
                     vector3f5.map(this::notGamma);
                     finalColor.lerp(vector3f5, Math.max(0.0f, gamma /*- darknessGamma*/));
@@ -1794,12 +1800,12 @@ public class MenuWorldRenderer {
             Vec3 skyColor = this.menuWorldRenderer.getSkyColor(eyePos);
             if (OptifineHelper.isOptifineLoaded()) {
                 if (this.menuWorldRenderer.blockAccess.dimensionType().effectsLocation()
-                    .equals(BuiltinDimensionTypes.OVERWORLD_EFFECTS))
+                    .equals(DimensionType.OVERWORLD_EFFECTS))
                 {
                     skyColor = OptifineHelper.getCustomSkyColor(skyColor, this.menuWorldRenderer.blockAccess, eyePos.x,
                         eyePos.y, eyePos.z);
                 } else if (this.menuWorldRenderer.blockAccess.dimensionType().effectsLocation()
-                    .equals(BuiltinDimensionTypes.END_EFFECTS))
+                    .equals(DimensionType.END_EFFECTS))
                 {
                     skyColor = OptifineHelper.getCustomSkyColorEnd(skyColor);
                 }
@@ -1810,16 +1816,16 @@ public class MenuWorldRenderer {
             Vec3 fogColor = this.menuWorldRenderer.getFogColor(eyePos);
             if (OptifineHelper.isOptifineLoaded()) {
                 if (this.menuWorldRenderer.blockAccess.dimensionType().effectsLocation()
-                    .equals(BuiltinDimensionTypes.OVERWORLD_EFFECTS))
+                    .equals(DimensionType.OVERWORLD_EFFECTS))
                 {
                     fogColor = OptifineHelper.getCustomFogColor(fogColor, this.menuWorldRenderer.blockAccess, eyePos.x,
                         eyePos.y, eyePos.z);
                 } else if (this.menuWorldRenderer.blockAccess.dimensionType().effectsLocation()
-                    .equals(BuiltinDimensionTypes.END_EFFECTS))
+                    .equals(DimensionType.END_EFFECTS))
                 {
                     fogColor = OptifineHelper.getCustomFogColorEnd(fogColor);
                 } else if (this.menuWorldRenderer.blockAccess.dimensionType().effectsLocation()
-                    .equals(BuiltinDimensionTypes.NETHER_EFFECTS))
+                    .equals(DimensionType.NETHER_EFFECTS))
                 {
                     fogColor = OptifineHelper.getCustomFogColorNether(fogColor);
                 }
@@ -1927,7 +1933,7 @@ public class MenuWorldRenderer {
 
                 Holder<Biome> holder = this.menuWorldRenderer.blockAccess.getBiome(
                     new BlockPos(this.menuWorldRenderer.getEyePos()));
-                if (holder.is(BiomeTags.HAS_CLOSER_WATER_FOG)) {
+                if (Biome.getBiomeCategory(holder) == Biome.BiomeCategory.SWAMP) {
                     fogEnd *= 0.85f;
                 }
                 if (fogEnd > this.menuWorldRenderer.renderDistance) {

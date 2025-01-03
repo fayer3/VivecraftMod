@@ -333,7 +333,8 @@ public class RenderHelper {
         bufferBuilder.vertex(x, y + size, 0).uv(0, 15F / 265F).endVertex();
         bufferBuilder.vertex(x + size, y + size, 0).uv(15F / 265F, 15F / 265F).endVertex();
         bufferBuilder.vertex(x + size, y, 0).uv(15F / 265F, 0).endVertex();
-        BufferUploader.drawWithShader(bufferBuilder.end());
+        bufferBuilder.end();
+        BufferUploader.end(bufferBuilder);
 
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
@@ -376,7 +377,8 @@ public class RenderHelper {
             .vertex(matrix, -sizeX, sizeY, 0)
             .uv(0.0F, 1.0F)
             .endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
@@ -490,7 +492,8 @@ public class RenderHelper {
             .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
             .normal(0, 0, 1)
             .endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader.end(bufferbuilder);
 
         MC.gameRenderer.lightTexture().turnOffLightLayer();
 

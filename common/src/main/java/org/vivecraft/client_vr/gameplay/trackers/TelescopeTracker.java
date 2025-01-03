@@ -3,7 +3,7 @@ package org.vivecraft.client_vr.gameplay.trackers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -52,7 +52,7 @@ public class TelescopeTracker extends Tracker {
             if (isTelescope(player.getItemInHand(InteractionHand.values()[c]))) {
                 if (isViewing(c)) {
                     if (!this.viewing[c]) {
-                        this.mc.gameMode.useItem(player, InteractionHand.values()[c]);
+                        this.mc.gameMode.useItem(player, player.level, InteractionHand.values()[c]);
                     }
                     this.viewing[c] = true;
                 } else {
@@ -86,7 +86,7 @@ public class TelescopeTracker extends Tracker {
             return false;
         } else {
             return itemStack.getHoverName().getString().equals("Eye of the Farseer") ||
-                (itemStack.getHoverName().getContents() instanceof TranslatableContents translatableContents &&
+                (itemStack.getHoverName() instanceof TranslatableComponent translatableContents &&
                     translatableContents.getKey().equals("vivecraft.item.telescope")
                 );
         }

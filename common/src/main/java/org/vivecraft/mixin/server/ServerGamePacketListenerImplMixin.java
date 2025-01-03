@@ -1,7 +1,9 @@
 package org.vivecraft.mixin.server;
 
+import net.minecraft.Util;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -60,8 +62,9 @@ public abstract class ServerGamePacketListenerImplMixin {
         if (ServerConfig.MESSAGES_ENABLED.get()) {
             String message = ServerConfig.MESSAGES_LEAVE_MESSAGE.get();
             if (!message.isEmpty()) {
-                this.server.getPlayerList().broadcastSystemMessage(
-                    Component.literal(message.formatted(this.player.getScoreboardName())), false);
+                this.server.getPlayerList().broadcastMessage(
+                    new TextComponent(message.formatted(this.player.getScoreboardName())), ChatType.SYSTEM,
+                    Util.NIL_UUID);
             }
         }
         // remove player from viveplayer list, when they leave

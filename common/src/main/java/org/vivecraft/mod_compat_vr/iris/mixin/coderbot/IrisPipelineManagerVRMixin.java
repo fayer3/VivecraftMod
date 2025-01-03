@@ -6,7 +6,7 @@ import net.coderbot.iris.shaderpack.DimensionId;
 import net.coderbot.iris.shaderpack.materialmap.NamespacedId;
 import net.coderbot.iris.shadows.ShadowRenderTargets;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Desc;
@@ -130,7 +130,7 @@ public class IrisPipelineManagerVRMixin implements PipelineManagerExtension {
                     {
                         first = false;
                         Minecraft.getInstance().gui.getChat()
-                            .addMessage(Component.translatable("vivecraft.messages.slowshader"));
+                            .addMessage(new TranslatableComponent("vivecraft.messages.slowshader"));
                     }
                 }
                 // set to currently needed renderpass again

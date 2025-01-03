@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -814,20 +814,20 @@ public abstract class MCVR {
             if (++this.moveModeSwitchCount == 80 || toggleMovementPressed) {
                 if (this.dh.vrSettings.seated) {
                     this.dh.vrSettings.seatedFreeMove = !this.dh.vrSettings.seatedFreeMove;
-                    this.mc.gui.getChat().addMessage(Component.translatable("vivecraft.messages.movementmodeswitch",
-                        this.dh.vrSettings.seatedFreeMove ? Component.translatable("vivecraft.options.freemove") :
-                            Component.translatable("vivecraft.options.teleport")));
+                    this.mc.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.movementmodeswitch",
+                        this.dh.vrSettings.seatedFreeMove ? new TranslatableComponent("vivecraft.options.freemove") :
+                            new TranslatableComponent("vivecraft.options.teleport")));
                 } else if (this.dh.vrPlayer.isTeleportSupported()) {
                     this.dh.vrSettings.forceStandingFreeMove = !this.dh.vrSettings.forceStandingFreeMove;
-                    this.mc.gui.getChat().addMessage(Component.translatable("vivecraft.messages.movementmodeswitch",
-                        this.dh.vrSettings.seatedFreeMove ? Component.translatable("vivecraft.options.freemove") :
-                            Component.translatable("vivecraft.options.teleport")));
+                    this.mc.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.movementmodeswitch",
+                        this.dh.vrSettings.seatedFreeMove ? new TranslatableComponent("vivecraft.options.freemove") :
+                            new TranslatableComponent("vivecraft.options.teleport")));
                 } else if (this.dh.vrPlayer.isTeleportOverridden()) {
                     this.dh.vrPlayer.setTeleportOverride(false);
-                    this.mc.gui.getChat().addMessage(Component.translatable("vivecraft.messages.teleportdisabled"));
+                    this.mc.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.teleportdisabled"));
                 } else {
                     this.dh.vrPlayer.setTeleportOverride(true);
-                    this.mc.gui.getChat().addMessage(Component.translatable("vivecraft.messages.teleportenabled"));
+                    this.mc.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.teleportenabled"));
                 }
             }
         } else {

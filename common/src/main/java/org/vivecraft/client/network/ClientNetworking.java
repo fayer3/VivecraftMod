@@ -3,7 +3,7 @@ package org.vivecraft.client.network;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -252,13 +252,13 @@ public class ClientNetworking {
                     ))
                 {
                     ClientNetworking.DISPLAYED_CHAT_MESSAGE = true;
-                    mc.gui.getChat().addMessage(Component.translatable("vivecraft.messages.serverplugin",
+                    mc.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.serverplugin",
                         ((VersionPayloadS2C) s2cPayload).version()));
                 }
                 if (VRState.VR_ENABLED && dataholder.vrSettings.manualCalibration == -1.0F &&
                     !dataholder.vrSettings.seated)
                 {
-                    mc.gui.getChat().addMessage(Component.translatable("vivecraft.messages.calibrateheight"));
+                    mc.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.calibrateheight"));
                 }
             }
             case IS_VR_ACTIVE -> {
@@ -338,7 +338,7 @@ public class ClientNetworking {
                 if (VRState.VR_INITIALIZED) {
                     if (!ClientNetworking.SERVER_ALLOWS_VR_SWITCHING) {
                         Minecraft.getInstance().gui.getChat()
-                            .addMessage(Component.translatable("vivecraft.messages.novrhotswitching"));
+                            .addMessage(new TranslatableComponent("vivecraft.messages.novrhotswitching"));
                     }
                     dataholder.vrPlayer.vrSwitchWarning = false;
                 }

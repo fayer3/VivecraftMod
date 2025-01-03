@@ -5,6 +5,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.OptionsScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,7 +27,7 @@ public class OptionsScreenVRMixin extends Screen {
 
             this.addRenderableWidget(
                 new Button(this.width / 2 + xOffset, this.height / 6 - 12 + 24, 150, 20,
-                    Component.translatable("vivecraft.options.screen.main.button"), (p) -> {
+                    new TranslatableComponent("vivecraft.options.screen.main.button"), (p) -> {
                     Minecraft.getInstance().options.save();
                     Minecraft.getInstance().setScreen(new GuiMainVRSettings(this));
                 }));

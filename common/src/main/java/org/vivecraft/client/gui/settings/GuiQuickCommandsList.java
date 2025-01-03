@@ -7,6 +7,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
 public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsList.CommandEntry> {
@@ -15,16 +16,13 @@ public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsLi
     public GuiQuickCommandsList(GuiQuickCommandEditor parent, Minecraft mc) {
         super(mc, parent.width, parent.height, 32, parent.height - 32, 20);
 
+        setRenderSelection(false);
+
         for (String command : this.dataholder.vrSettings.vrQuickCommands) {
             this.minecraft.font.width(command);
             this.addEntry(new CommandEntry(command, this));
         }
     }
-
-    @Override
-    protected void renderSelection(
-        PoseStack poseStack, int top, int width, int height, int outerColor, int innerColor)
-    {}
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -41,11 +39,11 @@ public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsLi
 
         private CommandEntry(String command, GuiQuickCommandsList parent) {
             this.txt = new EditBox(GuiQuickCommandsList.this.minecraft.font, parent.width / 2 - 100, 60, 200, 20,
-                Component.literal(""));
+                new TextComponent(""));
             this.txt.setMaxLength(256);
             this.txt.setValue(command);
             this.btnDelete = new Button(0, 0, 18, 18,
-                Component.literal("X"), (p) -> {
+                new TextComponent("X"), (p) -> {
                 this.txt.setValue("");
                 this.txt.changeFocus(true);
             });

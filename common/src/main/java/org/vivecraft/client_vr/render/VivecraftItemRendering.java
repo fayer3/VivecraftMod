@@ -68,8 +68,6 @@ public class VivecraftItemRendering {
                     itemTransformType = VivecraftItemTransformType.Bow_Roomscale;
                 }
             }
-        } else if (itemStack.getUseAnimation() == UseAnim.TOOT_HORN) {
-            itemTransformType = VivecraftItemTransformType.Horn;
         } else if (item instanceof SwordItem || itemStack.is(ItemTags.VIVECRAFT_SWORDS)) {
             itemTransformType = VivecraftItemTransformType.Sword;
         } else if (item instanceof ShieldItem || itemStack.is(ItemTags.VIVECRAFT_SHIELDS)) {

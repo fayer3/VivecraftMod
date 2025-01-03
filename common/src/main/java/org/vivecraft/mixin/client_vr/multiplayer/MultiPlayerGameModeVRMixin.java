@@ -3,12 +3,14 @@ package org.vivecraft.mixin.client_vr.multiplayer;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,7 +36,7 @@ public class MultiPlayerGameModeVRMixin {
 
     @Inject(method = "useItem", at = @At("HEAD"))
     private void vivecraft$overrideUse(
-        Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir)
+        Player player, Level level, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir)
     {
         if (VRState.VR_RUNNING) {
             ClientNetworking.overrideLook(player,
@@ -53,7 +55,8 @@ public class MultiPlayerGameModeVRMixin {
 
     @Inject(method = "useItemOn", at = @At("HEAD"))
     private void vivecraft$overrideUseOn(
-        LocalPlayer player, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<InteractionResult> cir)
+        LocalPlayer player, ClientLevel clientLevel, InteractionHand hand, BlockHitResult result,
+        CallbackInfoReturnable<InteractionResult> cir)
     {
         if (VRState.VR_RUNNING) {
             ClientNetworking.overrideLook(player,

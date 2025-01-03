@@ -5,7 +5,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
@@ -58,9 +58,9 @@ public abstract class ShapedRecipeMixin {
             } else {
                 ItemStack itemStack = new ItemStack(vanillaItem, i);
                 if (jsonObject.has("fallbackname")) {
-                    itemStack.setHoverName(Component.translatable(jsonObject.get("name").getAsString()));
+                    itemStack.setHoverName(new TranslatableComponent(jsonObject.get("name").getAsString()));
                 } else {
-                    itemStack.setHoverName(Component.translatable(jsonObject.get("name").getAsString()));
+                    itemStack.setHoverName(new TranslatableComponent(jsonObject.get("name").getAsString()));
                 }
                 itemStack.getOrCreateTag()
                     .putBoolean("Unbreakable", GsonHelper.getAsBoolean(jsonObject, "unbreakable", false));

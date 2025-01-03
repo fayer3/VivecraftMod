@@ -3,7 +3,7 @@ package org.vivecraft.fabric;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import org.vivecraft.client.Xplat;
@@ -23,7 +23,7 @@ public class VivecraftMod implements ModInitializer {
 
         // add server config commands
         CommandRegistrationCallback.EVENT.register(
-            (dispatcher, registryAccess, environment) -> ServerUtil.registerCommands(dispatcher, registryAccess));
+            (dispatcher, dedicated) -> ServerUtil.registerCommands(dispatcher));
 
         // register packets
         // use channel registers to be compatible with other mod loaders

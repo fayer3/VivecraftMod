@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "client": [
     "client.ResourceLoadStateTrackerMixin",
+    "client.blaze3d.BufferBuilderAccessor",
     "client.blaze3d.BufferBuilderMixin",
     "client.blaze3d.MemoryTrackerAccessor",
     "client.blaze3d.RenderSystemAccessor",
@@ -14,6 +15,7 @@
     "client.gui.screens.TitleScreenMixin",
     "client.main.MainMixin",
     "client.model.PlayerModelMixin",
+    "client.model.geom.ModelPartMixin",
     "client.multiplayer.ClientLevelMixin",
     "client.particle.SparkParticleMixin",
     "client.player.AbstractClientPlayerMixin",
@@ -53,7 +55,9 @@
     "client_vr.gui.screens.inventory.BookEditScreenVRMixin",
     "client_vr.gui.screens.inventory.CreativeModeInventoryScreenVRMixin",
     "client_vr.gui.screens.inventory.SignEditScreenVRMixin",
+    "client_vr.lwjgl.LibraryMixin",
     "client_vr.lwjgl.OpenVRMixin",
+    "client_vr.lwjgl.VRMixin",
     "client_vr.multiplayer.ClientPacketListenerVRMixin",
     "client_vr.multiplayer.MultiPlayerGameModeVRMixin",
     "client_vr.particle.ItemPickupParticleVRMixin",
@@ -63,7 +67,6 @@
     "client_vr.player.LocalPlayerVRMixin",
     "client_vr.renderer.GameRendererVRMixin",
     "client_vr.renderer.ItemInHandRendererVRMixin",
-    "client_vr.renderer.ItemPropertiesVRMixin",
     "client_vr.renderer.LevelRendererVRMixin",
     "client_vr.renderer.NoSodiumLevelRendererVRMixin",
     "client_vr.renderer.PostChainVRMixin",
@@ -84,7 +87,8 @@
     "client_vr.world.PotionItemVRMixin",
     "client_vr.world.entity.LivingEntityMixin",
     "client_vr.world.entity.player.PlayerVRMixin",
-    "client_vr.world.entity.projectile.FireworkRocketEntityVRMixin"
+    "client_vr.world.entity.projectile.FireworkRocketEntityVRMixin",
+    "client_vr.world.level.biome.BiomeAccessor"
   ],
   "minVersion": "0.8.4",
   "mixins": [

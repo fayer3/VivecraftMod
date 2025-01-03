@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -25,7 +25,7 @@ public abstract class TwoHandedScreen extends Screen {
     protected boolean reinit;
 
     protected TwoHandedScreen() {
-        super(Component.literal(""));
+        super(new TextComponent(""));
     }
 
     @Override

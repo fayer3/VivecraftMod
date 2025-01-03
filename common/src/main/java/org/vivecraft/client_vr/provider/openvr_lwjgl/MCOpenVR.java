@@ -12,7 +12,8 @@ import net.minecraft.client.resources.language.ClientLanguage;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.tuple.Triple;
 import org.joml.*;
@@ -124,6 +125,8 @@ public class MCOpenVR extends MCVR {
     // general error buffer
     private final IntBuffer errorBuffer;
 
+    private final boolean runningOnOldLWJGL;
+
     // Last updated 10/29/2023
     // Hard-coded list of languages Steam supports
     private static final Map<String, String> STEAM_LANGUAGES = Map.ofEntries(
@@ -207,11 +210,13 @@ public class MCOpenVR extends MCVR {
                 VRSettings.LOGGER.error("Vivecraft: couldn't check lwjgl source:", e);
             }
 
-            throw new RenderConfigException(Component.translatable("vivecraft.messages.vriniterror"),
-                Component.translatable("vivecraft.messages.rendersetupfailed",
+            throw new RenderConfigException(new TranslatableComponent("vivecraft.messages.vriniterror"),
+                new TranslatableComponent("vivecraft.messages.rendersetupfailed",
                     I18n.get("vivecraft.messages.invalidlwjgl", Version.getVersion(), max, suppliedJar),
                     "OpenVR_LWJGL"));
         }
+        // older lwjgl is missing some JNI calls that openvr of lwjgl 3.3.2 needs
+        this.runningOnOldLWJGL = version[0] < 3 || (version[1] < 3 && version[2] < 3);
 
         this.hapticScheduler = new OpenVRHapticScheduler();
 
@@ -1054,11 +1059,11 @@ public class MCOpenVR extends MCVR {
         if (hasInvalidChars || alwaysThrow) {
             String error = knownError + (hasInvalidChars ? "\nInvalid characters in path: \n" : "\n");
             if (hasInvalidChars) {
-                throw new RenderConfigException(Component.translatable("vivecraft.messages.vriniterror"),
-                    Component.translatable("vivecraft.messages.steamvrInvalidCharacters", pathFormatted));
+                throw new RenderConfigException(new TranslatableComponent("vivecraft.messages.vriniterror"),
+                    new TranslatableComponent("vivecraft.messages.steamvrInvalidCharacters", pathFormatted));
             } else {
-                throw new RenderConfigException(Component.translatable("vivecraft.messages.vriniterror"),
-                    Component.empty().append(error).append(pathFormatted));
+                throw new RenderConfigException(new TranslatableComponent("vivecraft.messages.vriniterror"),
+                    new TextComponent(error).append(pathFormatted));
             }
         }
     }
@@ -1196,8 +1201,8 @@ public class MCOpenVR extends MCVR {
         int error = VRInput_SetActionManifestPath(actionsPath);
 
         if (error != EVRInputError_VRInputError_None) {
-            throw new RenderConfigException(Component.translatable("vivecraft.messages.vriniterror"),
-                Component.literal("Failed to load action manifest: " + getInputErrorName(error)));
+            throw new RenderConfigException(new TranslatableComponent("vivecraft.messages.vriniterror"),
+                new TextComponent("Failed to load action manifest: " + getInputErrorName(error)));
         }
     }
 
@@ -1376,8 +1381,14 @@ public class MCOpenVR extends MCVR {
      * @throws RuntimeException if OpenVR gives an error
      */
     private void readPoseData(long poseHandle) {
-        int error = VRInput_GetPoseActionDataForNextFrame(poseHandle, ETrackingUniverseOrigin_TrackingUniverseStanding,
-            this.poseData, InputPoseActionData.SIZEOF, k_ulInvalidInputValueHandle);
+        int error;
+        if (!this.runningOnOldLWJGL) {
+            error = VRInput_GetPoseActionDataForNextFrame(poseHandle, ETrackingUniverseOrigin_TrackingUniverseStanding,
+                this.poseData, InputPoseActionData.SIZEOF, k_ulInvalidInputValueHandle);
+        } else {
+            error = VRInput_GetPoseActionDataRelativeToNow(poseHandle, ETrackingUniverseOrigin_TrackingUniverseStanding,
+                0F, this.poseData, InputPoseActionData.SIZEOF, k_ulInvalidInputValueHandle);
+        }
 
         if (error != EVRInputError_VRInputError_None) {
             throw new RuntimeException("Error reading pose data: " + getInputErrorName(error));

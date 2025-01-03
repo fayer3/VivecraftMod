@@ -26,7 +26,6 @@ import net.minecraft.world.level.material.FluidState;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.common.network.packet.c2s.VivecraftPayloadC2S;
 import org.vivecraft.common.network.packet.s2c.VivecraftPayloadS2C;
-import org.vivecraft.fabric.mixin.world.level.biome.BiomeAccessor;
 
 import java.nio.file.Path;
 
@@ -112,10 +111,6 @@ public class XplatImpl implements Xplat {
                 };
             }
         }
-    }
-
-    public static Biome.ClimateSettings getBiomeClimateSettings(Biome biome) {
-        return ((BiomeAccessor) (Object) biome).getClimateSettings();
     }
 
     public static BiomeSpecialEffects getBiomeEffects(Biome biome) {

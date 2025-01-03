@@ -1,11 +1,12 @@
 package org.vivecraft.mixin.client_vr;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Options;
+import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.ChatVisiblity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.vivecraft.client.VivecraftVRMod;
@@ -18,8 +19,14 @@ public abstract class OptionsVRMixin {
         return VivecraftVRMod.INSTANCE.initializeBindings((KeyMapping[]) original.call(array1, array2));
     }
 
-    @ModifyExpressionValue(method = "broadcastOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/OptionInstance;get()Ljava/lang/Object;", ordinal = 3))
-    private Object vivecraft$alwaysRightMain(Object arm) {
-        return VRState.VR_RUNNING ? HumanoidArm.RIGHT : arm;
+    @WrapOperation(method = "broadcastOptions", at = @At(value = "NEW", target = "net/minecraft/network/protocol/game/ServerboundClientInformationPacket"))
+    private ServerboundClientInformationPacket vivecraft$alwaysRightMain(
+        String language, int viewDistance, ChatVisiblity chatVisibility, boolean chatColors, int modelCustomisation,
+        HumanoidArm mainHand, boolean textFilteringEnabled, boolean allowsListing,
+        Operation<ServerboundClientInformationPacket> original)
+    {
+        return original.call(language, viewDistance, chatVisibility, chatColors, modelCustomisation,
+            VRState.VR_RUNNING ? HumanoidArm.RIGHT : mainHand,
+            textFilteringEnabled, allowsListing);
     }
 }

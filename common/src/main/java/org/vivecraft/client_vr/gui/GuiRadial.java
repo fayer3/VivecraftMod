@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.vivecraft.client.gui.framework.TwoHandedScreen;
 import org.vivecraft.client_vr.provider.MCVR;
 import org.vivecraft.client_vr.provider.openvr_lwjgl.VRInputAction;
@@ -69,7 +69,7 @@ public class GuiRadial extends TwoHandedScreen {
             if (!"?".equals(label)) {
                 this.addRenderableWidget(new Button(
                     centerX + x - buttonWidth / 2, centerY + y - 10, buttonWidth, 20,
-                    Component.translatable(label),
+                    new TranslatableComponent(label),
                     (p) -> {
                         VRInputAction vrinputaction = MCVR.get().getInputAction(this.arr[index]);
 

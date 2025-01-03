@@ -5,10 +5,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.ComponentCollector;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.ComponentRenderUtils;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -193,11 +190,11 @@ public class TextUtils {
      * @return Component of the Throwable message and stack trace
      */
     public static Component throwableToComponent(Throwable throwable) {
-        MutableComponent result = Component.literal(throwable.getClass().getName() +
+        MutableComponent result = new TextComponent(throwable.getClass().getName() +
             (throwable.getMessage() == null ? "" : ": " + throwable.getMessage()));
 
         for (StackTraceElement element : throwable.getStackTrace()) {
-            result.append(Component.literal("\n" + element.toString()));
+            result.append(new TextComponent("\n" + element.toString()));
         }
         return result;
     }

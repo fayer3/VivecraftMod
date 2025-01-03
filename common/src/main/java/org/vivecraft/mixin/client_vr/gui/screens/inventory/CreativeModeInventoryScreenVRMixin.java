@@ -5,6 +5,8 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -50,10 +52,10 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
     private void vivecraft$addCreativeItems(CreativeModeTab tab, NonNullList<ItemStack> items) {
         if (tab == CreativeModeTab.TAB_FOOD || tab == null) {
             ItemStack eatMeCake = new ItemStack(Items.PUMPKIN_PIE);
-            eatMeCake.setHoverName(Component.literal("EAT ME"));
+            eatMeCake.setHoverName(new TextComponent("EAT ME"));
 
             ItemStack drinkMePotion = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);
-            drinkMePotion.setHoverName(Component.literal("DRINK ME"));
+            drinkMePotion.setHoverName(new TextComponent("DRINK ME"));
             drinkMePotion.getOrCreateTag().putInt("HideFlags", 32);
 
             items.add(eatMeCake);
@@ -62,13 +64,13 @@ public abstract class CreativeModeInventoryScreenVRMixin extends EffectRendering
 
         if (tab == CreativeModeTab.TAB_TOOLS || tab == null) {
             ItemStack boots = new ItemStack(Items.LEATHER_BOOTS);
-            boots.setHoverName(Component.translatable("vivecraft.item.jumpboots"));
+            boots.setHoverName(new TranslatableComponent("vivecraft.item.jumpboots"));
             boots.getOrCreateTag().putBoolean("Unbreakable", true);
             boots.getOrCreateTag().putInt("HideFlags", 4);
             boots.getOrCreateTagElement(ItemStack.TAG_DISPLAY).putInt(ItemStack.TAG_COLOR, 0x8CE56F);
 
             ItemStack claws = new ItemStack(Items.SHEARS);
-            claws.setHoverName(Component.translatable("vivecraft.item.climbclaws"));
+            claws.setHoverName(new TranslatableComponent("vivecraft.item.climbclaws"));
             claws.getOrCreateTag().putBoolean("Unbreakable", true);
             claws.getOrCreateTag().putInt("HideFlags", 4);
 

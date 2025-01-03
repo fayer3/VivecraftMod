@@ -17,6 +17,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.vivecraft.client.extensions.ModelPartExtension;
 import org.vivecraft.client.render.models.HandModel;
 import org.vivecraft.client.utils.ClientUtils;
 import org.vivecraft.client.utils.ModelUtils;
@@ -224,7 +225,8 @@ public class VRPlayerModel_WithArms<T extends LivingEntity> extends VRPlayerMode
         }
 
         // first person scale
-        this.leftHand.xScale = this.leftHand.zScale = this.rightHand.xScale = this.rightHand.zScale = this.armScale;
+        ((ModelPartExtension) (Object) this.leftHand).vivecraft$setScale(this.armScale, 1F, this.armScale);
+        ((ModelPartExtension) (Object) this.rightHand).vivecraft$setScale(this.armScale, 1F, this.armScale);
 
         if (this.layAmount > 0F) {
             ModelUtils.applySwimRotationOffset(player, this.xRot, this.tempV, this.tempV2,

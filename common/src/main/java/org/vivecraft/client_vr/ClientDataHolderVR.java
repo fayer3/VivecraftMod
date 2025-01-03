@@ -33,6 +33,8 @@ public class ClientDataHolderVR {
     public static boolean IS_MAIN_HAND;
     public static boolean IS_FP_HAND;
 
+    public static final List<String> HRTF_LIST = new ArrayList<>();
+
     private static ClientDataHolderVR INSTANCE;
 
     public VRPlayer vrPlayer;

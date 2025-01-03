@@ -7,10 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.*;
 import org.jetbrains.annotations.NotNull;
 import org.vivecraft.client.gui.widgets.TextScrollWidget;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -25,43 +22,44 @@ public class GarbageCollectorScreen extends Screen {
     private TextScrollWidget text;
 
     public GarbageCollectorScreen(String currentGarbageCollector) {
-        super(Component.translatable("vivecraft.messages.gctitle"));
+        super(new TranslatableComponent("vivecraft.messages.gctitle"));
         this.lastScreen = Minecraft.getInstance().screen;
         this.currentGarbageCollector = currentGarbageCollector;
     }
 
     @Override
     protected void init() {
-        Component message = Component.translatable("vivecraft.messages.gcinfo",
-            Component.literal(this.currentGarbageCollector).withStyle(s -> s.withColor(ChatFormatting.RED)),
-            Component.literal("ZGC"),
-            Component.literal(Integer.toString(6)),
-            Component.literal("-XX:+UseZGC").withStyle(s -> s
+        Component message = new TranslatableComponent("vivecraft.messages.gcinfo",
+            new TextComponent(this.currentGarbageCollector).withStyle(s -> s.withColor(ChatFormatting.RED)),
+            new TextComponent("ZGC"),
+            new TextComponent(Integer.toString(6)),
+            new TextComponent("-XX:+UseZGC").withStyle(s -> s
                 .withColor(ChatFormatting.GOLD)
                 .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "-XX:+UseZGC"))
                 .withHoverEvent(
-                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click")))),
-            Component.translatable("vivecraft.gui.openguide").withStyle(style -> style
+                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent("chat.copy.click")))),
+            new TranslatableComponent("vivecraft.gui.openguide").withStyle(style -> style
                 .withUnderlined(true)
                 .withColor(ChatFormatting.GREEN)
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable(("chat.link.open"))))
+                .withHoverEvent(
+                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(("chat.link.open"))))
                 .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, GUIDE_URL))));
         this.text = this.addRenderableWidget(
             new TextScrollWidget(this.width / 2 - 155, 30, 310, this.height - 30 - 60, message));
 
         this.addRenderableWidget(new Button(this.width / 2 - 155, this.height - 56, 150, 20,
-            Component.translatable("vivecraft.gui.dontshowagain"), (p) -> {
+            new TranslatableComponent("vivecraft.gui.dontshowagain"), (p) -> {
             ClientDataHolderVR.getInstance().vrSettings.disableGarbageCollectorMessage = true;
             ClientDataHolderVR.getInstance().vrSettings.saveOptions();
             Minecraft.getInstance().setScreen(this.lastScreen);
         }));
 
         this.addRenderableWidget(new Button(this.width / 2 + 5, this.height - 56, 150, 20,
-            Component.translatable("vivecraft.gui.ok"), (p) ->
+            new TranslatableComponent("vivecraft.gui.ok"), (p) ->
             onClose()));
 
         this.addRenderableWidget(new Button(this.width / 2 - 75, this.height - 32, 150, 20,
-            Component.translatable("vivecraft.gui.openguide"),
+            new TranslatableComponent("vivecraft.gui.openguide"),
             button ->
                 this.minecraft.setScreen(new ConfirmLinkScreen(bl -> {
                     if (bl) {

@@ -84,7 +84,8 @@ public class ShaderHelper {
             throw new IllegalStateException("Unexpected vertex format " + format);
         }
 
-        BufferUploader.draw(builder.end());
+        builder.end();
+        BufferUploader._endInternal(builder);
     }
 
     /**
@@ -486,7 +487,8 @@ public class ShaderHelper {
         bufferbuilder.vertex(1.0F, -1.0F, 0.0F).uv(xMax, yMin).endVertex();
         bufferbuilder.vertex(1.0F, 1.0F, 0.0F).uv(xMax, yMax).endVertex();
         bufferbuilder.vertex(-1.0F, 1.0F, 0.0F).uv(xMin, yMax).endVertex();
-        BufferUploader.draw(bufferbuilder.end());
+        bufferbuilder.end();
+        BufferUploader._endInternal(bufferbuilder);
         instance.clear();
 
         RenderSystem.depthMask(true);

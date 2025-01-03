@@ -1,11 +1,18 @@
 package org.vivecraft.mixin.client_vr.lwjgl;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import org.lwjgl.openvr.OpenVR;
+import org.lwjgl.system.Library;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.function.Consumer;
 import java.util.function.LongFunction;
 
 import static org.lwjgl.openvr.VR.*;
@@ -87,5 +94,27 @@ public abstract class OpenVRMixin {
         // VRSpatialAnchors = getGenericInterface(IVRSpatialAnchors_Version, OpenVR.IVRSpatialAnchors::new);
         // VRDebug = getGenericInterface(IVRDebug_Version, OpenVR.IVRDebug::new);
         // VRNotifications = getGenericInterface(IVRNotifications_Version, OpenVR.IVRNotifications::new);
+    }
+
+    /**
+     * compatibility mixin, to make it possible to load lwjgl 3.3.2 openvr on lwjgl 3.2.2
+     */
+    @WrapOperation(method = "<clinit>", at = @At(value = "INVOKE", target = "Lorg/lwjgl/system/Library;loadSystem(Ljava/util/function/Consumer;Ljava/util/function/Consumer;Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V"), remap = false, expect = 0, require = 0)
+    private static void vivecraft$fixLoadingOn322(
+        Consumer<String> load, Consumer<String> loadLibrary, Class<?> context, String module, String name,
+        Operation<Void> original)
+    {
+        try {
+            original.call(load, loadLibrary, context, module, name);
+        } catch (NoSuchMethodError expected) {
+            try {
+                // lwjgl 3.2.2 doesn't have the module field
+                Method loadSystem = Library.class.getMethod("loadSystem", Consumer.class, Consumer.class, Class.class,
+                    String.class);
+                loadSystem.invoke(null, load, loadLibrary, context, name);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Failed to load OpenVR native library", e);
+            }
+        }
     }
 }

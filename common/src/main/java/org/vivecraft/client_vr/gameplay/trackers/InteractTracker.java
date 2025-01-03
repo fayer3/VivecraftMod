@@ -1,6 +1,7 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -314,9 +315,10 @@ public class InteractTracker extends Tracker {
                         .consumesAction() ||
                         this.mc.gameMode.interact(this.mc.player, this.inEntity[c], hand).consumesAction();
                 } else if (this.inBlockHit[c] != null) {
-                    success = this.mc.gameMode.useItemOn(this.mc.player, hand, this.inBlockHit[c]).consumesAction();
+                    success = this.mc.gameMode.useItemOn(this.mc.player, (ClientLevel) this.mc.player.level, hand,
+                        this.inBlockHit[c]).consumesAction();
                 } else if (this.bukkit[c]) {
-                    success = this.mc.gameMode.useItem(this.mc.player, hand).consumesAction();
+                    success = this.mc.gameMode.useItem(this.mc.player, this.mc.player.level, hand).consumesAction();
                 }
 
                 if (success) {

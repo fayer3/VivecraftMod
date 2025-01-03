@@ -1,7 +1,7 @@
 package org.vivecraft.client_vr.provider;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.utils.ClientUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -116,7 +116,7 @@ public class InputSimulator {
                 pressKey(code);
             }
         } else if (minecraft.screen == null && ClientUtils.milliTime() - AIR_TYPING_WARNING_TIME >= 30000) {
-            minecraft.gui.getChat().addMessage(Component.translatable("vivecraft.messages.airtypingwarning"));
+            minecraft.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.airtypingwarning"));
             AIR_TYPING_WARNING_TIME = ClientUtils.milliTime();
         }
     }

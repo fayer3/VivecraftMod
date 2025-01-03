@@ -4,6 +4,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.tutorial.OpenInventoryTutorialStep;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -19,8 +21,8 @@ public class OpenInventoryTutorialStepVRMixin {
             return description;
         }
         if (MCVR.get().getInputAction(Minecraft.getInstance().options.keyInventory).isActive()) {
-            return Component.translatable("tutorial.open_inventory.description", Component.literal(MCVR.get()
-                    .getOriginName(MCVR.get().getInputAction(Minecraft.getInstance().options.keyInventory).getLastOrigin()))
+            return new TranslatableComponent("tutorial.open_inventory.description", new TextComponent(MCVR.get()
+                .getOriginName(MCVR.get().getInputAction(Minecraft.getInstance().options.keyInventory).getLastOrigin()))
                 .withStyle(ChatFormatting.BOLD));
         }
         return description;

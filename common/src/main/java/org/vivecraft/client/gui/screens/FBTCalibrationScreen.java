@@ -6,7 +6,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.Vec3i;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
@@ -51,7 +51,7 @@ public class FBTCalibrationScreen extends Screen {
     private Button cancelButton;
 
     public FBTCalibrationScreen(Screen parent) {
-        super(Component.translatable("vivecraft.options.screen.fbtcalibration"));
+        super(new TranslatableComponent("vivecraft.options.screen.fbtcalibration"));
         this.parent = parent;
         // copy old settings to be able to reset them on cancel
         this.wasFbtCalibrated = ClientDataHolderVR.getInstance().vrSettings.fbtCalibrated;
@@ -87,7 +87,7 @@ public class FBTCalibrationScreen extends Screen {
         ClientDataHolderVR.getInstance().vrSettings.fbtExtendedCalibrated = false;
         ClientDataHolderVR.getInstance().vrSettings.unlabeledTrackersUsed = this.usingUnlabeledTrackers;
         ClientDataHolderVR.getInstance().vrSettings.saveOptions();
-        this.cancelButton.setMessage(Component.translatable("gui.cancel"));
+        this.cancelButton.setMessage(new TranslatableComponent("gui.cancel"));
         this.resetButton.visible = false;
     }
 
@@ -98,23 +98,23 @@ public class FBTCalibrationScreen extends Screen {
     @Override
     protected void init() {
         this.calibrationText = new MultilineComponent(this.width / 2, 30, 400,
-            Component.translatable("vivecraft.messages.fbtcalibration"), true, this.font);
+            new TranslatableComponent("vivecraft.messages.fbtcalibration"), true, this.font);
 
         this.unlabeledTrackersWarningText = new MultilineComponent(this.width / 2,
             this.calibrationText.y + this.calibrationText.getHeight(), 400,
-            Component.translatable("vivecraft.messages.fbtcalibration.unlabeledTrackers"), true, this.font);
+            new TranslatableComponent("vivecraft.messages.fbtcalibration.unlabeledTrackers"), true, this.font);
         this.unlabeledTrackersWarningText.visible = this.usingUnlabeledTrackers;
 
         this.unlabeledTrackersConfirmationText = new MultilineComponent(this.width / 2, 30, 400,
-            Component.translatable("vivecraft.messages.fbtcalibration.unlabeledTrackersConfirm"), true, this.font);
+            new TranslatableComponent("vivecraft.messages.fbtcalibration.unlabeledTrackersConfirm"), true, this.font);
         this.unlabeledTrackersConfirmationText.visible = false;
 
         this.resetButton = new Button(this.width / 2 - 75, this.height - 54, 150, 20,
-            Component.translatable("controls.reset"), p -> reset());
+            new TranslatableComponent("controls.reset"), p -> reset());
         this.resetButton.visible = this.calibrated;
 
         this.cancelButton = new Button(this.width / 2 - 75, this.height - 32, 150, 20,
-            Component.translatable(this.calibrated ? "vivecraft.gui.ok" : "gui.cancel"),
+            new TranslatableComponent(this.calibrated ? "vivecraft.gui.ok" : "gui.cancel"),
             p -> this.minecraft.setScreen(this.parent));
 
         this.addRenderableWidget(this.calibrationText);
@@ -217,7 +217,8 @@ public class FBTCalibrationScreen extends Screen {
             builder.vertex(poseStack.last().pose(), -4, 24, -100)
                 .color(1F, 1F, 1F, 1F).endVertex();
 
-            BufferUploader.drawWithShader(builder.end());
+            builder.end();
+            BufferUploader.end(builder);
 
             if (VRState.VR_RUNNING) {
                 poseStack.mulPose(com.mojang.math.Vector3f.YP.rotation(
@@ -253,7 +254,8 @@ public class FBTCalibrationScreen extends Screen {
                 new Vec3(-6, 22, 0).add(this.rightHand.x * 10F, this.rightHand.y * 10F, this.rightHand.z * 10F),
                 4, 4, this.rightHandAtPosition ? colorActive : color, (byte) 200, poseStack);
 
-            BufferUploader.drawWithShader(builder.end());
+            builder.end();
+            BufferUploader.end(builder);
 
             if (VRState.VR_RUNNING) {
                 ClientDataHolderVR.getInstance().vr.getInputAction(VivecraftVRMod.INSTANCE.keyVRInteract)
@@ -270,12 +272,12 @@ public class FBTCalibrationScreen extends Screen {
                     ClientDataHolderVR.getInstance().vrSettings.unlabeledTrackersUsed = this.usingUnlabeledTrackers;
                     ClientDataHolderVR.getInstance().vrSettings.saveOptions();
                     this.minecraft.gui.getChat()
-                        .addMessage(Component.translatable("vivecraft.messages.fbtcalibrationsuccess"));
+                        .addMessage(new TranslatableComponent("vivecraft.messages.fbtcalibrationsuccess"));
                     this.calibrated = true;
                     if (!this.usingUnlabeledTrackers) {
                         this.minecraft.setScreen(this.parent);
                     } else {
-                        this.cancelButton.setMessage(Component.translatable("vivecraft.gui.ok"));
+                        this.cancelButton.setMessage(new TranslatableComponent("vivecraft.gui.ok"));
                         this.resetButton.visible = true;
                     }
                 }

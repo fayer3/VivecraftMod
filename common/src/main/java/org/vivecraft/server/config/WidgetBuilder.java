@@ -3,7 +3,8 @@ package org.vivecraft.server.config;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.*;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.vivecraft.client.gui.settings.GuiListValueEditScreen;
 
 import java.util.Collection;
@@ -20,10 +21,10 @@ public class WidgetBuilder {
      */
     public static Supplier<AbstractWidget> getBaseWidget(ConfigBuilder.ConfigValue<?> value, int width, int height) {
         return () -> new Button(0, 0, width, height,
-            Component.literal("" + value.get()), button -> {},
+            new TextComponent("" + value.get()), button -> {},
             ((button, poseStack, x, y) ->
                 Minecraft.getInstance().screen.renderTooltip(poseStack,
-                    Minecraft.getInstance().font.split(Component.literal(value.getComment()), 200), x, y)
+                    Minecraft.getInstance().font.split(new TextComponent(value.getComment()), 200), x, y)
             ));
     }
 
@@ -42,8 +43,8 @@ public class WidgetBuilder {
             .onOffBuilder(booleanValue.get())
             .displayOnlyValue()
             .withTooltip((bool) -> booleanValue.getComment() != null ?
-                Minecraft.getInstance().font.split(Component.literal(booleanValue.getComment()), 200) : null)
-            .create(0, 0, width, height, Component.empty(), (button, bool) -> booleanValue.set(bool));
+                Minecraft.getInstance().font.split(new TextComponent(booleanValue.getComment()), 200) : null)
+            .create(0, 0, width, height, TextComponent.EMPTY, (button, bool) -> booleanValue.set(bool));
     }
 
     /**
@@ -60,7 +61,7 @@ public class WidgetBuilder {
     {
         return () -> {
             EditBox box = new EditBox(Minecraft.getInstance().font, 0, 0, width - 1, height,
-                Component.literal(stringValue.get()))
+                new TextComponent(stringValue.get()))
             {
                 @Override
                 public boolean charTyped(char character, int modifiers) {
@@ -81,7 +82,7 @@ public class WidgetBuilder {
                     super.renderButton(poseStack, x, y, f);
                     if (this.isHovered) {
                         Minecraft.getInstance().screen.renderTooltip(poseStack,
-                            Minecraft.getInstance().font.split(Component.literal(stringValue.getComment()), 200), x, y);
+                            Minecraft.getInstance().font.split(new TextComponent(stringValue.getComment()), 200), x, y);
                     }
                 }
             };
@@ -104,15 +105,15 @@ public class WidgetBuilder {
         ConfigBuilder.ConfigValue<T> configValue, Collection<? extends T> values, int width, int height)
     {
         return () -> CycleButton
-            .builder((newValue) -> Component.literal("" + newValue))
+            .builder((newValue) -> new TextComponent("" + newValue))
             .withInitialValue(configValue.get())
             // toArray is needed here, because the button uses Objects, and the collection is of other types
             .withValues(values.toArray())
             .withInitialValue(configValue.get())
             .displayOnlyValue()
             .withTooltip((bool) -> configValue.getComment() != null ?
-                Minecraft.getInstance().font.split(Component.literal(configValue.getComment()), 200) : null)
-            .create(0, 0, width, height, Component.empty(), (button, newValue) -> configValue.set((T) newValue));
+                Minecraft.getInstance().font.split(new TextComponent(configValue.getComment()), 200) : null)
+            .create(0, 0, width, height, TextComponent.EMPTY, (button, newValue) -> configValue.set((T) newValue));
     }
 
     /**
@@ -128,11 +129,11 @@ public class WidgetBuilder {
     {
         return () -> {
             AbstractSliderButton widget = new AbstractSliderButton(0, 0, width, height,
-                Component.literal("" + numberValue.get()), numberValue.normalize())
+                new TextComponent("" + numberValue.get()), numberValue.normalize())
             {
                 @Override
                 protected void updateMessage() {
-                    setMessage(Component.literal("" + numberValue.get()));
+                    setMessage(new TextComponent("" + numberValue.get()));
                 }
 
                 @Override
@@ -145,7 +146,7 @@ public class WidgetBuilder {
                     super.renderButton(poseStack, x, y, f);
                     if (this.isHovered) {
                         Minecraft.getInstance().screen.renderTooltip(poseStack,
-                            Minecraft.getInstance().font.split(Component.literal(numberValue.getComment()), 200), x, y);
+                            Minecraft.getInstance().font.split(new TextComponent(numberValue.getComment()), 200), x, y);
                     }
                 }
             };
@@ -167,12 +168,12 @@ public class WidgetBuilder {
         // TODO handle other types than String
         return () -> new Button(
             0, 0, width, height,
-            Component.translatable("vivecraft.options.editlist"),
+            new TranslatableComponent("vivecraft.options.editlist"),
             button -> Minecraft.getInstance().setScreen(
                 new GuiListValueEditScreen(
-                    Component.literal(listValue.getPath().substring(listValue.getPath().lastIndexOf("."))),
+                    new TextComponent(listValue.getPath().substring(listValue.getPath().lastIndexOf("."))),
                     Minecraft.getInstance().screen, (ConfigBuilder.ListValue<String>) listValue)),
             (button, poseStack, x, y) -> Minecraft.getInstance().screen.renderTooltip(poseStack,
-                Minecraft.getInstance().font.split(Component.literal(listValue.getComment()), 200), x, y));
+                Minecraft.getInstance().font.split(new TextComponent(listValue.getComment()), 200), x, y));
     }
 }

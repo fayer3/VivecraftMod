@@ -7,9 +7,10 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.phys.Vec2;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -31,7 +32,7 @@ public abstract class GuiVROptionsBase extends Screen {
     private Button btnDefaults;
 
     public GuiVROptionsBase(Screen lastScreen) {
-        super(Component.literal(""));
+        super(new TextComponent(""));
         this.lastScreen = lastScreen;
         this.vrSettings = ClientDataHolderVR.getInstance().vrSettings;
     }
@@ -39,7 +40,7 @@ public abstract class GuiVROptionsBase extends Screen {
     protected void addDefaultButtons() {
         this.addRenderableWidget(
             this.btnDone = new Button(this.width / 2 + 5, this.height - 30, 150, 20,
-                Component.translatable("gui.back"), (p) -> {
+                new TranslatableComponent("gui.back"), (p) -> {
                 if (!this.onDoneClicked()) {
                     this.dataHolder.vrSettings.saveOptions();
                     this.minecraft.setScreen(this.lastScreen);
@@ -48,7 +49,7 @@ public abstract class GuiVROptionsBase extends Screen {
 
         this.addRenderableWidget(
             this.btnDefaults = new Button(this.width / 2 - 155, this.height - 30, 150, 20,
-                Component.translatable("vivecraft.gui.loaddefaults"), (p) -> {
+                new TranslatableComponent("vivecraft.gui.loaddefaults"), (p) -> {
                 this.loadDefaults();
                 this.dataHolder.vrSettings.saveOptions();
                 this.reinit = true;
@@ -94,7 +95,7 @@ public abstract class GuiVROptionsBase extends Screen {
                             !layout.getCustomHandler().apply((GuiVROptionButton) p, new Vec2(0.0F, 0.0F)))
                         {
                             this.vrSettings.setOptionValue(((GuiVROptionButton) p).getOption());
-                            p.setMessage(Component.literal(layout.getButtonText()));
+                            p.setMessage(new TextComponent(layout.getButtonText()));
                         }
                     }));
             } else if (layout.getScreen() != null) {
@@ -217,7 +218,7 @@ public abstract class GuiVROptionsBase extends Screen {
 
         super.render(poseStack, mouseX, mouseY, partialTick);
 
-        drawCenteredString(poseStack, this.font, Component.translatable(this.vrTitle), this.width / 2, 15, 0xFFFFFF);
+        drawCenteredString(poseStack, this.font, new TranslatableComponent(this.vrTitle), this.width / 2, 15, 0xFFFFFF);
 
         if (this.btnDefaults != null) {
             this.btnDefaults.visible = this.drawDefaultButtons;
@@ -347,10 +348,10 @@ public abstract class GuiVROptionsBase extends Screen {
                         if (guiHover.getY() + guiHover.getHeight() + formattedText.size() * (this.font.lineHeight + 1) +
                             14 < this.height)
                         {
-                            renderTooltip(poseStack, this.font.split(Component.literal(tooltip), 308),
+                            renderTooltip(poseStack, this.font.split(new TextComponent(tooltip), 308),
                                 this.width / 2 - 166, guiHover.getY() + guiHover.getHeight() + 14);
                         } else {
-                            renderTooltip(poseStack, this.font.split(Component.literal(tooltip), 308),
+                            renderTooltip(poseStack, this.font.split(new TextComponent(tooltip), 308),
                                 this.width / 2 - 166,
                                 guiHover.getY() - formattedText.size() * (this.font.lineHeight + 1) + 9);
                         }

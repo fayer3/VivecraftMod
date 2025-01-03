@@ -89,12 +89,8 @@ public class XplatImpl implements Xplat {
         return ForgeHooksClient.getFluidSprites(level, pos, fluidStateIn);
     }
 
-    public static Biome.ClimateSettings getBiomeClimateSettings(Biome biome) {
-        return biome.getModifiedClimateSettings();
-    }
-
     public static BiomeSpecialEffects getBiomeEffects(Biome biome) {
-        return biome.getModifiedSpecialEffects();
+        return biome.getSpecialEffects();
     }
 
     public static double getItemEntityReach(double baseRange, ItemStack itemStack, EquipmentSlot slot) {

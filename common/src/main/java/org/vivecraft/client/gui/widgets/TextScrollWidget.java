@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
@@ -27,16 +28,16 @@ public class TextScrollWidget extends AbstractWidget {
     private final List<FormattedCharSequence> formattedChars;
 
     public TextScrollWidget(int x, int y, int width, int height, String text) {
-        super(x, y, width, height, Component.literal(""));
+        super(x, y, width, height, new TextComponent(""));
 
-        this.formattedChars = Minecraft.getInstance().font.split(Component.literal(text),
+        this.formattedChars = Minecraft.getInstance().font.split(new TextComponent(text),
             width - this.scrollBarWidth * 2);
 
         initScroll();
     }
 
     public TextScrollWidget(int x, int y, int width, int height, Component text) {
-        super(x, y, width, height, Component.literal(""));
+        super(x, y, width, height, new TextComponent(""));
 
         this.formattedChars = Minecraft.getInstance().font.split(text, width - this.scrollBarWidth * 2);
         initScroll();

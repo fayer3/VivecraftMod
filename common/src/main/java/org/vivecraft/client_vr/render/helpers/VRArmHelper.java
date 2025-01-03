@@ -147,7 +147,8 @@ public class VRArmHelper {
         RenderHelper.renderBox(tesselator.getBuilder(), start, end, -0.02F, 0.02F, -0.0125F, 0.0125F, color, alpha,
             poseStack);
 
-        BufferUploader.drawWithShader(tesselator.getBuilder().end());
+        tesselator.getBuilder().end();
+        BufferUploader.end(tesselator.getBuilder());
 
         poseStack.popPose();
 

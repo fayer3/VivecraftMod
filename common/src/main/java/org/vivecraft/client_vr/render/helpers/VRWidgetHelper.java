@@ -17,7 +17,6 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -30,13 +29,14 @@ import org.vivecraft.client_vr.settings.VRHotkeys;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.common.utils.MathUtils;
 
+import java.util.Random;
 import java.util.function.Function;
 
 public class VRWidgetHelper {
     private static final Minecraft MC = Minecraft.getInstance();
     private static final ClientDataHolderVR DATA_HOLDER = ClientDataHolderVR.getInstance();
 
-    private static final RandomSource RANDOM = RandomSource.create();
+    private static final Random RANDOM = new Random();
     private static final ResourceLocation TRANSPARENT_TEXTURE = new ResourceLocation("vivecraft:transparent");
     public static boolean DEBUG = false;
 

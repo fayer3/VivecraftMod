@@ -12,8 +12,9 @@ import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import org.joml.Matrix4f;
@@ -270,7 +271,8 @@ public abstract class VRRenderer {
                 radius + Mth.sin(startAngle) * radius,
                 0.0F).endVertex();
         }
-        BufferUploader.drawWithShader(builder.end());
+        builder.end();
+        BufferUploader.end(builder);
     }
 
     /**
@@ -298,7 +300,8 @@ public abstract class VRRenderer {
         }
 
         RenderSystem.setShader(GameRenderer::getPositionShader);
-        BufferUploader.drawWithShader(builder.end());
+        builder.end();
+        BufferUploader.end(builder);
     }
 
     /**
@@ -516,8 +519,8 @@ public abstract class VRRenderer {
         if ((this.framebufferMR == null || this.framebufferUndistorted == null) && ShadersHelper.isShaderActive()) {
             this.reinitFrameBuffers("Shaders on, but some buffers not initialized");
         }
-        if (Minecraft.getInstance().options.graphicsMode().get() != this.previousGraphics) {
-            this.previousGraphics = Minecraft.getInstance().options.graphicsMode().get();
+        if (Minecraft.getInstance().options.graphicsMode != this.previousGraphics) {
+            this.previousGraphics = Minecraft.getInstance().options.graphicsMode;
             this.reinitFrameBuffers("gfx setting changed to: " + this.previousGraphics);
         }
 
@@ -615,25 +618,25 @@ public abstract class VRRenderer {
                     }
                     gpus.append(gpu.getVendor()).append(": ").append(gpu.getName());
                 }
-                throw new RenderConfigException(Component.translatable("vivecraft.messages.incompatiblegpu"),
-                    Component.translatable("vivecraft.messages.intelgraphics1",
-                        Component.literal(GlUtil.getRenderer()).withStyle(ChatFormatting.GOLD),
+                throw new RenderConfigException(new TranslatableComponent("vivecraft.messages.incompatiblegpu"),
+                    new TranslatableComponent("vivecraft.messages.intelgraphics1",
+                        new TextComponent(GlUtil.getRenderer()).withStyle(ChatFormatting.GOLD),
                         gpus.toString(),
-                        onlyIntel ? Component.empty()
-                            : Component.translatable("vivecraft.messages.intelgraphics2",
-                            Component.literal("https://www.vivecraft.org/faq/#gpu")
+                        onlyIntel ? TextComponent.EMPTY
+                            : new TranslatableComponent("vivecraft.messages.intelgraphics2",
+                            new TextComponent("https://www.vivecraft.org/faq/#gpu")
                                 .withStyle(style -> style.withUnderlined(true)
                                     .withColor(ChatFormatting.GREEN)
                                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                        Component.translatable("chat.link.open")))
+                                        new TranslatableComponent("chat.link.open")))
                                     .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,
                                         "https://www.vivecraft.org/faq/#gpu"))))));
             }
 
             if (!this.isInitialized()) {
                 throw new RenderConfigException(
-                    Component.translatable("vivecraft.messages.renderiniterror", this.getName()),
-                    Component.literal(this.getInitError()));
+                    new TranslatableComponent("vivecraft.messages.renderiniterror", this.getName()),
+                    new TextComponent(this.getInitError()));
             }
 
             Tuple<Integer, Integer> tuple = this.getRenderTextureSizes();
@@ -647,8 +650,8 @@ public abstract class VRRenderer {
 
                 if (this.LeftEyeTextureId == -1) {
                     throw new RenderConfigException(
-                        Component.translatable("vivecraft.messages.renderiniterror", this.getName()),
-                        Component.literal(this.getLastError()));
+                        new TranslatableComponent("vivecraft.messages.renderiniterror", this.getName()),
+                        new TextComponent(this.getLastError()));
                 }
 
                 VRSettings.LOGGER.info("Vivecraft: VR Provider supplied render texture IDs: {}, {}",
@@ -805,7 +808,7 @@ public abstract class VRRenderer {
             } catch (Exception exception) {
                 VRSettings.LOGGER.error("Vivecraft: Shader creation failed:", exception);
                 throw new RenderConfigException(
-                    Component.translatable("vivecraft.messages.renderiniterror", this.getName()),
+                    new TranslatableComponent("vivecraft.messages.renderiniterror", this.getName()),
                     TextUtils.throwableToComponent(exception));
             }
 

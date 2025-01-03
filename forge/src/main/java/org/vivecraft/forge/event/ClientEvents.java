@@ -1,8 +1,9 @@
 package org.vivecraft.forge.event;
 
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.ConfigGuiHandler;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -17,20 +18,18 @@ import org.vivecraft.forge.Vivecraft;
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD, modid = Vivecraft.MODID)
 public class ClientEvents {
     @SubscribeEvent
-    public static void registerModels(ModelEvent.RegisterAdditional event) {
-        event.register(TelescopeTracker.SCOPE_MODEL);
-        event.register(ClimbTracker.CLAWS_MODEL);
-        event.register(ClientDataHolderVR.THIRD_PERSON_CAMERA_MODEL);
-        event.register(ClientDataHolderVR.THIRD_PERSON_CAMERA_DISPLAY_MODEL);
-        event.register(CameraTracker.CAMERA_MODEL);
-        event.register(CameraTracker.CAMERA_DISPLAY_MODEL);
+    public static void registerModels(ModelRegistryEvent event) {
+        ForgeModelBakery.addSpecialModel(TelescopeTracker.SCOPE_MODEL);
+        ForgeModelBakery.addSpecialModel(ClimbTracker.CLAWS_MODEL);
+        ForgeModelBakery.addSpecialModel(ClientDataHolderVR.THIRD_PERSON_CAMERA_MODEL);
+        ForgeModelBakery.addSpecialModel(ClientDataHolderVR.THIRD_PERSON_CAMERA_DISPLAY_MODEL);
+        ForgeModelBakery.addSpecialModel(CameraTracker.CAMERA_MODEL);
+        ForgeModelBakery.addSpecialModel(CameraTracker.CAMERA_DISPLAY_MODEL);
     }
 
     @SubscribeEvent
-    // this is only removed in 1.21.1 don't bother me please
-    @SuppressWarnings("removal")
     public static void registerConfigScreen(FMLConstructModEvent constructModEvent) {
-        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
-            () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new VivecraftMainSettings(screen)));
+        ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class,
+            () -> new ConfigGuiHandler.ConfigGuiFactory((mc, screen) -> new VivecraftMainSettings(screen)));
     }
 }

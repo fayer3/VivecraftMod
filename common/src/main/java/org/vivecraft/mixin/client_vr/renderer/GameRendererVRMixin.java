@@ -198,7 +198,7 @@ public abstract class GameRendererVRMixin
     private void vivecraft$fixedFOV(CallbackInfoReturnable<Double> cir) {
         // some mods don't expect this to be called outside levels
         if (this.minecraft.level == null || MethodHolder.isInMenuRoom()) {
-            cir.setReturnValue(Double.valueOf(this.minecraft.options.fov().get()));
+            cir.setReturnValue(this.minecraft.options.fov);
         }
     }
 
@@ -433,7 +433,7 @@ public abstract class GameRendererVRMixin
                 sinProgress *= vivecraft$DATA_HOLDER.vrSettings.mixedRealityFov / 70.0F;
             } else if (pass == RenderPass.CENTER) {
                 // make the item the same size, independent of FOV
-                sinProgress *= Minecraft.getInstance().options.fov().get() / 70.0F;
+                sinProgress *= (float) Minecraft.getInstance().options.fov / 70.0F;
             } else if (pass == RenderPass.LEFT || pass == RenderPass.RIGHT) {
                 // apply stereo offset, but screen relative, not world
                 VRData data = vivecraft$DATA_HOLDER.vrPlayer.getVRDataWorld();

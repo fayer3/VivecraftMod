@@ -14,6 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.vivecraft.client.extensions.ModelPartExtension;
 import org.vivecraft.client.render.models.FeetModel;
 import org.vivecraft.client.utils.ModelUtils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -228,7 +229,8 @@ public class VRPlayerModel_WithArmsLegs<T extends LivingEntity> extends VRPlayer
             this.rightFoot.setRotation(this.rightLeg.xRot, this.rightLeg.yRot, this.rightLeg.zRot);
         }
 
-        this.leftFoot.xScale = this.leftFoot.zScale = this.rightFoot.xScale = this.rightFoot.zScale = this.legScale;
+        ((ModelPartExtension) (Object) this.leftFoot).vivecraft$setScale(this.legScale, 1F, this.legScale);
+        ((ModelPartExtension) (Object) this.rightFoot).vivecraft$setScale(this.legScale, 1F, this.legScale);
 
         if (player.isAutoSpinAttack()) {
             spinOffset(this.leftLeg, this.rightLeg, this.leftFoot, this.rightFoot);

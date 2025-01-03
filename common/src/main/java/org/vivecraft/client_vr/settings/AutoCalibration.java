@@ -1,7 +1,7 @@
 package org.vivecraft.client_vr.settings;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
 public class AutoCalibration {
@@ -18,7 +18,7 @@ public class AutoCalibration {
         // round to nearest %
         int percentHeight = Math.round(100.0F * getPlayerHeight() / DEFAULT_HEIGHT);
 
-        minecraft.gui.getChat().addMessage(Component.translatable("vivecraft.messages.heightset", percentHeight));
+        minecraft.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.heightset", percentHeight));
         dataHolder.vrSettings.saveOptions();
     }
 

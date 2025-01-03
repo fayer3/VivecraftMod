@@ -3,7 +3,7 @@ package org.vivecraft.client_vr.settings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.WinScreen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -55,14 +55,14 @@ public class VRHotkeys {
                     // Debug aim
                     if (key == GLFW.GLFW_KEY_RIGHT_SHIFT) {
                         dataHolder.vrSettings.storeDebugAim = true;
-                        minecraft.gui.getChat().addMessage(Component.translatable("vivecraft.messages.showaim"));
+                        minecraft.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.showaim"));
                         gotKey = true;
                     }
 
                     // Walk up blocks
                     if (key == GLFW.GLFW_KEY_B) {
                         dataHolder.vrSettings.walkUpBlocks = !dataHolder.vrSettings.walkUpBlocks;
-                        minecraft.gui.getChat().addMessage(Component.translatable("vivecraft.messages.walkupblocks",
+                        minecraft.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.walkupblocks",
                             dataHolder.vrSettings.walkUpBlocks ? LangHelper.getYes() : LangHelper.getNo()));
                         gotKey = true;
                     }
@@ -70,8 +70,8 @@ public class VRHotkeys {
                     // Player inertia
                     if (key == GLFW.GLFW_KEY_I) {
                         dataHolder.vrSettings.inertiaFactor = dataHolder.vrSettings.inertiaFactor.getNext();
-                        minecraft.gui.getChat().addMessage(Component.translatable("vivecraft.messages.playerinertia",
-                            Component.translatable(dataHolder.vrSettings.inertiaFactor.getLangKey())));
+                        minecraft.gui.getChat().addMessage(new TranslatableComponent("vivecraft.messages.playerinertia",
+                            new TranslatableComponent(dataHolder.vrSettings.inertiaFactor.getLangKey())));
 
                         gotKey = true;
                     }
@@ -81,11 +81,11 @@ public class VRHotkeys {
                         if (dataHolder.vrPlayer.isTeleportOverridden()) {
                             dataHolder.vrPlayer.setTeleportOverride(false);
                             minecraft.gui.getChat()
-                                .addMessage(Component.translatable("vivecraft.messages.teleportdisabled"));
+                                .addMessage(new TranslatableComponent("vivecraft.messages.teleportdisabled"));
                         } else {
                             dataHolder.vrPlayer.setTeleportOverride(true);
                             minecraft.gui.getChat()
-                                .addMessage(Component.translatable("vivecraft.messages.teleportenabled"));
+                                .addMessage(new TranslatableComponent("vivecraft.messages.teleportenabled"));
                         }
 
                         gotKey = true;
@@ -229,12 +229,12 @@ public class VRHotkeys {
             } else {
                 // first person fov
                 if (MethodHolder.isKeyDown(GLFW.GLFW_KEY_INSERT)) {
-                    minecraft.options.fov().set(minecraft.options.fov().get() + 1);
+                    minecraft.options.fov++;
                     gotKey = true;
                 }
 
                 if (MethodHolder.isKeyDown(GLFW.GLFW_KEY_DELETE)) {
-                    minecraft.options.fov().set(minecraft.options.fov().get() - 1);
+                    minecraft.options.fov--;
                     gotKey = true;
                 }
             }
@@ -256,13 +256,13 @@ public class VRHotkeys {
 
     private static void logPositionRotation(Vector3f position, Quaternionf rotation) {
         Minecraft.getInstance().gui.getChat().addMessage(
-            Component.translatable("vivecraft.messages.coords",
+            new TranslatableComponent("vivecraft.messages.coords",
                 "%.2f".formatted(position.x),
                 "%.2f".formatted(position.y),
                 "%.2f".formatted(position.z)));
         Vector3f angle = MathUtils.getEulerAnglesYZX(rotation);
         Minecraft.getInstance().gui.getChat().addMessage(
-            Component.translatable("vivecraft.messages.angles",
+            new TranslatableComponent("vivecraft.messages.angles",
                 "%.1f".formatted(Math.toDegrees(angle.x)),
                 "%.1f".formatted(Math.toDegrees(angle.y)),
                 "%.1f".formatted(Math.toDegrees(angle.z))));

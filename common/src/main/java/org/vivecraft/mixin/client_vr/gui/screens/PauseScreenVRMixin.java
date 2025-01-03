@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -62,35 +63,35 @@ public abstract class PauseScreenVRMixin extends Screen {
         if (!Minecraft.getInstance().isMultiplayerServer()) {
             this.addRenderableWidget(
                 new Button(this.width / 2 - 102, this.height / 4 + 48 + -16 + offset, 98, 20,
-                    Component.translatable("vivecraft.gui.chat"),
+                    new TranslatableComponent("vivecraft.gui.chat"),
                     (p) -> this.minecraft.setScreen(new ChatScreen("")))
             );
         } else {
             this.addRenderableWidget(
                 new Button(this.width / 2 - 102, this.height / 4 + 48 + -16 + offset, 46, 20,
-                    Component.translatable("vivecraft.gui.chat"),
+                    new TranslatableComponent("vivecraft.gui.chat"),
                     (p) -> this.minecraft.setScreen(new ChatScreen(""))));
             this.addRenderableWidget(
                 new Button(this.width / 2 - 102 + 48, this.height / 4 + 48 + -16 + offset, 46, 20,
-                    Component.translatable("vivecraft.gui.social"),
+                    new TranslatableComponent("vivecraft.gui.social"),
                     (p) -> this.minecraft.setScreen(new SocialInteractionsScreen())));
         }
 
         this.addRenderableWidget(
             new Button(this.width / 2 + 4, this.height / 4 + 48 + -16 + offset, 98, 20,
-                Component.translatable("vivecraft.gui.commands"),
+                new TranslatableComponent("vivecraft.gui.commands"),
                 (p) -> this.minecraft.setScreen(new GuiQuickCommandsInGame(this))));
 
         this.addRenderableWidget(
             new Button(this.width / 2 - 102, this.height / 4 + 96 + -16 + offset, 49, 20,
-                Component.translatable("vivecraft.gui.overlay"),
+                new TranslatableComponent("vivecraft.gui.overlay"),
                 (p) -> {
                     this.minecraft.options.renderDebug = !this.minecraft.options.renderDebug;
                     this.minecraft.setScreen(null);
                 }));
         this.addRenderableWidget
             (new Button(this.width / 2 - 52, this.height / 4 + 96 + -16 + offset, 49, 20,
-                Component.translatable("vivecraft.gui.profiler"),
+                new TranslatableComponent("vivecraft.gui.profiler"),
                 (p) -> {
                     if (!this.minecraft.options.renderDebug) {
                         this.minecraft.options.renderDebugCharts = false;
@@ -102,7 +103,7 @@ public abstract class PauseScreenVRMixin extends Screen {
 
         this.addRenderableWidget(
             new Button(this.width / 2 + 4, this.height / 4 + 96 + -16 + offset, 98, 20,
-                Component.translatable("vivecraft.gui.screenshot"),
+                new TranslatableComponent("vivecraft.gui.screenshot"),
                 (p) -> {
                     this.minecraft.setScreen(null);
                     ClientDataHolderVR.getInstance().grabScreenShot = true;
@@ -114,12 +115,12 @@ public abstract class PauseScreenVRMixin extends Screen {
             {
                 this.addRenderableWidget(
                     new Button(this.width / 2 - 102, this.height / 4 + 120 + -16 + offset, 98, 20,
-                        Component.translatable("vivecraft.options.screen.fbtcalibration.button"),
+                        new TranslatableComponent("vivecraft.options.screen.fbtcalibration.button"),
                         (p) -> this.minecraft.setScreen(new FBTCalibrationScreen(this))));
             } else {
                 this.addRenderableWidget(
                     new Button(this.width / 2 - 102, this.height / 4 + 120 + -16 + offset, 98, 20,
-                        Component.translatable("vivecraft.gui.calibrateheight"),
+                        new TranslatableComponent("vivecraft.gui.calibrateheight"),
                         (p) -> {
                             AutoCalibration.calibrateManual();
                             ClientDataHolderVR.getInstance().vrSettings.saveOptions();
@@ -131,7 +132,7 @@ public abstract class PauseScreenVRMixin extends Screen {
         if (ClientDataHolderVR.KAT_VR) {
             this.addRenderableWidget(
                 new Button(this.width / 2 + 106, this.height / 4 + 120 + -16 + offset, 98, 20,
-                    Component.translatable("vivecraft.gui.alignkatwalk"),
+                    new TranslatableComponent("vivecraft.gui.alignkatwalk"),
                     (p) -> {
                         jkatvr.resetYaw(ClientDataHolderVR.getInstance().vrPlayer.vrdata_room_pre.hmd.getYaw());
                         this.minecraft.setScreen(null);
@@ -141,7 +142,7 @@ public abstract class PauseScreenVRMixin extends Screen {
         if (cameraButton) {
             this.addRenderableWidget(
                 new Button(this.width / 2 + 4, this.height / 4 + 120 + -16 + offset, 98, 20,
-                    Component.translatable("vivecraft.gui.movethirdpersoncam"),
+                    new TranslatableComponent("vivecraft.gui.movethirdpersoncam"),
                     (p) -> {
                         if (!VRHotkeys.isMovingThirdPersonCam()) {
                             VRHotkeys.startMovingThirdPersonCam(1, VRHotkeys.Triggerer.MENUBUTTON);

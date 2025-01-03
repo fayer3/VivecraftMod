@@ -5,7 +5,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -112,7 +112,7 @@ public class ClimbTracker extends Tracker {
             return false;
         } else {
             return itemStack.getHoverName().getString().equals("Climb Claws") ||
-                (itemStack.getHoverName().getContents() instanceof TranslatableContents translatableContent &&
+                (itemStack.getHoverName() instanceof TranslatableComponent translatableContent &&
                     translatableContent.getKey().equals("vivecraft.item.climbclaws")
                 );
         }

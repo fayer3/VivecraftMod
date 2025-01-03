@@ -38,13 +38,13 @@ public class EatingTracker extends Tracker {
         } else {
             if (player.getMainHandItem() != null) {
                 UseAnim anim = player.getMainHandItem().getUseAnimation();
-                if (anim == UseAnim.EAT || anim == UseAnim.DRINK || anim == UseAnim.TOOT_HORN) {
+                if (anim == UseAnim.EAT || anim == UseAnim.DRINK) {
                     return true;
                 }
             }
             if (player.getOffhandItem() != null) {
                 UseAnim anim = player.getOffhandItem().getUseAnimation();
-                return anim == UseAnim.EAT || anim == UseAnim.DRINK || anim == UseAnim.TOOT_HORN;
+                return anim == UseAnim.EAT || anim == UseAnim.DRINK;
             }
             return false;
         }
@@ -86,8 +86,6 @@ public class EatingTracker extends Tracker {
                     }
                 } else if (itemstack.getUseAnimation() == UseAnim.EAT) {
                     crunchiness = 2;
-                } else if (itemstack.getUseAnimation() == UseAnim.TOOT_HORN) {
-                    crunchiness = 1;
                 } else {
                     continue;
                 }
@@ -95,7 +93,8 @@ public class EatingTracker extends Tracker {
                 if (!this.eating[c]) {
                     // Minecraft.getInstance().physicalGuiManager.preClickAction();
 
-                    if (this.mc.gameMode.useItem(player, c == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND)
+                    if (this.mc.gameMode.useItem(player, player.level,
+                            c == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND)
                         .consumesAction())
                     {
                         this.mc.gameRenderer.itemInHandRenderer.itemUsed(

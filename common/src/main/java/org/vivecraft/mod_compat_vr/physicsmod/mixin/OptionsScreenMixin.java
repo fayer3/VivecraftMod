@@ -5,7 +5,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.OptionsScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,7 +25,7 @@ public abstract class OptionsScreenMixin extends Screen {
         if (ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonEnabled) {
             for (GuiEventListener guiEventListener : children()) {
                 if (guiEventListener instanceof Button button) {
-                    if (button.getMessage().getContents() instanceof TranslatableContents contents &&
+                    if (button.getMessage() instanceof TranslatableComponent contents &&
                         "physicsmod.menu.main.title".equals(contents.getKey()))
                     {
                         // physics mods button would collide with ours, so make it half size to the right

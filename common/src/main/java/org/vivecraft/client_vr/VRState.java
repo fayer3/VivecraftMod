@@ -1,7 +1,7 @@
 package org.vivecraft.client_vr;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.apache.commons.lang3.StringUtils;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.client.gui.screens.ErrorScreen;
@@ -46,8 +46,8 @@ public class VRState {
         try {
             if (OptifineHelper.isOptifineLoaded() && OptifineHelper.isAntialiasing()) {
                 throw new RenderConfigException(
-                    Component.translatable("vivecraft.messages.incompatiblesettings"),
-                    Component.translatable("vivecraft.messages.optifineaa"));
+                    new TranslatableComponent("vivecraft.messages.incompatiblesettings"),
+                    new TranslatableComponent("vivecraft.messages.optifineaa"));
             }
 
             ClientDataHolderVR dh = ClientDataHolderVR.getInstance();
@@ -57,8 +57,9 @@ public class VRState {
                 dh.vr = new NullVR(Minecraft.getInstance(), dh);
             }
             if (!dh.vr.init()) {
-                throw new RenderConfigException(Component.translatable("vivecraft.messages.vriniterror"),
-                    Component.translatable("vivecraft.messages.rendersetupfailed", dh.vr.initStatus, dh.vr.getName()));
+                throw new RenderConfigException(new TranslatableComponent("vivecraft.messages.vriniterror"),
+                    new TranslatableComponent("vivecraft.messages.rendersetupfailed", dh.vr.initStatus,
+                        dh.vr.getName()));
             }
 
             dh.vrRenderer = dh.vr.createVRRenderer();
@@ -120,7 +121,7 @@ public class VRState {
                     .setScreen(new ErrorScreen(renderConfigException.title, renderConfigException.error));
             } else {
                 Minecraft.getInstance()
-                    .setScreen(new ErrorScreen(Component.translatable("vivecraft.messages.vriniterror"),
+                    .setScreen(new ErrorScreen(new TranslatableComponent("vivecraft.messages.vriniterror"),
                         TextUtils.throwableToComponent(exception)));
             }
         }

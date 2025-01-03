@@ -29,10 +29,10 @@ subprojects {
             // parchment mappings as backup
             parchment("org.parchmentmc.data:parchment-${rootProject.minecraft_version}:${rootProject.parchment_version}@zip")
         }
-        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}")
-        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-linux")
-        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-macos")
-        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-windows")
+        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}") { transitive false }
+        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-linux") { transitive false }
+        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-macos") { transitive false }
+        implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-windows") { transitive false }
 
         implementation("org.joml:joml:1.10.5")
 
@@ -136,7 +136,7 @@ allprojects {
         maven { url = "https://maven.cafeteria.dev/releases/" }
         maven { url = "https://maven.gegy.dev" }
         maven { url = "https://modmaven.dev" }
-        maven { url = "https://maven.minecraftforge.net/"}
+        maven { url = "https://maven.minecraftforge.net/" }
         exclusiveContent {
             forRepository {
                 maven {

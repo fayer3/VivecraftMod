@@ -1,7 +1,10 @@
 package org.vivecraft.forge;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.fml.IExtensionPoint;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.NetworkConstants;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.event.EventNetworkChannel;
@@ -27,6 +30,11 @@ public class Vivecraft {
     public Vivecraft() {
         // init server config
         ServerConfig.init(null);
+        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
+            () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY,
+                // only needed on server, client is optional
+                (s, b) -> true // any version is good
+            ));
 
         VIVECRAFT_NETWORK_CHANNEL.addListener(event -> {
             if (event.getPayload() != null) {

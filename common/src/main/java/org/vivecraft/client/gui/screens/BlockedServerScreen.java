@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 
 public class BlockedServerScreen extends Screen {
 
@@ -15,7 +15,7 @@ public class BlockedServerScreen extends Screen {
     private MultiLineLabel message;
 
     public BlockedServerScreen(Screen lastScreen, String server, Runnable onContinue) {
-        super(Component.translatable("vivecraft.messages.blocklist.title"));
+        super(new TranslatableComponent("vivecraft.messages.blocklist.title"));
         this.lastScreen = lastScreen;
         this.server = server;
         this.onContinue = onContinue;
@@ -24,13 +24,13 @@ public class BlockedServerScreen extends Screen {
     protected void init() {
 
         this.addRenderableWidget(new Button(this.width / 2 + 5, this.height - 32, 150, 20,
-            Component.translatable("gui.back"), (p) ->
+            new TranslatableComponent("gui.back"), (p) ->
             Minecraft.getInstance().setScreen(this.lastScreen)));
         this.addRenderableWidget(
             new Button(this.width / 2 - 155, this.height - 32, 150, 20,
-                Component.translatable("vivecraft.gui.continueWithout"), p -> this.onContinue.run()));
+                new TranslatableComponent("vivecraft.gui.continueWithout"), p -> this.onContinue.run()));
         this.message = MultiLineLabel.create(this.font,
-            Component.translatable("vivecraft.messages.blocklist", this.server), 360);
+            new TranslatableComponent("vivecraft.messages.blocklist", this.server), 360);
     }
 
     @Override

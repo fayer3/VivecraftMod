@@ -5,7 +5,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.apache.commons.lang3.ArrayUtils;
 import org.vivecraft.client.gui.framework.GuiVROptionButton;
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
@@ -58,7 +58,7 @@ public class GuiRadialConfiguration extends GuiVROptionsBase {
 
         if (this.isselectmode) {
             this.addRenderableWidget(new Button(this.width / 2 - 155, this.height - 25, 150, 20,
-                Component.translatable("gui.cancel"),
+                new TranslatableComponent("gui.cancel"),
                 (p) -> {
                     this.isselectmode = false;
                     this.reinit = true;
@@ -66,13 +66,13 @@ public class GuiRadialConfiguration extends GuiVROptionsBase {
                 }));
 
             this.addRenderableWidget(new Button(this.width / 2 - 155, 26, 150, 20,
-                Component.translatable("vivecraft.gui.clear"),
+                new TranslatableComponent("vivecraft.gui.clear"),
                 (p) -> this.setKey(null)));
         } else {
             this.addRenderableWidget(new Button(this.width / 2 + 2, this.height / 6 - 10, 150, 20,
                 this.isShift ?
-                    Component.translatable("vivecraft.gui.radialmenu.mainset") :
-                    Component.translatable("vivecraft.gui.radialmenu.alternateset"),
+                    new TranslatableComponent("vivecraft.gui.radialmenu.mainset") :
+                    new TranslatableComponent("vivecraft.gui.radialmenu.alternateset"),
                 (p) -> {
                     this.isShift = !this.isShift;
                     this.reinit = true;
@@ -131,7 +131,7 @@ public class GuiRadialConfiguration extends GuiVROptionsBase {
                 int index = i;
                 this.addRenderableWidget(
                     new Button(centerX + x - buttonWidth / 2, centerY + y, buttonWidth, 20,
-                        Component.translatable(label),
+                        new TranslatableComponent(label),
                         (p) -> {
                             this.selectedIndex = index;
                             this.isselectmode = true;
@@ -182,15 +182,15 @@ public class GuiRadialConfiguration extends GuiVROptionsBase {
 
         if (this.visibleList == null) {
             drawCenteredString(poseStack, this.minecraft.font,
-                Component.translatable("vivecraft.messages.radialmenubind.1"), this.width / 2, this.height - 50,
+                new TranslatableComponent("vivecraft.messages.radialmenubind.1"), this.width / 2, this.height - 50,
                 0x55FF55);
 
             if (this.isShift) {
                 drawCenteredString(poseStack, this.minecraft.font,
-                    Component.translatable("vivecraft.messages.radialmenubind.2"), this.width / 2, this.height - 36,
+                    new TranslatableComponent("vivecraft.messages.radialmenubind.2"), this.width / 2, this.height - 36,
                     0xD23877);
                 drawCenteredString(poseStack, this.minecraft.font,
-                    Component.translatable("vivecraft.messages.radialmenubind.3"), this.width / 2, this.height - 22,
+                    new TranslatableComponent("vivecraft.messages.radialmenubind.3"), this.width / 2, this.height - 22,
                     0xD23877);
             }
         }

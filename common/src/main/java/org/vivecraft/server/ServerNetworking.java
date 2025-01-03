@@ -1,8 +1,9 @@
 package org.vivecraft.server;
 
 import net.minecraft.ResourceLocationException;
+import net.minecraft.Util;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkMap;
@@ -91,8 +92,9 @@ public class ServerNetworking {
                         }
                     } else {
                         // unsupported version, send notification, and disregard
-                        player.sendSystemMessage(
-                            Component.literal("Unsupported vivecraft version, VR features will not work"));
+                        player.sendMessage(
+                            new TextComponent("Unsupported vivecraft version, VR features will not work"),
+                            Util.NIL_UUID);
                         if (ServerConfig.DEBUG.get()) {
                             LOGGER.info(
                                 "Vivecraft: {} networking not supported. client range [{},{}], server range [{},{}]",

@@ -3,8 +3,7 @@ package org.vivecraft.mixin.client_vr.multiplayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.Registry;
-import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
-import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
+import net.minecraft.network.protocol.game.ClientboundChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
@@ -80,24 +79,12 @@ public abstract class ClientPacketListenerVRMixin {
         ClientNetworking.NEEDS_RESET = true;
     }
 
-    @Inject(method = "handlePlayerChat", at = @At("TAIL"))
-    private void vivecraft$chatHapticsPlayer(ClientboundPlayerChatPacket packet, CallbackInfo ci) {
-        String lastMsg = ((PlayerExtension) this.minecraft.player).vivecraft$getLastMsg();
-        ((PlayerExtension) this.minecraft.player).vivecraft$setLastMsg(null);
-        if (VRState.VR_RUNNING && (this.minecraft.player == null || lastMsg == null ||
-            packet.message().signedHeader().sender() == this.minecraft.player.getUUID()
-        ))
-        {
-            vivecraft$triggerHapticSound();
-        }
-    }
-
-    @Inject(method = "handleSystemChat", at = @At("TAIL"))
-    private void vivecraft$chatHapticsSystem(ClientboundSystemChatPacket packet, CallbackInfo ci) {
+    @Inject(method = "handleChat", at = @At("TAIL"))
+    private void vivecraft$chatHapticsPlayer(ClientboundChatPacket packet, CallbackInfo ci) {
         String lastMsg = ((PlayerExtension) this.minecraft.player).vivecraft$getLastMsg();
         ((PlayerExtension) this.minecraft.player).vivecraft$setLastMsg(null);
         if (VRState.VR_RUNNING &&
-            (this.minecraft.player == null || lastMsg == null || packet.content().getString().contains(lastMsg)))
+            (this.minecraft.player == null || lastMsg == null || packet.getMessage().getString().contains(lastMsg)))
         {
             vivecraft$triggerHapticSound();
         }

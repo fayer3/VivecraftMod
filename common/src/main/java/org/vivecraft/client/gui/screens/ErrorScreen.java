@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.jetbrains.annotations.NotNull;
 import org.vivecraft.client.gui.widgets.TextScrollWidget;
 
@@ -29,11 +30,11 @@ public class ErrorScreen extends Screen {
 
         this.addRenderableWidget(
             new Button(this.width / 2 + 5, this.height - 32, 150, 20,
-                Component.translatable("gui.back"),
+                new TranslatableComponent("gui.back"),
                 (p) -> Minecraft.getInstance().setScreen(this.lastScreen)));
         this.addRenderableWidget(
             new Button(this.width / 2 - 155, this.height - 32, 150, 20,
-                Component.translatable("chat.copy.click"),
+                new TranslatableComponent("chat.copy.click"),
                 (p) -> Minecraft.getInstance().keyboardHandler.setClipboard(
                     this.title.getString() + "\n" + this.error.getString())));
     }

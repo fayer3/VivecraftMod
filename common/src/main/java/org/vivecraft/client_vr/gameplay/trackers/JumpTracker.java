@@ -2,7 +2,7 @@ package org.vivecraft.client_vr.gameplay.trackers;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -61,7 +61,7 @@ public class JumpTracker extends Tracker {
             return false;
         } else {
             return itemStack.getHoverName().getString().equals("Jump Boots") ||
-                (itemStack.getHoverName().getContents() instanceof TranslatableContents translatableContent &&
+                (itemStack.getHoverName() instanceof TranslatableComponent translatableContent &&
                     translatableContent.getKey().equals("vivecraft.item.jumpboots")
                 );
         }

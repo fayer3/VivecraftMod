@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
@@ -133,12 +132,12 @@ public abstract class LocalPlayerVRMixin extends LocalPlayer_PlayerVRMixin imple
         // clear teleport here, after all the packets would be sent
         this.vivecraft$teleported = false;
         if (VRState.VR_RUNNING && ClientDataHolderVR.getInstance().vrSettings.walkUpBlocks) {
-            this.minecraft.options.autoJump().set(false);
+            this.minecraft.options.autoJump = false;
         }
     }
 
-    @Inject(method = "chatSigned", at = @At("TAIL"))
-    private void vivecraft$chatMsg(String string, Component component, CallbackInfo ci) {
+    @Inject(method = "chat", at = @At("TAIL"))
+    private void vivecraft$chatMsg(String string, CallbackInfo ci) {
         this.vivecraft$lastMsg = string;
     }
 
