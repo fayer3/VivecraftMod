@@ -177,6 +177,17 @@ allprojects {
                 includeGroup "com.jamieswhiteshirt"
             }
         }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = 'BlameJared Maven (CrT / Bookshelf)'
+                    url = 'https://maven.blamejared.com'
+                }
+            }
+            filter {
+                includeGroup "foundry.veil"
+            }
+        }
 
         exclusiveContent {
             forRepository {

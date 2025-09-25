@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.tuple.Triple;
+import org.vivecraft.Xloader;
 import org.vivecraft.api.client.data.RenderPass;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRState;
@@ -11,6 +12,7 @@ import org.vivecraft.client_vr.render.helpers.RenderHelper;
 import org.vivecraft.common.utils.MathUtils;
 import org.vivecraft.mod_compat_vr.iris.IrisHelper;
 import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
+import org.vivecraft.mod_compat_vr.veil.VeilHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,14 +58,14 @@ public class ShadersHelper {
      */
     public static boolean isShaderActive() {
         return (IrisHelper.isLoaded() && IrisHelper.isShaderActive()) ||
-            (OptifineHelper.isOptifineLoaded() && OptifineHelper.isShaderActive());
+            (OptifineHelper.isOptifineLoaded() && OptifineHelper.isShaderActive()) || VeilHelper.isLoaded();
     }
 
     /**
      * @return if the current shader implementation needs the same buffer sizes for all passes
      */
     public static boolean needsSameSizeBuffers() {
-        return OptifineHelper.isOptifineLoaded() && OptifineHelper.isShaderActive();
+        return OptifineHelper.isOptifineLoaded() && OptifineHelper.isShaderActive() || VeilHelper.isLoaded();
     }
 
     /**

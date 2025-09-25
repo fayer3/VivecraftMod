@@ -40,6 +40,14 @@ dependencies {
     //for epic fight compat
     modCompileOnly("maven.modrinth:epic-fight:20.6.3")
 
+    // veil
+    modCompileOnly("foundry.veil:Veil-fabric-1.20.1:1.0.0.228") {
+        exclude group: "maven.modrinth"
+        exclude group: "me.fallenbreath"
+        exclude group: "net.fabricmc"
+        exclude group: "net.fabricmc.fabric-api"
+    }
+
     // needed dependencies
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     compileOnly('com.electronwill.night-config:toml:3.6.6')

@@ -55,6 +55,7 @@ import org.vivecraft.client_xr.render_pass.RenderPassType;
 import org.vivecraft.common.utils.MathUtils;
 import org.vivecraft.mod_compat_vr.immersiveportals.ImmersivePortalsHelper;
 import org.vivecraft.mod_compat_vr.shaders.ShadersHelper;
+import org.vivecraft.mod_compat_vr.veil.VeilHelper;
 
 import java.util.function.Predicate;
 
@@ -505,6 +506,10 @@ public abstract class GameRendererVRMixin
 
     @ModifyExpressionValue(method = "renderLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/GameRenderer;renderHand:Z"))
     private boolean vivecraft$noHandsInVR(boolean renderHand) {
+        if (renderHand && !RenderPassType.isVanilla() && VeilHelper.isLoaded()) {
+            VeilHelper.beginFirstPerson();
+            VeilHelper.endFirstPerson();
+        }
         return renderHand && RenderPassType.isVanilla();
     }
 

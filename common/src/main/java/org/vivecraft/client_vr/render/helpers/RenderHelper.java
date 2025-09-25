@@ -10,7 +10,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
@@ -36,7 +36,6 @@ import org.vivecraft.mixin.client.blaze3d.RenderSystemAccessor;
 import org.vivecraft.mod_compat_vr.shaders.ShadersHelper;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 public class RenderHelper {
 
@@ -346,15 +345,15 @@ public class RenderHelper {
      * @param size          size of the quad
      * @param packedLight   block and sky light packed into an int
      * @param matrix        matrix to use to
-     * @param shader        entity Shader supplier to use
+     * @param type          entity Shader supplier to use
      * @param flipY         if the texture should be flipped vertically
      */
     public static void drawSizedQuadWithLightmap(
         float displayWidth, float displayHeight, float size, int packedLight, Matrix4f matrix,
-        Supplier<ShaderInstance> shader, boolean flipY)
+        RenderType type, boolean flipY)
     {
         drawSizedQuadWithLightmap(displayWidth, displayHeight, size, packedLight, new float[]{1, 1, 1, 1}, matrix,
-            shader, flipY);
+            type, flipY);
     }
 
     /**
@@ -365,13 +364,13 @@ public class RenderHelper {
      * @param size          size of the quad
      * @param color         color of the quad, expects an array of length 4 for: r, g, b, a
      * @param matrix        matrix to use to
-     * @param shader        entity Shader supplier to use
+     * @param type          entity Shader supplier to use
      */
     public static void drawSizedQuadFullbright(
         float displayWidth, float displayHeight, float size, float[] color, Matrix4f matrix,
-        Supplier<ShaderInstance> shader)
+        RenderType type)
     {
-        drawSizedQuadWithLightmap(displayWidth, displayHeight, size, LightTexture.FULL_BRIGHT, color, matrix, shader,
+        drawSizedQuadWithLightmap(displayWidth, displayHeight, size, LightTexture.FULL_BRIGHT, color, matrix, type,
             false);
     }
 
@@ -384,21 +383,19 @@ public class RenderHelper {
      * @param packedLight   block and sky light packed into an int
      * @param color         color of the quad, expects an array of length 4 for: r, g, b, a
      * @param matrix        matrix to use to for positioning
-     * @param shader        supplier of the Shader to render as, needs to be one of the entity types
+     * @param type          supplier of the Shader to render as, needs to be one of the entity types
      * @param flipY         if the texture should be flipped vertically
      */
     public static void drawSizedQuadWithLightmap(
         float displayWidth, float displayHeight, float size, int packedLight, float[] color, Matrix4f matrix,
-        Supplier<ShaderInstance> shader, boolean flipY)
+        RenderType type, boolean flipY)
     {
         float sizeX = size * 0.5F;
         float sizeY = sizeX * displayHeight / displayWidth;
 
-        RenderSystem.setShader(shader);
         MC.gameRenderer.lightTexture().turnOnLightLayer();
         MC.gameRenderer.overlayTexture().setupOverlayColor();
-        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
+        VertexConsumer bufferBuilder = MC.renderBuffers().bufferSource().getBuffer(type);
 
         // store old lights
         Vector3f light0Old = RenderSystemAccessor.getShaderLightDirections()[0];
@@ -434,7 +431,7 @@ public class RenderHelper {
             .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
             .normal(normal.x, normal.y, normal.z)
             .endVertex();
-        BufferUploader.drawWithShader(bufferBuilder.end());
+        MC.renderBuffers().bufferSource().endBatch(type);
 
         MC.gameRenderer.lightTexture().turnOffLightLayer();
 

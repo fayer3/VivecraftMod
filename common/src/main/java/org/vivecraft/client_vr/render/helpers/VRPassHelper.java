@@ -20,6 +20,7 @@ import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_xr.render_pass.RenderPassManager;
 import org.vivecraft.client_xr.render_pass.WorldRenderPass;
 import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
+import org.vivecraft.mod_compat_vr.veil.VeilHelper;
 
 import java.util.List;
 
@@ -201,6 +202,11 @@ public class VRPassHelper {
                 {
                     continue;
                 }
+            }
+            if (!DATA_HOLDER.isFirstPass && VeilHelper.isLoaded()) {
+                // end gui
+                VeilHelper.endFrame();
+                VeilHelper.startFrame();
             }
 
             switch (renderpass) {

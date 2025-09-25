@@ -81,7 +81,9 @@ import org.vivecraft.client_vr.render.helpers.ShaderHelper;
 import org.vivecraft.client_vr.settings.VRHotkeys;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_xr.render_pass.RenderPassManager;
+import org.vivecraft.client_xr.render_pass.WorldRenderPass;
 import org.vivecraft.common.network.packet.c2s.VRActivePayloadC2S;
+import org.vivecraft.mod_compat_vr.veil.VeilHelper;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
@@ -388,6 +390,13 @@ public abstract class MinecraftVRMixin implements MinecraftExtension {
             } else {
                 RenderPassManager.setVanillaRenderPass();
             }
+        }
+    }
+
+    @Inject(method = "resizeDisplay", at = @At("TAIL"))
+    private void vivecraft$resizeVeil(CallbackInfo ci) {
+        if (VRState.VR_RUNNING && VeilHelper.isLoaded()) {
+            VeilHelper.resize(WorldRenderPass.STEREO_XR.target.width, WorldRenderPass.STEREO_XR.target.height);
         }
     }
 

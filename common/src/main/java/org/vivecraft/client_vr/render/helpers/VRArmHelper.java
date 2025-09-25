@@ -7,6 +7,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
@@ -140,13 +141,13 @@ public class VRArmHelper {
         }
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+        RenderType quad = RenderType.debugQuads();
+        VertexConsumer bufferBuilder = MC.renderBuffers().bufferSource().getBuffer(quad);
 
         RenderHelper.renderBox(bufferBuilder, start, end, -0.02F, 0.02F, -0.0125F, 0.0125F, color, alpha,
             poseStack);
 
-        BufferUploader.drawWithShader(bufferBuilder.end());
+        MC.renderBuffers().bufferSource().endBatch(quad);
 
         poseStack.popPose();
 
@@ -386,8 +387,8 @@ public class VRArmHelper {
             // to make shaders work
             ShadersHelper.bindTexture(RenderHelper.WHITE_TEXTURE);
 
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+            RenderType quad = RenderType.debugQuads();
+            VertexConsumer bufferBuilder = MC.renderBuffers().bufferSource().getBuffer(quad);
 
             double VOffset = DATA_HOLDER.teleportTracker.lastTeleportArcDisplayOffset;
             Vec3 dest = DATA_HOLDER.teleportTracker.getDestination();
@@ -441,7 +442,7 @@ public class VRArmHelper {
                     (-1.0F + shift) * segmentHalfWidth, (1.0F + shift) * segmentHalfWidth, color, alpha, poseStack);
             }
 
-            BufferUploader.drawWithShader(bufferBuilder.end());
+            MC.renderBuffers().bufferSource().getBuffer(quad);
 
             // hit indicator
             if (validLocation && DATA_HOLDER.teleportTracker.movementTeleportProgress >= 1.0D) {

@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -47,6 +48,7 @@ import org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler;
 import org.vivecraft.client_vr.gameplay.screenhandlers.RadialHandler;
 import org.vivecraft.client_vr.gameplay.trackers.TelescopeTracker;
 import org.vivecraft.client_vr.provider.ControllerType;
+import org.vivecraft.client_vr.render.VRRenderTypes;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.common.utils.MathUtils;
 import org.vivecraft.mod_compat_vr.immersiveportals.ImmersivePortalsHelper;
@@ -139,12 +141,15 @@ public class VREffectsHelper {
         poseStack.pushPose();
         RenderSystem.enableDepthTest();
 
+        RenderTarget target;
         if (c == 0) {
             DATA_HOLDER.vrRenderer.telescopeFramebufferR.bindRead();
             RenderSystem.setShaderTexture(0, DATA_HOLDER.vrRenderer.telescopeFramebufferR.getColorTextureId());
+            target = DATA_HOLDER.vrRenderer.telescopeFramebufferR;
         } else {
             DATA_HOLDER.vrRenderer.telescopeFramebufferL.bindRead();
             RenderSystem.setShaderTexture(0, DATA_HOLDER.vrRenderer.telescopeFramebufferL.getColorTextureId());
+            target = DATA_HOLDER.vrRenderer.telescopeFramebufferL;
         }
 
         // size of the back of the spyglass 2/16
@@ -154,7 +159,7 @@ public class VREffectsHelper {
         // draw spyglass view
         RenderSystem.disableBlend();
         RenderHelper.drawSizedQuadFullbright(720.0F, 720.0F, scale, new float[]{alpha, alpha, alpha, 1},
-            poseStack.last().pose(), GameRenderer::getRendertypeEntitySolidShader);
+            poseStack.last().pose(), VRRenderTypes.entityTranslucent(target));
 
         // draw spyglass overlay
         ShadersHelper.bindTexture(SCOPE_TEXTURE);
@@ -166,7 +171,7 @@ public class VREffectsHelper {
             DATA_HOLDER.vrPlayer.vrdata_world_render.getController(c).getPosition()));
         // draw the overlay, and flip it vertically
         RenderHelper.drawSizedQuadWithLightmap(720.0F, 720.0F, scale, light, poseStack.last().pose(),
-            GameRenderer::getRendertypeEntityTranslucentShader, true);
+            RenderType.entityTranslucent(SCOPE_TEXTURE), true);
 
         poseStack.popPose();
     }
@@ -1052,11 +1057,11 @@ public class VREffectsHelper {
             {
                 RenderHelper.drawSizedQuadWithLightmap((float) MC.getWindow().getGuiScaledWidth(),
                     (float) MC.getWindow().getGuiScaledHeight(), 1.5F, light, color, poseStack.last().pose(),
-                    GameRenderer::getRendertypeEntityTranslucentShader, false);
+                    VRRenderTypes.entityTranslucent(framebuffer), false);
             } else {
                 RenderHelper.drawSizedQuadWithLightmap((float) MC.getWindow().getGuiScaledWidth(),
                     (float) MC.getWindow().getGuiScaledHeight(), 1.5F, light, color, poseStack.last().pose(),
-                    GameRenderer::getRendertypeEntityCutoutNoCullShader, false);
+                    VRRenderTypes.entityCutout(framebuffer), false);
             }
         } else {
             RenderHelper.drawSizedQuad(
@@ -1357,8 +1362,8 @@ public class VREffectsHelper {
 
         RenderSystem.setShader(GameRenderer::getRendertypeEntityCutoutNoCullShader);
 
-        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
+        RenderType crosshair = RenderType.entityCutout(Gui.GUI_ICONS_LOCATION);
+        VertexConsumer bufferBuilder = MC.renderBuffers().bufferSource().getBuffer(crosshair);
 
         bufferBuilder.vertex(poseStack.last().pose(), -1.0F, 1.0F, 0.0F)
             .color(brightness, brightness, brightness, 1.0F)
@@ -1381,7 +1386,7 @@ public class VREffectsHelper {
             .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light)
             .normal(0.0F, 0.0F, 1.0F).endVertex();
 
-        BufferUploader.drawWithShader(bufferBuilder.end());
+        MC.renderBuffers().bufferSource().endBatch(crosshair);
 
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
