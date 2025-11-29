@@ -172,6 +172,10 @@ public class VRArmHelper {
         // Roomscale bow override
         item = getBowOverride(item, InteractionHand.MAIN_HAND);
 
+        if (DATA_HOLDER.dualHandedWeaponModule.isLatched(InteractionHand.MAIN_HAND)) {
+            item = ItemStack.EMPTY;
+        }
+
         if (OptifineHelper.isOptifineLoaded() && OptifineHelper.isShaderActive()) {
             // if we don't do this shaders render the hands wrong
             OptifineHelper.beginEntities();
@@ -217,6 +221,10 @@ public class VRArmHelper {
 
             // Roomscale bow override
             item = getBowOverride(item, InteractionHand.OFF_HAND);
+
+            if (DATA_HOLDER.dualHandedWeaponModule.isLatched(InteractionHand.OFF_HAND)) {
+                item = ItemStack.EMPTY;
+            }
 
             if (OptifineHelper.isOptifineLoaded() && OptifineHelper.isShaderActive()) {
                 // if we don't do this shaders render the hands wrong

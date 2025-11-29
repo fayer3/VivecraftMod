@@ -227,11 +227,42 @@ public class VivecraftItemRendering {
                 translateZ += 0.16F;
             }
             case CROSSBOW -> {
+                boolean roomscaleCrossbow = true;
                 rotation = Axis.YP.rotationDegrees(10.0F);
-                translateX += 0.01F;
-                translateZ -= 0.02F;
-                translateY -= 0.02F;
-                scale = 0.5F;
+
+                scale = roomscaleCrossbow ? 0.7F : 0.5F;
+                translateX += 0.0525F - scale * 0.085F;
+                translateZ -= -0.235F + scale * 0.51F;
+                translateY -= -0.055F + scale * 0.18F;
+                if (DH.dualHandedWeaponModule.isLatched()) {
+                    rotation.identity();
+                    preRotation.identity();
+                    //scale = 1.0F;
+
+                    int latchedHand = DH.dualHandedWeaponModule.getLatchedHand();
+
+                    Vector3fc aim = MathUtils.subtractToVector3f(
+                        DH.vrPlayer.vrdata_world_render.getController(latchedHand).getPosition(),
+                        DH.vrPlayer.vrdata_world_render.getController(1 - latchedHand).getPosition());
+                    Vector3f up = DH.vrPlayer.vrdata_world_render.getController(1 - latchedHand)
+                        .getCustomVector(MathUtils.UP)
+                        //.add(DH.vrPlayer.vrdata_world_render.getController(latchedHand).getCustomVector(MathUtils.UP))
+                        .normalize();
+
+                    //poseStack.translate(0.0F, 0.0F, 0.1F);
+                    // un-do controller tracking
+                    poseStack.last().pose()
+                        .mul(DH.vrPlayer.vrdata_world_render.getController(hand.ordinal()).getMatrix().transpose());
+
+                    // align with controller
+                    preRotation = new Quaternionf().lookAlong(aim, up).conjugate();
+
+                    // bow model adjustment
+                    //rotation = Axis.YP.rotationDegrees(180.0F);
+                    //rotation.mul(Axis.XP.rotationDegrees(160.0F));
+                    //preRotation.mul(Axis.ZP.rotationDegrees(-90.0F));
+                    preRotation.mul(Axis.YP.rotationDegrees(10.0F));
+                }
             }
             case MAP -> {
                 rotation = Axis.XP.rotationDegrees(-45.0F);

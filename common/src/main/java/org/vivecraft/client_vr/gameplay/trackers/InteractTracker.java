@@ -6,6 +6,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
 import org.vivecraft.api.client.HeldInteractModule;
 import org.vivecraft.api.client.InteractModule;
+import org.vivecraft.api.client.ItemInUseInteractModule;
+import org.vivecraft.api.client.ItemInUseTracker;
 import org.vivecraft.client.VivecraftVRMod;
 import org.vivecraft.client.gui.screens.FBTCalibrationScreen;
 import org.vivecraft.client_vr.ClientDataHolderVR;
@@ -16,7 +18,7 @@ import org.vivecraft.client_vr.render.VRFirstPersonArmSwing;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InteractTracker implements DebugRenderTracker {
+public class InteractTracker implements DebugRenderTracker, ItemInUseTracker {
 
     // sorted list of registered interact modules
     private final List<InteractModule> modules = new ArrayList<>();
@@ -167,6 +169,12 @@ public class InteractTracker implements DebugRenderTracker {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean itemInUse(LocalPlayer player) {
+        return this.pressed[0] && this.activeModules[0] instanceof ItemInUseInteractModule ||
+            this.pressed[1] && this.activeModules[1] instanceof ItemInUseInteractModule;
     }
 
     @Override

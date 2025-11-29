@@ -73,10 +73,12 @@ public class ClientDataHolderVR {
     // our interact modules
     public final InteractiveHotbarModule hotbarModule;
     public final BowModule bowModule;
+    public final CrossbowModule crossbowModule;
     public final ThirdPersonCameraModule thirdCamModule;
     public final ScreenshotCameraModule screenCamModule;
     public final EntityInteractionModule entityModule;
     public final BlockInteractionModule blockModule;
+    public final DualHandedWeaponModule dualHandedWeaponModule;
 
     public VRSettings vrSettings;
     public boolean grabScreenShot = false;
@@ -141,13 +143,16 @@ public class ClientDataHolderVR {
         // create interact modules
         this.hotbarModule = new InteractiveHotbarModule(Minecraft.getInstance(), this);
         this.bowModule = new BowModule(this);
+        this.crossbowModule = new CrossbowModule(this);
         this.thirdCamModule = new ThirdPersonCameraModule(this);
         this.screenCamModule = new ScreenshotCameraModule(this);
         this.entityModule = new EntityInteractionModule(Minecraft.getInstance(), this);
         this.blockModule = new BlockInteractionModule(Minecraft.getInstance(), this);
+        this.dualHandedWeaponModule = new DualHandedWeaponModule(this);
 
         this.interactTracker.registerModules(this.hotbarModule, this.bowModule, this.thirdCamModule,
-            this.screenCamModule, this.entityModule, this.blockModule);
+            this.screenCamModule, this.entityModule, this.blockModule, this.dualHandedWeaponModule,
+            this.crossbowModule);
     }
 
     public static ClientDataHolderVR getInstance() {
