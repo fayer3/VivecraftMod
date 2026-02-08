@@ -30,6 +30,9 @@ jobs:
     name: checkout branch, compile and publish to packages
     runs-on: ubuntu-22.04
     needs: prepare
+    permissions:
+      contents: read
+      packages: write
     strategy:
       # no max-parallel, since this is allowed to run in parallel
       matrix:
