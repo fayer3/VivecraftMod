@@ -1,0 +1,68 @@
+name: parse build jars
+description: parses the source and outputs
+
+inputs:
+  mod_version:
+    description: version number opf hte mod, with all suffixes
+    required: true
+    
+outputs:
+  release_type:
+    description: "release, alpha or beta"
+    value: ${{ steps.inspect.outputs.RELEASE_TYPE }}
+
+  fabric_loaders:
+    description: "mod loaders for the fabric jar"
+    value: ${{ steps.inspect.outputs.LOADERS_FABRIC }}
+
+  fabric_file:
+    description: jar for fabric
+    value: ${{ steps.identify.outputs.FABRIC_FILE_NAME }}
+
+  quilt_loaders:
+    description: "mod loaders for the quilt jar, if one is available"
+    value: ${{ steps.inspect.outputs.LOADERS_QUILT }}
+
+  quilt_file:
+    description: jar for quilt
+    value: ${{ steps.identify.outputs.QUILT_FILE_NAME }}
+
+  forge_loaders:
+    description: "mod loaders for the forge jar"
+    value: ${{ steps.inspect.outputs.LOADERS_FORGE }}
+
+  forge_file:
+    description: jar for forge
+    value: ${{ steps.identify.outputs.FORGE_FILE_NAME }}
+
+  forge_mc_versions:
+    description: "minecraft versions the forge jar runs on"
+    value: ${{ steps.inspect.outputs.FORGE_MC_VERSIONS }}
+
+  neoforge_loaders:
+    description: "mod loaders for the neoforge jar, if one is available"
+    value: ${{ steps.inspect.outputs.LOADERS_NEOFORGE }}
+
+  neoforge_file:
+    description: jar for neoforge
+    value: ${{ steps.identify.outputs.NEOFORGE_FILE_NAME }}
+
+  neoforge_mc_versions:
+    description: "minecraft versions the neoforge jar runs on"
+    value: ${{ steps.inspect.outputs.NEOFORGE_MC_VERSIONS }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: identify
+      shell: bash
+      run: bash ${{ github.action_path }}/identify.sh
+    - id: inspect
+      shell: bash
+      env:
+        FABRIC_FILE_NAME: ${{ steps.identify.outputs.FABRIC_FILE_NAME }}
+        QUILT_FILE_NAME: ${{ steps.identify.outputs.QUILT_FILE_NAME }}
+        FORGE_FILE_NAME: ${{ steps.identify.outputs.FORGE_FILE_NAME }}
+        NEOFORGE_FILE_NAME: ${{ steps.identify.outputs.NEOFORGE_FILE_NAME }}
+        MOD_VERSION: ${{ inputs.mod_version }}
+      run: bash ${{ github.action_path }}/get_info.sh
