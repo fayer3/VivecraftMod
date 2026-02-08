@@ -1,7 +1,10 @@
-name: build
+name: build and publish
 run-name: building
 on:
   workflow_dispatch
+
+env:
+  TARGET_REPOSITORY: 'fayer3/VivecraftMod'
 
 jobs:
   prepare:
@@ -35,6 +38,7 @@ jobs:
       - name: checkout ${{ matrix.branch }}
         uses: actions/checkout@v6
         with:
+          repository: ${{ env.TARGET_REPOSITORY }}
           ref: ${{ matrix.branch }}
       - name: Set up JDK
         uses: actions/setup-java@v5
