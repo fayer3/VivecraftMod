@@ -1,4 +1,6 @@
 {
   "homepage": "https://modrinth.com/mod/vivecraft",
-  "promos": {}
+  "promos": {
+    "1.21.11-latest": "1.21.11-1.3.6"
+  }
 }
