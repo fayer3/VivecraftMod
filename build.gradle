@@ -35,6 +35,7 @@ subprojects {
             // parchment mappings as backup
             parchment("org.parchmentmc.data:parchment-${rootProject.parchment_version}@zip")
         }
+        implementation("org.lwjgl:lwjgl:3.4.1")
         implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}") { transitive = false }
         implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-linux") { transitive = false }
         implementation("org.lwjgl:lwjgl-openvr:${rootProject.lwjgl_version}:natives-macos") { transitive = false }
