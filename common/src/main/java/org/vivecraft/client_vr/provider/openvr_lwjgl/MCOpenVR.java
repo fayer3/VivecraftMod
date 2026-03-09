@@ -59,7 +59,6 @@ import static org.lwjgl.openvr.VRApplications.*;
 import static org.lwjgl.openvr.VRCompositor.*;
 import static org.lwjgl.openvr.VRInput.*;
 import static org.lwjgl.openvr.VRRenderModels.*;
-import static org.lwjgl.openvr.VRSettings.VRSettings_GetFloat;
 import static org.lwjgl.openvr.VRSystem.*;
 
 /**
@@ -120,7 +119,7 @@ public class MCOpenVR extends MCVR {
 
     private final Queue<VREvent> vrEvents = new LinkedList<>();
 
-    private final VRTextureBounds texBounds;
+    protected final VRTextureBounds texBounds;
     protected final Texture texType0;
     protected final Texture texType1;
 
@@ -189,7 +188,7 @@ public class MCOpenVR extends MCVR {
         OME = this;
         // make sure the lwjgl version is the right one
         // check that the right lwjgl version is loaded that we ship the OpenVR part of, or stuff breaks
-        final String[] lwjglVersions = new String[]{"3.4.1"};
+        /*final String[] lwjglVersions = new String[]{"3.4.1"};
         if (Arrays.stream(lwjglVersions).noneMatch(v -> Version.getVersion().startsWith(v))) {
             String suppliedJar = "";
             try {
@@ -205,7 +204,7 @@ public class MCOpenVR extends MCVR {
                         lwjglVersions.length == 1 ? lwjglVersions[0] :
                             (lwjglVersions[0] + " - " + lwjglVersions[lwjglVersions.length - 1]), suppliedJar),
                     "OpenVR_LWJGL"));
-        }
+        }*/
 
         this.hapticScheduler = new OpenVRHapticScheduler();
 
@@ -313,7 +312,7 @@ public class MCOpenVR extends MCVR {
 
     @Override
     public Vector2fc getPlayAreaSize() {
-        if (OpenVR.VRChaperone == null || OpenVR.VRChaperone.GetPlayAreaSize == 0L) {
+        if (true || OpenVR.VRChaperone == null || OpenVR.VRChaperone.GetPlayAreaSize == 0L) {
             return null;
         } else {
             try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -445,7 +444,7 @@ public class MCOpenVR extends MCVR {
     public void poll(long frameIndex) {
         if (!this.initialized) return;
 
-        this.paused = VRSystem_ShouldApplicationPause();
+        //this.paused = VRSystem_ShouldApplicationPause();
         Profiler.get().push("pollEvents");
         this.pollVREvents();
         Profiler.get().popPush("processEvents");
@@ -547,11 +546,11 @@ public class MCOpenVR extends MCVR {
                 deviceIndex);
         } else {
             // print only manufacturer and model
-            VRSettings.LOGGER.info("Vivecraft: VR DEVICE: {}, Manufacturer: {}, Model: {}", deviceIndex,
+            /*VRSettings.LOGGER.info("Vivecraft: VR DEVICE: {}, Manufacturer: {}, Model: {}", deviceIndex,
                 VRSystem_GetStringTrackedDeviceProperty(deviceIndex,
                     ETrackedDeviceProperty_Prop_ManufacturerName_String, this.errorBuffer),
                 VRSystem_GetStringTrackedDeviceProperty(deviceIndex,
-                    VR.ETrackedDeviceProperty_Prop_ModelNumber_String, this.errorBuffer));
+                    VR.ETrackedDeviceProperty_Prop_ModelNumber_String, this.errorBuffer));*/
         }
     }
 
@@ -862,7 +861,7 @@ public class MCOpenVR extends MCVR {
      * @return current OpenVR resolution scaling
      */
     protected float getSuperSampling() {
-        return VRSettings_GetFloat("steamvr", "supersampleScale", this.errorBuffer);
+        return 1;//VRSettings_GetFloat("steamvr", "supersampleScale", this.errorBuffer);
     }
 
 
@@ -870,6 +869,7 @@ public class MCOpenVR extends MCVR {
      * fetches the controller poses from openvr
      */
     private void getTransforms() {
+        if (true) return;
         if (this.getXforms) {
             this.controllerComponentTransforms = new HashMap<>();
         }
@@ -1035,7 +1035,7 @@ public class MCOpenVR extends MCVR {
         };
         VRSettings.LOGGER.info("Vivecraft: TrackingSpace: {}", actualTrackingSpace);
 
-        try (MemoryStack stack = MemoryStack.stackPush()) {
+        /*try (MemoryStack stack = MemoryStack.stackPush()) {
             ByteBuffer stringBuffer = stack.calloc(20);
 
             VRSystem_GetStringTrackedDeviceProperty(k_unTrackedDeviceIndex_Hmd,
@@ -1044,7 +1044,7 @@ public class MCOpenVR extends MCVR {
             String deviceName = memUTF8NullTerminated(stringBuffer);
             VRSettings.LOGGER.info("Vivecraft: Device manufacturer is: {}", deviceName);
             this.detectedHardware = HardwareType.fromManufacturer(deviceName);
-        }
+        }*/
 
         // texture bounds, currently unused, since we use the full texture anyway
         this.texBounds.uMax(1.0F);
@@ -1390,10 +1390,10 @@ public class MCOpenVR extends MCVR {
      */
     private void pollVREvents() {
         VREvent vrEvent = VREvent.calloc();
-        while (VRSystem_PollNextEvent(vrEvent, VREvent.SIZEOF)) {
+        /*while (VRSystem_PollNextEvent(vrEvent, VREvent.SIZEOF)) {
             this.vrEvents.add(vrEvent);
             vrEvent = VREvent.calloc();
-        }
+        }*/
         // free the one that didn't get used
         vrEvent.free();
     }
@@ -1477,6 +1477,7 @@ public class MCOpenVR extends MCVR {
      * @param actionHandle pose handle of the specified controller/tracker
      */
     private void updateControllerPose(int controller, long actionHandle) {
+        if (true) return;
         this.readPoseData(actionHandle);
 
         if (this.poseData.activeOrigin() != k_ulInvalidInputValueHandle) {
@@ -1628,7 +1629,7 @@ public class MCOpenVR extends MCVR {
             }
 
             // read data for all inputActions
-            this.inputActions.values().forEach(this::readNewData);
+           //this.inputActions.values().forEach(this::readNewData);
 
             Profiler.get().pop();
 
@@ -1650,7 +1651,7 @@ public class MCOpenVR extends MCVR {
                 if (this.deviceSource[i].source != DeviceSource.Source.OSC ||
                     !this.oscTrackers.trackers[this.deviceSource[i].deviceIndex].isTracking())
                 {
-                    this.updateTrackerPose(i, !this.usingUnlabeledTrackers);
+                    //this.updateTrackerPose(i, !this.usingUnlabeledTrackers);
                 }
             }
         }
@@ -1807,7 +1808,7 @@ public class MCOpenVR extends MCVR {
     public void calibrateFBT(float headsetYaw) {
         // reset device indices
         for (int i = 3; i < MCVR.TRACKABLE_DEVICE_COUNT; i++) {
-            this.updateTrackerPose(i, true);
+            //this.updateTrackerPose(i, true);
         }
         super.calibrateFBT(headsetYaw);
     }

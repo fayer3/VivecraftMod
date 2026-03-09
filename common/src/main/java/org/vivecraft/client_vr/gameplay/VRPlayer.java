@@ -206,7 +206,7 @@ public class VRPlayer {
             this.worldScale = Mth.clamp(this.worldScale, 0.025F, 100F);
 
             // check that nobody tries to bypass the server set worldscale limit it with a runtime worldscale
-            if (this.mc.level != null && this.mc.isLocalServer() &&
+            /*if (this.mc.level != null && this.mc.isLocalServer() &&
                 (worldScaleOverride.isValueMinOverridden() || worldScaleOverride.isValueMaxOverridden()))
             {
                 // a vr runtime worldscale also scales the distance between the eyes, so that can be used to calculate it
@@ -237,7 +237,7 @@ public class VRPlayer {
                                     .withStyle(style -> style.withColor(ChatFormatting.GOLD)))),
                         false);
                 }
-            }
+            }*/
         }
 
         if (this.dh.vrSettings.seated && !MethodHolder.isInMenuRoom()) {
