@@ -9,7 +9,6 @@ import org.lwjgl.system.libffi.LibFFI;
 import org.vivecraft.client_vr.settings.VRSettings;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,14 +16,13 @@ import java.util.Map;
 public class JNIUtils {
 
     private static final Map<String, FFIInfo> FFIs = new HashMap<>();
-    private static int counter = 0;
 
     private static FFIInfo get(String format) {
         FFIInfo info = FFIs.get(format);
-        //VRSettings.LOGGER.warn("calling: {}", Thread.currentThread().getStackTrace()[3]);
+        VRSettings.LOGGER.warn("calling: {}", Thread.currentThread().getStackTrace()[3]);
         if (info == null) {
             String[] parameters = format.split("_");
-            FFICIF cif = FFICIF.calloc();
+            FFICIF cif = FFICIF.malloc();
             PointerBuffer argTypes = null;
             if (!parameters[0].isEmpty()) {
                 argTypes = MemoryUtil.memAllocPointer(parameters[0].length());
@@ -47,24 +45,14 @@ public class JNIUtils {
     public static float callF(String signature, long __functionAddress, Object... args) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FFIInfo info = get(signature);
-/*
+
             PointerBuffer pointers = getPointers(stack, info.args, args);
 
-            ByteBuffer returnValue = stack.malloc(64);
-            StringBuilder s = new StringBuilder();
-            for (int i = 0; i < info.args.length; i++) {
-                s.append("called with: type: ").append(info.args[i])
-                    .append(" value: ").append(info.args[i] == 'P' ? Long.toHexString((long) args[i]) : args[i])
-                    .append("  address: ").append(Long.toHexString(pointers.get(i)))
-                    .append("\n");
-            }
-            s.append(" return buffer at: ").append(MemoryUtil.memAddress(returnValue));
-            VRSettings.LOGGER.warn(s.toString());
+            ByteBuffer returnValue = stack.malloc(4);
 
             LibFFI.ffi_call(info.cif, __functionAddress, returnValue, pointers);
 
-            return returnValue.getFloat(0);*/
-            return 0;
+            return returnValue.getFloat(0);
         }
     }
 
@@ -74,13 +62,8 @@ public class JNIUtils {
 
             PointerBuffer pointers = getPointers(stack, info.args, args);
 
-            ByteBuffer returnValue = stack.malloc(64);
-            counter++;
-            StringBuilder s = new StringBuilder();
-            s.append(counter);
-            s.append(", function: ").append(Long.toHexString(__functionAddress));
-            s.append(", return buffer at: ").append(Long.toHexString(MemoryUtil.memAddress(returnValue)));
-            VRSettings.LOGGER.warn(s.toString());
+            ByteBuffer returnValue = stack.malloc(4);
+
             LibFFI.ffi_call(info.cif, __functionAddress, returnValue, pointers);
 
             return returnValue.getInt(0);
@@ -90,52 +73,30 @@ public class JNIUtils {
     public static void callV(String signature, long __functionAddress, Object... args) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FFIInfo info = get(signature);
-/*
-            PointerBuffer pointers = getPointers(stack, info.args, args);
-            StringBuilder s = new StringBuilder();
-            for (int i = 0; i < info.args.length; i++) {
-                s.append("called with: type: ").append(info.args[i])
-                    .append(" value: ").append(info.args[i] == 'P' ? Long.toHexString((long) args[i]) : args[i])
-                    .append("  address: ").append(Long.toHexString(pointers.get(i)))
-                    .append("\n");
-            }
-            VRSettings.LOGGER.warn(s.toString());
 
-            LibFFI.ffi_call(info.cif, __functionAddress, null, pointers);*/
+            PointerBuffer pointers = getPointers(stack, info.args, args);
+
+            LibFFI.ffi_call(info.cif, __functionAddress, null, pointers);
         }
     }
 
     public static boolean callZ(String signature, long __functionAddress, Object... args) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FFIInfo info = get(signature);
-/*
+
             PointerBuffer pointers = getPointers(stack, info.args, args);
 
-            ByteBuffer returnValue = stack.malloc(64);
-            StringBuilder s = new StringBuilder();
-            for (int i = 0; i < info.args.length; i++) {
-                s.append("called with: type: ").append(info.args[i])
-                    .append(" value: ").append(info.args[i] == 'P' ? Long.toHexString((long) args[i]) : args[i])
-                    .append(" address: ").append(Long.toHexString(pointers.get(i)))
-                    .append("\n");
-            }
-            s.append(" return buffer at: ").append(MemoryUtil.memAddress(returnValue));
-            VRSettings.LOGGER.warn(s.toString());
+            ByteBuffer returnValue = stack.malloc(1);
 
             LibFFI.ffi_call(info.cif, __functionAddress, returnValue, pointers);
 
-            return returnValue.get(0) != 0;*/
-            return false;
+            return returnValue.get(0) == 1;
         }
     }
 
     private static PointerBuffer getPointers(MemoryStack stack, char[] types, Object[] args) {
         if (types.length > 0 && args == null || (args != null && types.length != args.length)) {
-            throw new IllegalArgumentException(
-                "arguments needed but not enough supplied! types:" + Arrays.toString(types) + ", args:" +
-                    (args == null ? "null" :
-                        Arrays.toString(Arrays.stream(args).map(o -> o.getClass().getSimpleName()).toArray())
-                    ));
+            throw new IllegalArgumentException("arguments needed but not enough supplied! types:" + Arrays.toString(types) + ", args:" + (args == null ? "null" : Arrays.toString(Arrays.stream(args).map(o -> o.getClass().getSimpleName()).toArray())));
         }
         if (args == null) {
             return null;

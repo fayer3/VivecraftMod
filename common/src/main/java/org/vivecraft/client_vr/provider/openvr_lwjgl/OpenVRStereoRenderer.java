@@ -119,29 +119,11 @@ public class OpenVRStereoRenderer extends VRRenderer {
         this.lastError = RenderHelper.checkGLError("create VR textures");
     }
 
-    private static int counter = 0;
-
     @Override
     public void endFrame() throws RenderConfigException {
-        VRSettings.LOGGER.warn("""
-            submit {}: eEye: {}, EVRSubmitFlags: {}
-             pTexture: {}, eColorSpace: {}, eType: {}, handle: {}
-             pBounds: {}, uMin: {}, vMin: {}, uMax: {},  vMax: {}
-            """, ++counter, VR.EVREye_Eye_Left, VR.EVRSubmitFlags_Submit_Default,
-            Long.toHexString(this.openvr.texType0.address()), this.openvr.texType0.eColorSpace(), this.openvr.texType0.eType(), this.openvr.texType0.handle(),
-            Long.toHexString(this.openvr.texBounds.address()), this.openvr.texBounds.uMin(), this.openvr.texBounds.vMin(), this.openvr.texBounds.uMax(), this.openvr.texBounds.vMax());
-        int leftError = VRCompositor_Submit(VR.EVREye_Eye_Left, this.openvr.texType0, this.openvr.texBounds,
+        int leftError = VRCompositor_Submit(VR.EVREye_Eye_Left, this.openvr.texType0, null,
             VR.EVRSubmitFlags_Submit_Default);
-
-        VRSettings.LOGGER.warn("""
-            submit {}: eEye: {}, EVRSubmitFlags: {}
-             pTexture: {}, eColorSpace: {}, eType: {}, handle: {}
-             pBounds: {}, uMin: {}, vMin: {}, uMax: {},  vMax: {}
-            """, ++counter, VR.EVREye_Eye_Right, VR.EVRSubmitFlags_Submit_Default,
-            Long.toHexString(this.openvr.texType1.address()), this.openvr.texType1.eColorSpace(), this.openvr.texType1.eType(), this.openvr.texType1.handle(),
-            Long.toHexString(this.openvr.texBounds.address()), this.openvr.texBounds.uMin(), this.openvr.texBounds.vMin(), this.openvr.texBounds.uMax(), this.openvr.texBounds.vMax());
-
-        int rightError = VRCompositor_Submit(VR.EVREye_Eye_Right, this.openvr.texType1, this.openvr.texBounds,
+        int rightError = VRCompositor_Submit(VR.EVREye_Eye_Right, this.openvr.texType1, null,
             VR.EVRSubmitFlags_Submit_Default);
 
         VRCompositor_PostPresentHandoff();
