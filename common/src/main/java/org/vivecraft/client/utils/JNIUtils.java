@@ -27,17 +27,18 @@ public class JNIUtils {
             FFICIF cif = FFICIF.calloc();
             PointerBuffer argTypes = null;
             if (!parameters[0].isEmpty()) {
-                argTypes = PointerBuffer.allocateDirect(parameters[0].length());
+                argTypes = MemoryUtil.memAllocPointer(parameters[0].length());
                 for (int i = 0; i < parameters[0].length(); i++) {
-                    argTypes.put(i, getType(parameters[0].charAt(i)));
+                    argTypes.put(getType(parameters[0].charAt(i)));
                 }
+                argTypes.flip();
             }
             int ret = LibFFI.ffi_prep_cif(cif, LibFFI.FFI_DEFAULT_ABI, getType(parameters[1].charAt(0)),
                 argTypes);
             if (ret != LibFFI.FFI_OK) {
                 throw new RuntimeException("FFI error: " + ret);
             }
-            info = new FFIInfo(cif, parameters[0].toCharArray());
+            info = new FFIInfo(cif, parameters[0].toCharArray(), argTypes);
             FFIs.put(format, info);
         }
         return info;
@@ -68,22 +69,10 @@ public class JNIUtils {
     }
 
     public static int callI(String signature, long __functionAddress, Object... args) {
-        int ret = 0;
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FFIInfo info = get(signature);
 
-            //PointerBuffer pointers = getPointers(stack, info.args, args);
-
-            IntBuffer eye = stack.ints((int) args[0]);
-            PointerBuffer texture = stack.pointers((long) args[1]);
-            PointerBuffer bounds = stack.pointers((long) args[2]);
-            IntBuffer flags = stack.ints((int) args[3]);
-
-            PointerBuffer pointers = stack.mallocPointer(args.length);
-            pointers.put(0, MemoryUtil.memAddress(eye));
-            pointers.put(1, texture.address());
-            pointers.put(2, bounds.address());
-            pointers.put(3, MemoryUtil.memAddress(flags));
+            PointerBuffer pointers = getPointers(stack, info.args, args);
 
             ByteBuffer returnValue = stack.malloc(64);
             counter++;
@@ -94,9 +83,8 @@ public class JNIUtils {
             VRSettings.LOGGER.warn(s.toString());
             LibFFI.ffi_call(info.cif, __functionAddress, returnValue, pointers);
 
-            ret = returnValue.getInt(0);
+            return returnValue.getInt(0);
         }
-        return ret;
     }
 
     public static void callV(String signature, long __functionAddress, Object... args) {
@@ -155,15 +143,15 @@ public class JNIUtils {
         PointerBuffer pointers = stack.mallocPointer(args.length);
         for (int i = 0; i < args.length; i++) {
             switch (types[i]) {
-                case 'I', 'U' -> pointers.put(i, MemoryUtil.memAddress(stack.ints((int) args[i])));
-                case 'J' -> pointers.put(i, MemoryUtil.memAddress(stack.longs((long) args[i])));
-                case 'F' -> pointers.put(i, MemoryUtil.memAddress(stack.floats((int) args[i])));
-                case 'S' -> pointers.put(i, MemoryUtil.memAddress(stack.shorts((short) args[i])));
-                case 'Z' ->
-                    pointers.put(i, MemoryUtil.memAddress(stack.bytes((boolean) args[i] ? (byte) 1 : (byte) 0)));
-                case 'P' -> pointers.put(i, stack.pointers((long) args[i]).address());
+                case 'I', 'U' -> pointers.put(stack.ints((int) args[i]));
+                case 'J' -> pointers.put(stack.longs((long) args[i]));
+                case 'F' -> pointers.put(stack.floats((int) args[i]));
+                case 'S' -> pointers.put(stack.shorts((short) args[i]));
+                case 'Z' -> pointers.put(stack.bytes((boolean) args[i] ? (byte) 1 : (byte) 0));
+                case 'P' -> pointers.put(stack.pointers((long) args[i]).address());
             }
         }
+        pointers.flip();
         return pointers;
     }
 
@@ -180,5 +168,5 @@ public class JNIUtils {
         };
     }
 
-    private record FFIInfo(FFICIF cif, char[] args) {}
+    private record FFIInfo(FFICIF cif, char[] args, PointerBuffer argTypes) {}
 }
