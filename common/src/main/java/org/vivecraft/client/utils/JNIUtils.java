@@ -19,7 +19,6 @@ public class JNIUtils {
 
     private static FFIInfo get(String format) {
         FFIInfo info = FFIs.get(format);
-        VRSettings.LOGGER.warn("calling: {}", Thread.currentThread().getStackTrace()[3]);
         if (info == null) {
             String[] parameters = format.split("_");
             FFICIF cif = FFICIF.malloc();
@@ -48,7 +47,7 @@ public class JNIUtils {
 
             PointerBuffer pointers = getPointers(stack, info.args, args);
 
-            ByteBuffer returnValue = stack.malloc(4);
+            ByteBuffer returnValue = stack.malloc(Float.BYTES);
 
             LibFFI.ffi_call(info.cif, __functionAddress, returnValue, pointers);
 
@@ -62,11 +61,39 @@ public class JNIUtils {
 
             PointerBuffer pointers = getPointers(stack, info.args, args);
 
-            ByteBuffer returnValue = stack.malloc(4);
+            ByteBuffer returnValue = stack.malloc(Integer.BYTES);
 
             LibFFI.ffi_call(info.cif, __functionAddress, returnValue, pointers);
 
             return returnValue.getInt(0);
+        }
+    }
+
+    public static boolean callZ(String signature, long __functionAddress, Object... args) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FFIInfo info = get(signature);
+
+            PointerBuffer pointers = getPointers(stack, info.args, args);
+
+            ByteBuffer returnValue = stack.malloc(Long.BYTES);
+
+            LibFFI.ffi_call(info.cif, __functionAddress, returnValue, pointers);
+
+            return returnValue.get(0) == 1;
+        }
+    }
+
+    public static long callJ(String signature, long __functionAddress, Object... args) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FFIInfo info = get(signature);
+
+            PointerBuffer pointers = getPointers(stack, info.args, args);
+
+            ByteBuffer returnValue = stack.malloc(Long.BYTES);
+
+            LibFFI.ffi_call(info.cif, __functionAddress, returnValue, pointers);
+
+            return returnValue.getLong(0);
         }
     }
 
@@ -77,20 +104,6 @@ public class JNIUtils {
             PointerBuffer pointers = getPointers(stack, info.args, args);
 
             LibFFI.ffi_call(info.cif, __functionAddress, null, pointers);
-        }
-    }
-
-    public static boolean callZ(String signature, long __functionAddress, Object... args) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            FFIInfo info = get(signature);
-
-            PointerBuffer pointers = getPointers(stack, info.args, args);
-
-            ByteBuffer returnValue = stack.malloc(1);
-
-            LibFFI.ffi_call(info.cif, __functionAddress, returnValue, pointers);
-
-            return returnValue.get(0) == 1;
         }
     }
 
