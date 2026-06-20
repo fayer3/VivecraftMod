@@ -24,6 +24,8 @@ public class VRTextureTarget extends RenderTarget {
     @Nullable
     private final Vector4fc clearColor;
 
+    public final int fixedTexId;
+
     private VRTextureTarget(
         String name, int width, int height, boolean useDepth, int texId, boolean mipmaps, boolean useStencil,
         @Nullable Vector4fc clearColor)
@@ -41,6 +43,7 @@ public class VRTextureTarget extends RenderTarget {
             // use our stencil only if the modloader doesn't support it
             ((RenderTargetExtension) this).vivecraft$setStencil(true);
         }
+        this.fixedTexId = texId;
         if (texId >= 0) {
             // hardcoded opengl here
             if (RenderSystem.getDevice().backend instanceof GlDevice glDevice) {

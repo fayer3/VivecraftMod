@@ -1,13 +1,12 @@
 package org.vivecraft.client_vr.provider.nullvr;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
-import org.lwjgl.opengl.GL11;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRTextureTarget;
 import org.vivecraft.client_vr.provider.MCVR;
 import org.vivecraft.client_vr.provider.VRRenderer;
 import org.vivecraft.client_vr.render.helpers.graphics.GraphicsHelper;
@@ -56,19 +55,17 @@ public class NullVRStereoRenderer extends VRRenderer {
 
     @Override
     public void createRenderTexture(int lwidth, int lheight) {
-        // generate eye textures
-        for (int i = 0; i < 2; i++) {
-            int prevTexture = GlStateManager._getInteger(GL11.GL_TEXTURE_BINDING_2D);
-            this.eyeTextureId[i] = GlStateManager._genTexture();
-            GlStateManager._bindTexture(this.eyeTextureId[i]);
-            GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-            GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-            GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, lwidth, lheight, 0, GL11.GL_RGBA,
-                GL11.GL_INT,
-                null);
+        // create mc rendertextures
+        if (this.framebufferEye[0] == null) {
+            this.framebufferEye[0] = VRTextureTarget.builder("L Eye")
+                .withSize(lwidth, lheight)
+                .build();
+        }
 
-            GlStateManager._bindTexture(prevTexture);
-            GraphicsHelper.INSTANCE.checkError((i == 0 ? "Left" : "Right") + " Eye framebuffer setup");
+        if (this.framebufferEye[1] == null) {
+            this.framebufferEye[1] = VRTextureTarget.builder("R Eye")
+                .withSize(lwidth, lheight)
+                .build();
         }
 
         this.lastError = GraphicsHelper.INSTANCE.checkError("create VR textures");
@@ -90,14 +87,5 @@ public class NullVRStereoRenderer extends VRRenderer {
     @Override
     protected void destroyBuffers() {
         super.destroyBuffers();
-        if (this.eyeTextureId[0] > -1) {
-            GlStateManager._deleteTexture(this.eyeTextureId[0]);
-            this.eyeTextureId[0] = -1;
-        }
-
-        if (this.eyeTextureId[1] > -1) {
-            GlStateManager._deleteTexture(this.eyeTextureId[1]);
-            this.eyeTextureId[1] = -1;
-        }
     }
 }

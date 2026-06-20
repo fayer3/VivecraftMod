@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.vivecraft.client.extensions.RenderSetupExtension;
 
-@Mixin(RenderType.class)
+@Mixin(value = RenderType.class, priority = 1100)
 public class RenderTypeVRMixin {
     @Shadow
     @Final

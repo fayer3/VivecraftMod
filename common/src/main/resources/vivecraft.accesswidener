@@ -20,7 +20,6 @@ accessible method net/minecraft/client/MouseHandler onMove (JDD)V
 accessible method net/minecraft/client/MouseHandler onScroll (JDD)V
 accessible method net/minecraft/client/KeyboardHandler charTyped (JLnet/minecraft/client/input/CharacterEvent;)V
 accessible method net/minecraft/client/KeyboardHandler keyPress (JILnet/minecraft/client/input/KeyEvent;)V
-accessible method com/mojang/blaze3d/platform/Window onFramebufferResize (JII)V
 
 # for aim fix
 accessible field net/minecraft/network/Connection channel Lio/netty/channel/Channel;

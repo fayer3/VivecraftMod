@@ -5,14 +5,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import org.vivecraft.client_vr.VRTextureTarget;
 import org.vivecraft.client_vr.render.RenderConfigException;
 import org.vivecraft.client_vr.settings.VRSettings;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public abstract class VulkanHelper implements GraphicsHelper {
+
+    private RawTexture.Format[] supportedFormats = null;
 
     protected abstract VkCommandBuffer allocateAndBeginCommandBuffer();
 
@@ -21,16 +25,107 @@ public abstract class VulkanHelper implements GraphicsHelper {
     @Override
     public abstract long getTextureHandle(GpuTexture texture);
 
+    protected abstract int getImageLayout(GpuTexture texture);
+
+    protected abstract void setImageLayout(GpuTexture texture, int newLayout);
+
+    @Override
+    public RawTexture createTexture(String name, int width, int height, RawTexture.Format format) {
+        return new VulkanRawTexture(name, width, height, format);
+    }
+
+    @Override
+    public void blitTextures(VRTextureTarget[] sources, RawTexture[] targets) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            VkCommandBuffer blitCommandBuffer = this.allocateAndBeginCommandBuffer();
+            for (int i = 0; i < sources.length; ++i) {
+                VulkanRawTexture target = ((VulkanRawTexture) targets[i]);
+
+                // transition image layout
+                target.transitionLayoutTo(blitCommandBuffer, VK10.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    VK10.VK_ACCESS_TRANSFER_READ_BIT, VK10.VK_ACCESS_TRANSFER_WRITE_BIT);
+
+                VkOffset3D.Buffer offsets = VkOffset3D.calloc(2, stack);
+                offsets.x(0)
+                    .y(0)
+                    .z(0);
+                offsets.position(1);
+                offsets.x(sources[i].getColorTexture().getWidth(0))
+                    .y(sources[i].getColorTexture().getHeight(0))
+                    .z(1);
+                offsets.position(0);
+
+                VkImageSubresourceLayers subresource = VkImageSubresourceLayers.calloc(stack);
+                subresource.aspectMask(1);
+                subresource.mipLevel(0);
+                subresource.baseArrayLayer(0);
+                subresource.layerCount(1);
+
+                VkImageBlit.Buffer blitRegion = VkImageBlit.calloc(1, stack);
+                blitRegion.srcSubresource(subresource);
+                blitRegion.srcOffsets(offsets);
+                blitRegion.dstSubresource(subresource);
+                blitRegion.dstOffsets(offsets);
+                VK12.vkCmdBlitImage(blitCommandBuffer,
+                    getTextureHandle(sources[i].getColorTexture()), getImageLayout(sources[i].getColorTexture()),
+                    target.getHandle(), target.currentLayout,
+                    blitRegion, VK10.VK_FILTER_NEAREST);
+
+                // transition image layout
+                target.transitionLayoutTo(blitCommandBuffer, VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    VK10.VK_ACCESS_TRANSFER_WRITE_BIT, VK10.VK_ACCESS_TRANSFER_READ_BIT);
+            }
+            endCommandBuffer(blitCommandBuffer);
+        }
+    }
+
+    @Override
+    public RawTexture.Format[] supportedTextureFormats() {
+        if (this.supportedFormats == null) {
+            List<RawTexture.Format> supported = new ArrayList<>();
+            for (RawTexture.Format format : RawTexture.Format.values()) {
+                try (MemoryStack stack = MemoryStack.stackPush()) {
+                    VkPhysicalDeviceImageFormatInfo2 formatInfo = VkPhysicalDeviceImageFormatInfo2.calloc(stack)
+                        .sType$Default();
+                    VkImageFormatProperties2 supportedProperties = VkImageFormatProperties2.calloc(stack)
+                        .sType$Default();
+
+                    // set needed properties
+                    formatInfo.format(getVkFormat(format));
+                    formatInfo.type(VK10.VK_IMAGE_TYPE_2D);
+                    formatInfo.tiling(VK10.VK_IMAGE_TILING_OPTIMAL);
+                    formatInfo.usage(VK10.VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                        VK10.VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                        VK10.VK_IMAGE_USAGE_SAMPLED_BIT);
+                    formatInfo.flags(0);
+
+                    int res = VK11.vkGetPhysicalDeviceImageFormatProperties2(this.getPhysicalDevice(), formatInfo,
+                        supportedProperties);
+                    if (res == VK10.VK_SUCCESS) {
+                        supported.add(format);
+                    } else {
+                        VRSettings.LOGGER.error("Vivecraft: format {} not supported", format);
+                    }
+                }
+            }
+            this.supportedFormats = supported.toArray(new RawTexture.Format[0]);
+        }
+
+        return this.supportedFormats;
+    }
+
     @Override
     public void genMipmaps(GpuTexture texture) {
         long vkImage = getTextureHandle(texture);
 
         VkCommandBuffer blitCommandBuffer = this.allocateAndBeginCommandBuffer();
 
+        int oldLayout = getImageLayout(texture);
+
         // transfer base level to src optimal
         transitionImageLayoutTo(blitCommandBuffer, vkImage,
             0, 1,
-            VK10.VK_IMAGE_LAYOUT_GENERAL, VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            oldLayout, VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
             VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK10.VK_ACCESS_TRANSFER_READ_BIT,
             VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK10.VK_PIPELINE_STAGE_TRANSFER_BIT);
 
@@ -38,9 +133,9 @@ public abstract class VulkanHelper implements GraphicsHelper {
             // transition the target layer to dst optimal
             transitionImageLayoutTo(blitCommandBuffer, vkImage,
                 i, 1,
-                VK10.VK_IMAGE_LAYOUT_GENERAL, VK10.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                0, VK10.VK_ACCESS_TRANSFER_WRITE_BIT,
-                0, VK10.VK_PIPELINE_STAGE_TRANSFER_BIT);
+                oldLayout, VK10.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK10.VK_ACCESS_TRANSFER_WRITE_BIT,
+                VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK10.VK_PIPELINE_STAGE_TRANSFER_BIT);
 
             // blit
             blitTexture(blitCommandBuffer,
@@ -56,11 +151,15 @@ public abstract class VulkanHelper implements GraphicsHelper {
         }
 
         // every mip is now in src optimal, transfer all mips at once back into the genreal layout
-        transitionImageLayoutTo(blitCommandBuffer, vkImage,
-            0, texture.getMipLevels(),
-            VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK10.VK_IMAGE_LAYOUT_GENERAL,
-            VK10.VK_ACCESS_TRANSFER_READ_BIT, VK10.VK_ACCESS_SHADER_READ_BIT,
-            VK10.VK_PIPELINE_STAGE_TRANSFER_BIT, VK10.VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+        if (oldLayout != VK10.VK_IMAGE_LAYOUT_UNDEFINED) {
+            transitionImageLayoutTo(blitCommandBuffer, vkImage,
+                0, texture.getMipLevels(),
+                VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, oldLayout,
+                VK10.VK_ACCESS_TRANSFER_READ_BIT, VK10.VK_ACCESS_SHADER_READ_BIT,
+                VK10.VK_PIPELINE_STAGE_TRANSFER_BIT, VK10.VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+        } else {
+            setImageLayout(texture, VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        }
 
         this.endCommandBuffer(blitCommandBuffer);
     }
@@ -253,6 +352,57 @@ public abstract class VulkanHelper implements GraphicsHelper {
         }
     }
 
+    public static int getVkFormat(RawTexture.Format format) {
+        return switch (format) {
+            case R8G8B8A8_UNORM -> VK10.VK_FORMAT_R8G8B8A8_UNORM;
+            case B8G8R8A8_UNORM -> VK10.VK_FORMAT_B8G8R8A8_UNORM;
+            case R8G8B8A8_SRGB -> VK10.VK_FORMAT_R8G8B8A8_SRGB;
+            case B8G8R8A8_SRGB -> VK10.VK_FORMAT_B8G8R8A8_SRGB;
+            case R16G16B16A16_SFLOAT -> VK10.VK_FORMAT_R16G16B16A16_SFLOAT;
+            case R32G32B32_SFLOAT -> VK10.VK_FORMAT_R32G32B32_SFLOAT;
+            case R32G32B32A32_SFLOAT -> VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
+        };
+    }
+
+    public static String resultToString(final int error) {
+        return switch (error) {
+            case VK12.VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS -> "VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS";
+            case VK12.VK_ERROR_FRAGMENTATION -> "VK_ERROR_FRAGMENTATION";
+            case VK12.VK_ERROR_INVALID_EXTERNAL_HANDLE -> "VK_ERROR_INVALID_EXTERNAL_HANDLE";
+            case VK12.VK_ERROR_OUT_OF_POOL_MEMORY -> "VK_ERROR_OUT_OF_POOL_MEMORY";
+            case KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR -> "VK_ERROR_OUT_OF_DATE_KHR";
+            case KHRSurface.VK_ERROR_NATIVE_WINDOW_IN_USE_KHR -> "VK_ERROR_NATIVE_WINDOW_IN_USE_KHR";
+            case KHRSurface.VK_ERROR_SURFACE_LOST_KHR -> "VK_ERROR_SURFACE_LOST_KHR";
+            case VK10.VK_ERROR_UNKNOWN -> "VK_ERROR_UNKNOWN";
+            case VK10.VK_ERROR_FRAGMENTED_POOL -> "VK_ERROR_FRAGMENTED_POOL";
+            case VK10.VK_ERROR_FORMAT_NOT_SUPPORTED -> "VK_ERROR_FORMAT_NOT_SUPPORTED";
+            case VK10.VK_ERROR_TOO_MANY_OBJECTS -> "VK_ERROR_TOO_MANY_OBJECTS";
+            case VK10.VK_ERROR_INCOMPATIBLE_DRIVER -> "VK_ERROR_INCOMPATIBLE_DRIVER";
+            case VK10.VK_ERROR_FEATURE_NOT_PRESENT -> "VK_ERROR_FEATURE_NOT_PRESENT";
+            case VK10.VK_ERROR_EXTENSION_NOT_PRESENT -> "VK_ERROR_EXTENSION_NOT_PRESENT";
+            case VK10.VK_ERROR_LAYER_NOT_PRESENT -> "VK_ERROR_LAYER_NOT_PRESENT";
+            case VK10.VK_ERROR_MEMORY_MAP_FAILED -> "VK_ERROR_MEMORY_MAP_FAILED";
+            case VK10.VK_ERROR_DEVICE_LOST -> "VK_ERROR_DEVICE_LOST";
+            case VK10.VK_ERROR_INITIALIZATION_FAILED -> "VK_ERROR_INITIALIZATION_FAILED";
+            case VK10.VK_ERROR_OUT_OF_DEVICE_MEMORY -> "VK_ERROR_OUT_OF_DEVICE_MEMORY";
+            case VK10.VK_ERROR_OUT_OF_HOST_MEMORY -> "VK_ERROR_OUT_OF_HOST_MEMORY";
+            case VK10.VK_SUCCESS -> "VK_SUCCESS";
+            case VK10.VK_NOT_READY -> "VK_NOT_READY";
+            case VK10.VK_TIMEOUT -> "VK_TIMEOUT";
+            case VK10.VK_EVENT_SET -> "VK_EVENT_SET";
+            case VK10.VK_EVENT_RESET -> "VK_EVENT_RESET";
+            case VK10.VK_INCOMPLETE -> "VK_INCOMPLETE";
+            case KHRSwapchain.VK_SUBOPTIMAL_KHR -> "VK_SUBOPTIMAL_KHR";
+            default -> "0x" + Integer.toHexString(error);
+        };
+    }
+
+    public static void crashIfFailure(int result, String message) {
+        if (result < VK10.VK_SUCCESS) {
+            throw new RuntimeException(resultToString(result) + ": " + message);
+        }
+    }
+
     protected abstract Set<String> getAvailableInstanceExtensions();
 
     protected abstract Set<String> getAvailableDeviceExtensions();
@@ -261,7 +411,9 @@ public abstract class VulkanHelper implements GraphicsHelper {
 
     public abstract long getDevicePointer();
 
-    public abstract long getPhysicalDevicePointer();
+    public abstract VkPhysicalDevice getPhysicalDevice();
+
+    public abstract long getVma();
 
     public abstract long getQueuePointer();
 

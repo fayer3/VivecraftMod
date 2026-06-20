@@ -5,7 +5,6 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -32,7 +31,6 @@ import org.vivecraft.client_vr.gameplay.screenhandlers.RadialHandler;
 import org.vivecraft.client_vr.gameplay.trackers.TelescopeTracker;
 import org.vivecraft.client_vr.render.RenderConfigException;
 import org.vivecraft.client_vr.render.VRShaders;
-import org.vivecraft.client_vr.render.helpers.RenderHelper;
 import org.vivecraft.client_vr.render.helpers.graphics.GraphicsHelper;
 import org.vivecraft.client_vr.render.rendertypes.VRRenderTypes;
 import org.vivecraft.client_vr.settings.VRSettings;
@@ -58,7 +56,6 @@ public abstract class VRRenderer {
 
     // render buffers
     public final VRTextureTarget[] framebufferEye = new VRTextureTarget[2];
-    public final int[] eyeTextureId = {-1, -1};
     public RenderTarget framebufferMR;
     public RenderTarget framebufferUndistorted;
     public RenderTarget framebufferVrRender;
@@ -691,39 +688,22 @@ public abstract class VRRenderer {
 
             destroyBuffers();
 
-            if (this.eyeTextureId[0] == -1) {
+            if (this.framebufferEye[0] == null) {
                 this.createRenderTexture(eyew, eyeh);
 
-                if (this.eyeTextureId[0] == -1) {
+                if (this.framebufferEye[0] == null || this.framebufferEye[1] == null) {
                     throw new RenderConfigException(
                         Component.translatable("vivecraft.messages.renderiniterror", this.getName()),
                         Component.literal(this.getLastError()));
                 }
 
-                VRSettings.LOGGER.info("Vivecraft: VR Provider supplied render texture IDs: {}, {}",
-                    this.eyeTextureId[0], this.eyeTextureId[1]);
                 VRSettings.LOGGER.info("Vivecraft: VR Provider supplied texture resolution: {} x {}", eyew, eyeh);
+
+                VRSettings.LOGGER.info("Vivecraft: {}", this.framebufferEye[0]);
+                VRSettings.LOGGER.info("Vivecraft: {}", this.framebufferEye[1]);
             }
 
             GraphicsHelper.INSTANCE.checkError("Render Texture setup");
-
-            if (this.framebufferEye[0] == null) {
-                this.framebufferEye[0] = VRTextureTarget.builder("L Eye")
-                    .withSize(eyew, eyeh)
-                    .withTexId(this.eyeTextureId[0])
-                    .build();
-                VRSettings.LOGGER.info("Vivecraft: {}", this.framebufferEye[0]);
-                GraphicsHelper.INSTANCE.checkError("Left Eye framebuffer setup");
-            }
-
-            if (this.framebufferEye[1] == null) {
-                this.framebufferEye[1] = VRTextureTarget.builder("R Eye")
-                    .withSize(eyew, eyeh)
-                    .withTexId(this.eyeTextureId[1])
-                    .build();
-                VRSettings.LOGGER.info("Vivecraft: {}", this.framebufferEye[1]);
-                GraphicsHelper.INSTANCE.checkError("Right Eye framebuffer setup");
-            }
 
             float resolutionScale =
                 ResolutionControlHelper.isLoaded() ? ResolutionControlHelper.getCurrentScaleFactor() : 1.0F;
@@ -1050,7 +1030,6 @@ public abstract class VRRenderer {
             if (this.framebufferEye[i] != null) {
                 this.framebufferEye[i].destroyBuffers();
                 this.framebufferEye[i] = null;
-                this.eyeTextureId[i] = -1;
             }
         }
 

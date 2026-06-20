@@ -1,25 +1,24 @@
 package org.vivecraft.client_vr.provider.openvr_lwjgl;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.network.chat.Component;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.openvr.HiddenAreaMesh;
 import org.lwjgl.openvr.VR;
 import org.lwjgl.openvr.VRCompositor;
 import org.lwjgl.openvr.VRVulkanTextureData;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.vulkan.VK10;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRTextureTarget;
 import org.vivecraft.client_vr.provider.MCVR;
 import org.vivecraft.client_vr.provider.VRRenderer;
 import org.vivecraft.client_vr.render.RenderConfigException;
 import org.vivecraft.client_vr.render.helpers.graphics.GraphicsHelper;
 import org.vivecraft.client_vr.render.helpers.graphics.OpenGLHelper;
+import org.vivecraft.client_vr.render.helpers.graphics.RawTexture;
 import org.vivecraft.client_vr.render.helpers.graphics.VulkanHelper;
 import org.vivecraft.client_vr.settings.VRSettings;
 
@@ -35,6 +34,8 @@ public class OpenVRStereoRenderer extends VRRenderer {
     private final MCOpenVR openvr;
 
     private final VRVulkanTextureData[] vkEyeData = new VRVulkanTextureData[2];
+
+    private final RawTexture[] eyeTextures = new RawTexture[2];
 
     public OpenVRStereoRenderer(MCVR vr) {
         super(vr);
@@ -62,11 +63,11 @@ public class OpenVRStereoRenderer extends VRRenderer {
             }
 
             length = VRCompositor.VRCompositor_GetVulkanDeviceExtensionsRequired(
-                vulkanHelper.getPhysicalDevicePointer(), null);
+                vulkanHelper.getPhysicalDevice().address(), null);
             String deviceExtensions = "";
             if (length > 0) {
                 deviceExtensions = VRCompositor.VRCompositor_GetVulkanDeviceExtensionsRequired(
-                    vulkanHelper.getPhysicalDevicePointer(), length);
+                    vulkanHelper.getPhysicalDevice().address(), length);
             }
             // remember the extensions for the next launch
             ClientDataHolderVR.getInstance().vrSettings.requiredVulkanInstanceExtensions = instanceExtensions;
@@ -134,17 +135,10 @@ public class OpenVRStereoRenderer extends VRRenderer {
     public void createRenderTexture(int width, int height) {
         // generate eye textures
         for (int i = 0; i < 2; i++) {
-            int prevTexture = GlStateManager._getInteger(GL11.GL_TEXTURE_BINDING_2D);
-            this.eyeTextureId[i] = GlStateManager._genTexture();
-            GlStateManager._bindTexture(this.eyeTextureId[i]);
-            GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-            GlStateManager._texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-            GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, width, height, 0, GL11.GL_RGBA,
-                GL11.GL_INT,
-                null);
-
-            GlStateManager._bindTexture(prevTexture);
             GraphicsHelper.INSTANCE.checkError((i == 0 ? "Left" : "Right") + " Eye framebuffer setup");
+            this.eyeTextures[i] = GraphicsHelper.INSTANCE.createTexture(
+                (i == 0 ? "Left" : "Right") + " Eye framebuffer", width, height,
+                GraphicsHelper.INSTANCE.supportedTextureFormats()[0]);
         }
 
         if (GraphicsHelper.INSTANCE instanceof OpenGLHelper) {
@@ -160,13 +154,30 @@ public class OpenVRStereoRenderer extends VRRenderer {
     }
 
     private void setupOpenGL() {
-        this.openvr.texType0.handle(this.eyeTextureId[0]);
+        this.openvr.texType0.handle(this.eyeTextures[0].getHandle());
         this.openvr.texType0.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
         this.openvr.texType0.eType(VR.ETextureType_TextureType_OpenGL);
 
-        this.openvr.texType1.handle(this.eyeTextureId[1]);
+        this.openvr.texType1.handle(this.eyeTextures[1].getHandle());
         this.openvr.texType1.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
         this.openvr.texType1.eType(VR.ETextureType_TextureType_OpenGL);
+
+        // create wrapped rendertargets for mc
+        if (this.framebufferEye[0] == null) {
+            this.framebufferEye[0] = VRTextureTarget.builder("L Eye")
+                .withSize(this.eyeTextures[0].width, this.eyeTextures[0].height)
+                .withTexId((int) this.eyeTextures[0].getHandle())
+                .build();
+            GraphicsHelper.INSTANCE.checkError("Left Eye framebuffer setup");
+        }
+
+        if (this.framebufferEye[1] == null) {
+            this.framebufferEye[1] = VRTextureTarget.builder("R Eye")
+                .withSize(this.eyeTextures[1].width, this.eyeTextures[1].height)
+                .withTexId((int) this.eyeTextures[1].getHandle())
+                .build();
+            GraphicsHelper.INSTANCE.checkError("Right Eye framebuffer setup");
+        }
     }
 
     private void setupVulkan() {
@@ -181,26 +192,41 @@ public class OpenVRStereoRenderer extends VRRenderer {
         // populate vk objects
         if (GraphicsHelper.INSTANCE instanceof VulkanHelper vkHelper) {
             for (int i = 0; i < 2; i++) {
-                this.vkEyeData[i].m_nImage(
-                    GraphicsHelper.INSTANCE.getTextureHandle(this.framebufferEye[i].getColorTexture()));
+                this.vkEyeData[i].m_nImage(this.eyeTextures[i].getHandle());
                 this.vkEyeData[i].m_pDevice(vkHelper.getDevicePointer());
-                this.vkEyeData[i].m_pPhysicalDevice(vkHelper.getPhysicalDevicePointer());
+                this.vkEyeData[i].m_pPhysicalDevice(vkHelper.getPhysicalDevice().address());
                 this.vkEyeData[i].m_pInstance(vkHelper.getInstancePointer());
                 this.vkEyeData[i].m_pQueue(vkHelper.getQueuePointer());
                 this.vkEyeData[i].m_nQueueFamilyIndex(vkHelper.getQueueFamilyIndex());
-                this.vkEyeData[i].m_nWidth(this.framebufferEye[i].width);
-                this.vkEyeData[i].m_nHeight(this.framebufferEye[i].height);
-                this.vkEyeData[i].m_nFormat(VK10.VK_FORMAT_R8G8B8_UNORM);
-                // hardcoded, maybe mixin to store per target?
+                this.vkEyeData[i].m_nWidth(this.eyeTextures[i].width);
+                this.vkEyeData[i].m_nHeight(this.eyeTextures[i].height);
+                this.vkEyeData[i].m_nFormat(VulkanHelper.getVkFormat(this.eyeTextures[i].format));
                 this.vkEyeData[i].m_nSampleCount(1);
             }
         } else {
             throw new IllegalStateException("Vivecraft: Vulkan on non vulkan device");
         }
+
+        // create mc rendertextures
+        if (this.framebufferEye[0] == null) {
+            this.framebufferEye[0] = VRTextureTarget.builder("L Eye")
+                .withSize(this.eyeTextures[0].width, this.eyeTextures[0].height)
+                .build();
+        }
+
+        if (this.framebufferEye[1] == null) {
+            this.framebufferEye[1] = VRTextureTarget.builder("R Eye")
+                .withSize(this.eyeTextures[1].width, this.eyeTextures[1].height)
+                .build();
+        }
     }
 
     @Override
     public void endFrame() throws RenderConfigException {
+
+        // copy mc textures, if they do not match what wee submit
+        GraphicsHelper.INSTANCE.blitTextures(this.framebufferEye, this.eyeTextures);
+
         int leftError = VRCompositor_Submit(VR.EVREye_Eye_Left, this.openvr.texType0, null,
             VR.EVRSubmitFlags_Submit_Default);
         int rightError = VRCompositor_Submit(VR.EVREye_Eye_Right, this.openvr.texType1, null,
@@ -250,14 +276,11 @@ public class OpenVRStereoRenderer extends VRRenderer {
     @Override
     protected void destroyBuffers() {
         super.destroyBuffers();
-        if (this.eyeTextureId[0] > -1) {
-            GlStateManager._deleteTexture(this.eyeTextureId[0]);
-            this.eyeTextureId[0] = -1;
-        }
-
-        if (this.eyeTextureId[1] > -1) {
-            GlStateManager._deleteTexture(this.eyeTextureId[1]);
-            this.eyeTextureId[1] = -1;
+        for (int i = 0; i < 2; i++) {
+            if (this.eyeTextures[i] != null) {
+                this.eyeTextures[i].destroy();
+                this.eyeTextures[i] = null;
+            }
         }
     }
 
