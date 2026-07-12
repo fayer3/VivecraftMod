@@ -1,6 +1,7 @@
 package org.vivecraft.client_vr.render.helpers.graphics;
 
 import com.mojang.blaze3d.opengl.GlDevice;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vulkan.VulkanDevice;
@@ -41,7 +42,9 @@ public interface GraphicsHelper {
 
     void setStencil(boolean state);
 
-    void flush();
+    default void preSubmit(RenderTarget[] eyeTextures) {}
+
+    default void postSubmit(RenderTarget[] eyeTextures) {}
 
     /**
      * @return if the eye buffer needs to be flipped vertically

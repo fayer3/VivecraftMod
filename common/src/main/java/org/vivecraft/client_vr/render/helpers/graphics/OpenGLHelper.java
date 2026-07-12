@@ -3,6 +3,7 @@ package org.vivecraft.client_vr.render.helpers.graphics;
 import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.opengl.GlTextureView;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import org.apache.commons.lang3.tuple.Pair;
@@ -103,7 +104,8 @@ public class OpenGLHelper implements GraphicsHelper {
     }
 
     @Override
-    public void flush() {
+    public void postSubmit(RenderTarget[] eyeTextures) {
+        // flush, recommended by the openvr docs
         GL11C.glFlush();
     }
 }

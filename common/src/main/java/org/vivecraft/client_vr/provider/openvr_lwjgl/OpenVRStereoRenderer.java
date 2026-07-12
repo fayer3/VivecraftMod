@@ -199,6 +199,8 @@ public class OpenVRStereoRenderer extends VRRenderer {
     public void endFrame() throws RenderConfigException {
         // technically we are supposed to transition Vulkan images to VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
         // vanilla has them in VK_IMAGE_LAYOUT_GENERAL by default which should also work though
+        GraphicsHelper.INSTANCE.preSubmit(this.framebufferEye);
+
         int leftError = VRCompositor_Submit(VR.EVREye_Eye_Left, this.openvr.texType0, null,
             VR.EVRSubmitFlags_Submit_Default);
         int rightError = VRCompositor_Submit(VR.EVREye_Eye_Right, this.openvr.texType1, null,
@@ -206,14 +208,13 @@ public class OpenVRStereoRenderer extends VRRenderer {
 
         VRCompositor_PostPresentHandoff();
 
+        GraphicsHelper.INSTANCE.postSubmit(this.framebufferEye);
+
         if (leftError + rightError > VR.EVRCompositorError_VRCompositorError_None) {
             throw new RenderConfigException(Component.literal("Compositor Error"),
                 Component.literal("Texture submission error: Left/Right " +
                     getCompositorError(leftError) + "/" + getCompositorError(rightError)));
         }
-
-        // flush, recommended by the openvr docs
-        GraphicsHelper.INSTANCE.flush();
     }
 
     public static String getCompositorError(int code) {

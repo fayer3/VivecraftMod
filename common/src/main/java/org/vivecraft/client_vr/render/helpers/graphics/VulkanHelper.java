@@ -1,5 +1,6 @@
 package org.vivecraft.client_vr.render.helpers.graphics;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vulkan.VulkanDevice;
@@ -208,7 +209,46 @@ public class VulkanHelper implements GraphicsHelper {
     public void setStencil(boolean state) {}
 
     @Override
-    public void flush() {}
+    public void preSubmit(RenderTarget[] eyeTextures) {
+        // move eye textures to VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+        VkCommandBuffer blitCommandBuffer = getVulkanDevice().createCommandEncoder()
+            .allocateAndBeginTransientCommandBuffer();
+
+        for (RenderTarget eyeTexture : eyeTextures) {
+            VulkanGpuTexture vulkanTexture = getVulkanTexture(eyeTexture.getColorTexture());
+            transitionImageLayoutTo(blitCommandBuffer, vulkanTexture.vkImage(),
+                0, 1,
+                VK10.VK_IMAGE_LAYOUT_GENERAL, VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK10.VK_ACCESS_TRANSFER_READ_BIT,
+                VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK10.VK_PIPELINE_STAGE_TRANSFER_BIT);
+        }
+
+        VulkanUtils.crashIfFailure(getVulkanDevice(), VK12.vkEndCommandBuffer(blitCommandBuffer),
+            "Failed to end VkCommandBuffer");
+        getVulkanDevice().createCommandEncoder().execute(blitCommandBuffer);
+    }
+
+    @Override
+    public void postSubmit(RenderTarget[] eyeTextures) {
+        // move eye textures back to VK_IMAGE_LAYOUT_GENERAL
+        VkCommandBuffer blitCommandBuffer = getVulkanDevice().createCommandEncoder()
+            .allocateAndBeginTransientCommandBuffer();
+
+        for (RenderTarget eyeTexture : eyeTextures) {
+            VulkanGpuTexture vulkanTexture = getVulkanTexture(eyeTexture.getColorTexture());
+            transitionImageLayoutTo(blitCommandBuffer, vulkanTexture.vkImage(),
+                0, 1,
+                VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK10.VK_IMAGE_LAYOUT_GENERAL,
+                VK10.VK_ACCESS_TRANSFER_READ_BIT, VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                VK10.VK_PIPELINE_STAGE_TRANSFER_BIT, VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+        }
+
+        VulkanUtils.crashIfFailure(getVulkanDevice(), VK12.vkEndCommandBuffer(blitCommandBuffer),
+            "Failed to end VkCommandBuffer");
+        getVulkanDevice().createCommandEncoder().execute(blitCommandBuffer);
+
+        getVulkanDevice().createCommandEncoder().submit();
+    }
 
     @Override
     public boolean flipEyeVertically() {
